@@ -1,0 +1,37 @@
+{
+  "app": {
+    "name": "SPBella",
+    "tagline": "Agenda do seu salão, simples e no celular."
+  },
+  "language": {
+    "label": "Idioma",
+    "pt-BR": "Português",
+    "es": "Español"
+  },
+  "status": {
+    "checking": "Verificando o sistema…",
+    "ok": "Tudo certo! O sistema está funcionando.",
+    "offline": "Não conseguimos falar com o servidor. Verifique sua internet e tente de novo.",
+    "retry": "Tentar de novo",
+    "version": "Versão {{version}}"
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "back": "Voltar ao início"
+  },
+  "errors": {
+    "bad_request": "Não foi possível concluir. Confira os dados e tente de novo.",
+    "not_authenticated": "Sua sessão terminou. Entre novamente.",
+    "forbidden": "Você não tem permissão para fazer isso.",
+    "not_found": "Não encontramos o que você procurou.",
+    "method_not_allowed": "Não foi possível concluir. Tente de novo.",
+    "conflict": "Isso mudou enquanto você usava. Atualize a página.",
+    "validation_error": "Alguns campos precisam ser corrigidos.",
+    "too_many_requests": "Muitas tentativas. Aguarde um minuto e tente de novo.",
+    "service_unavailable": "O sistema está em manutenção. Tente em alguns minutos.",
+    "database_unavailable": "O sistema está em manutenção. Tente em alguns minutos.",
+    "internal_error": "Algo deu errado do nosso lado. Já estamos vendo.",
+    "network_error": "Sem conexão com a internet.",
+    "unknown": "Algo deu errado. Tente de novo."
+  }
+}
