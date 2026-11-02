@@ -1,16 +1,19 @@
 [project]
 name = "spbella-backend"
-version = "0.1.0"
+version = "0.2.0"
 description = "API do SPBella — agendamento para salões de beleza e estética"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "fastapi>=0.115",
+    "fastapi>=0.121",
     "uvicorn[standard]>=0.32",
     "sqlalchemy>=2.0.36",
     "psycopg[binary]>=3.2",
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
     "structlog>=24.4",
+    "alembic>=1.14",
+    "argon2-cffi>=23.1",
+    "tzdata>=2024.1",
 ]
 
 [dependency-groups]
@@ -30,6 +33,9 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "S", "N"]
 ignore = ["S101"]  # assert é normal nos testes
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S105", "S106"]  # senhas falsas de teste
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

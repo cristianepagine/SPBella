@@ -9,25 +9,47 @@ export type Language = (typeof SUPPORTED_LANGUAGES)[number];
 
 const STORAGE_KEY = "spbella.language";
 
-/** Idioma salvo pelo usuário; senão, o do navegador (es-* → es); senão, português. */
-export function detectLanguage(): Language {
+function savedLanguage(): Language | null {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === "pt-BR" || saved === "es") return saved;
   } catch {
     // modo privado ou armazenamento bloqueado: segue sem preferência salva
   }
-  return navigator.language?.toLowerCase().startsWith("es") ? "es" : "pt-BR";
+  return null;
 }
 
+/** Idioma salvo pelo usuário; senão, o do navegador (es-* → es); senão, português. */
+export function detectLanguage(): Language {
+  return savedLanguage() ?? (navigator.language?.toLowerCase().startsWith("es") ? "es" : "pt-BR");
+}
+
+function apply(language: Language): void {
+  document.documentElement.lang = language;
+  void i18n.changeLanguage(language);
+}
+
+/** Troca feita pelo usuário: vale também para as próximas visitas. */
 export function changeLanguage(language: Language): void {
   try {
     localStorage.setItem(STORAGE_KEY, language);
   } catch {
     // sem problema: a escolha vale só para esta visita
   }
-  document.documentElement.lang = language;
-  void i18n.changeLanguage(language);
+  apply(language);
+}
+
+/** Idioma padrão do salão: só é aplicado se o usuário nunca escolheu um. */
+export function applySalonLanguage(language: Language): void {
+  if (savedLanguage() === null && i18n.language !== language) apply(language);
+}
+
+export function clearLanguagePreference(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // nada a limpar
+  }
 }
 
 void i18n.use(initReactI18next).init({

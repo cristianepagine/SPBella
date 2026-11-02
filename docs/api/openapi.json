@@ -74,6 +74,19 @@
         "title": "FieldError",
         "type": "object"
       },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
       "HealthResponse": {
         "properties": {
           "status": {
@@ -118,13 +131,115 @@
         ],
         "title": "ReadinessResponse",
         "type": "object"
+      },
+      "TenantPublicInfo": {
+        "properties": {
+          "country": {
+            "enum": [
+              "BR",
+              "PY"
+            ],
+            "title": "Country",
+            "type": "string"
+          },
+          "currency": {
+            "description": "Moeda dos valores `*_minor`.",
+            "enum": [
+              "BRL",
+              "PYG"
+            ],
+            "title": "Currency",
+            "type": "string"
+          },
+          "locale": {
+            "description": "Idioma padrão do salão.",
+            "enum": [
+              "pt-BR",
+              "es"
+            ],
+            "title": "Locale",
+            "type": "string"
+          },
+          "name": {
+            "examples": [
+              "Studio Bella"
+            ],
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "examples": [
+              "studio-bella"
+            ],
+            "title": "Slug",
+            "type": "string"
+          },
+          "timezone": {
+            "description": "Fuso horário IANA do salão.",
+            "examples": [
+              "America/Sao_Paulo"
+            ],
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "country",
+          "locale",
+          "timezone",
+          "currency"
+        ],
+        "title": "TenantPublicInfo",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
       }
     }
   },
   "info": {
     "description": "\nAPI do **SPBella**, sistema de agendamento para salões de beleza e estética.\n\nGuia de uso, convenções (erros, datas, valores, autenticação) e exemplos:\n`docs/api/README.md` no repositório.\n",
     "title": "SPBella API",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -181,12 +296,74 @@
           "Saúde do sistema"
         ]
       }
+    },
+    "/t/{slug}": {
+      "get": {
+        "description": "Nome, idioma, fuso e moeda do salão. Usado pelo app e pela página de agendamento para se apresentar e formatar datas e valores. Não exige login e não traz dados pessoais. Salão inexistente ou suspenso responde 404 `tenant_not_found`.",
+        "operationId": "get_public_info_t__slug__get",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantPublicInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Dados públicos do salão",
+        "tags": [
+          "Salão"
+        ]
+      }
     }
   },
   "tags": [
     {
       "description": "Verificações usadas por monitoramento e deploy.",
       "name": "Saúde do sistema"
+    },
+    {
+      "description": "Informações de um salão, identificado pelo `slug` na URL.",
+      "name": "Salão"
     }
   ]
 }

@@ -33,9 +33,19 @@ A referência completa de cada endpoint (campos, tipos e exemplos) fica no
 | Desenvolvimento | `http://localhost:8000` |
 | Produção | `https://api.<dominio>` (domínio ainda não definido) |
 
-Rotas de cada salão (a partir da história 2) ficam em `/t/{slug}/...`, onde `slug` é o
-identificador do salão na URL (ex.: `/t/studio-ana/appointments`).
-As rotas de saúde (`/health`) não pertencem a nenhum salão.
+### Salão na URL (`/t/{slug}`)
+
+Toda rota de um salão fica em `/t/{slug}/...`, onde `slug` é o identificador do salão na URL
+(ex.: `/t/studio-ana/appointments`). As rotas de saúde (`/health`) não pertencem a nenhum salão.
+
+- O `slug` tem de 3 a 40 caracteres: letras minúsculas, números e hífen (`studio-ana`, `salon-2`).
+- Se o salão não existe, está suspenso, ou o slug é malformado, **toda** rota em `/t/{slug}`
+  responde `404` com `code: "tenant_not_found"`. A resposta é a mesma nos três casos, para não
+  revelar quais salões existem.
+- O salão é verificado **antes** de qualquer outra coisa: mesmo um pedido com corpo inválido para um
+  salão inexistente recebe `tenant_not_found`, e não `validation_error`.
+- Uma rota de um salão **nunca** devolve dados de outro. Buscar pelo ID um registro de outro salão
+  responde `404 not_found`, como se o registro não existisse.
 
 ## Convenções
 
@@ -94,6 +104,7 @@ Toda resposta de erro tem o mesmo formato:
 | 401 | `not_authenticated` | Sem login ou sessão expirada |
 | 403 | `forbidden` | Logado, mas o perfil não tem permissão |
 | 404 | `not_found` | Não existe, **ou pertence a outro salão** (nunca revelamos qual dos dois) |
+| 404 | `tenant_not_found` | O salão do `slug` não existe, está suspenso ou o slug é inválido |
 | 405 | `method_not_allowed` | Método HTTP não suportado na rota |
 | 409 | `conflict` | Conflito de estado (cada rota pode ter códigos próprios, ex.: `slot_taken`) |
 | 422 | `validation_error` | Campos inválidos (ver `fields`) |
@@ -145,3 +156,40 @@ curl -i http://localhost:8000/health/ready
 |---|---|
 | 200 | `{"status": "ok", "database": "ok"}` |
 | 503 | `{"error": {"code": "database_unavailable", ...}}` |
+
+### Salão
+
+#### `GET /t/{slug}` — dados públicos do salão
+
+Nome, país, idioma, fuso e moeda do salão. O app e a página de agendamento usam isso para se
+apresentar e para formatar datas (`timezone`) e valores (`currency`). Não exige login e **não traz
+dados pessoais**.
+
+```bash
+curl -i http://localhost:8000/t/studio-bella
+```
+
+```http
+HTTP/1.1 200 OK
+
+{
+  "slug": "studio-bella",
+  "name": "Studio Bella (demonstração)",
+  "country": "BR",
+  "locale": "pt-BR",
+  "timezone": "America/Sao_Paulo",
+  "currency": "BRL"
+}
+```
+
+| Campo | Valores |
+|---|---|
+| `country` | `BR` ou `PY` |
+| `locale` | `pt-BR` ou `es`: idioma padrão do salão. O app usa esse idioma se a pessoa nunca escolheu outro. |
+| `timezone` | Fuso IANA, ex.: `America/Sao_Paulo`, `America/Asuncion` |
+| `currency` | `BRL` ou `PYG`: moeda de todos os campos `*_minor` desse salão |
+
+| HTTP | Quando |
+|---|---|
+| 200 | Salão ativo |
+| 404 `tenant_not_found` | Salão inexistente, suspenso ou slug inválido |

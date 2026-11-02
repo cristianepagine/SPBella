@@ -44,6 +44,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/t/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dados públicos do salão
+         * @description Nome, idioma, fuso e moeda do salão. Usado pelo app e pela página de agendamento para se apresentar e formatar datas e valores. Não exige login e não traz dados pessoais. Salão inexistente ou suspenso responde 404 `tenant_not_found`.
+         */
+        get: operations["get_public_info_t__slug__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -69,6 +89,11 @@ export interface components {
             code: string;
             /** Field */
             field: string;
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
         };
         /** HealthResponse */
         HealthResponse: {
@@ -98,6 +123,55 @@ export interface components {
              * @constant
              */
             status: "ok";
+        };
+        /** TenantPublicInfo */
+        TenantPublicInfo: {
+            /**
+             * Country
+             * @enum {string}
+             */
+            country: "BR" | "PY";
+            /**
+             * Currency
+             * @description Moeda dos valores `*_minor`.
+             * @enum {string}
+             */
+            currency: "BRL" | "PYG";
+            /**
+             * Locale
+             * @description Idioma padrão do salão.
+             * @enum {string}
+             */
+            locale: "pt-BR" | "es";
+            /**
+             * Name
+             * @example Studio Bella
+             */
+            name: string;
+            /**
+             * Slug
+             * @example studio-bella
+             */
+            slug: string;
+            /**
+             * Timezone
+             * @description Fuso horário IANA do salão.
+             * @example America/Sao_Paulo
+             */
+            timezone: string;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Context */
+            ctx?: Record<string, never>;
+            /** Input */
+            input?: unknown;
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
         };
     };
     responses: never;
@@ -153,6 +227,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_public_info_t__slug__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TenantPublicInfo"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

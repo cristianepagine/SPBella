@@ -26,3 +26,17 @@ export function toApiError(status: number, body: unknown): ApiError {
   const error = (body as { error?: ApiErrorBody } | undefined)?.error;
   return new ApiError(status, error?.code ?? "unknown", error?.request_id ?? undefined);
 }
+
+type FetchResult<T> = { data?: T; error?: unknown; response: Response };
+
+/** Executa uma chamada do openapi-fetch e devolve os dados, ou lança ApiError. */
+export async function call<T>(request: () => Promise<FetchResult<T>>): Promise<T> {
+  let result: FetchResult<T>;
+  try {
+    result = await request();
+  } catch {
+    throw new ApiError(0, "network_error");
+  }
+  if (result.data === undefined) throw toApiError(result.response.status, result.error);
+  return result.data;
+}

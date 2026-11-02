@@ -9,8 +9,8 @@ demonstração (quando cria dados), **API documentada** (`openapi.json` + [guia]
 | # | História | Status |
 |---|---|---|
 | 1 | Esqueleto: estrutura do repositório, Docker Compose, healthcheck, CI, `.env.example`, documentação da API | ✅ Feita |
-| 2 | Multitenancy: tabela de tenants, resolução por slug, sessão com `SET LOCAL ROLE` + `search_path`, CLI `tenants create` / `tenants migrate --all`, testes de isolamento A×B | ⏭️ Próxima |
-| 3 | Login: argon2, access token de 15 min, refresh em cookie httpOnly com rotação, perfis verificados no back-end, "esqueci a senha", Turnstile e rate limit | |
+| 2 | Multitenancy: tabela de tenants, resolução por slug, sessão com `SET LOCAL ROLE` + `search_path`, CLI `tenants create` / `tenants migrate --all`, testes de isolamento A×B | ✅ Feita |
+| 3 | Login: access token de 15 min, refresh em cookie httpOnly com rotação, token do salão A recusado no B, troca da senha provisória, perfis verificados no back-end, "esqueci a senha", Turnstile e rate limit (o hash argon2 e a tabela `users` já vieram na história 2) | ⏭️ Próxima |
 | 4 | Configurações do salão: nome, fuso, moeda (BRL/PYG), idioma, regras de agendamento | |
 | 5 | Serviços e profissionais: duração, preço, quem faz o quê, horário semanal, folgas e bloqueios | |
 | 6 | Clientes com consentimento registrado | |
@@ -24,6 +24,10 @@ demonstração (quando cria dados), **API documentada** (`openapi.json` + [guia]
 
 ## Depois do MVP (não implementar sem aprovação)
 
+- **Papel com login por salão + PgBouncer.** Fecha o limite de `SET ROLE` descrito em
+  [arquitetura.md](arquitetura.md#isolamento-entre-salões-história-2): mesmo com SQL injection,
+  um salão não conseguiria virar outro. Custo: um pool por salão.
+- **Suspender, reativar e excluir salão pela CLI** (hoje: só criar; suspender é um UPDATE manual).
 - **Backup contínuo (WAL-G → R2, PITR).** Recomendado logo após o MVP: o backup diário pode perder até 24 h.
 - **WhatsApp pela API oficial.** ⚠️ A Meta cobra por mensagem; exige número verificado e templates aprovados.
 - Cobrança automática e sinal via Pix (BR: Mercado Pago / Asaas / Efí; PY: Bancard / Pagopar).

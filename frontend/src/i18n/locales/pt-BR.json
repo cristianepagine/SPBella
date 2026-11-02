@@ -32,6 +32,11 @@
     "database_unavailable": "O sistema está em manutenção. Tente em alguns minutos.",
     "internal_error": "Algo deu errado do nosso lado. Já estamos vendo.",
     "network_error": "Sem conexão com a internet.",
-    "unknown": "Algo deu errado. Tente de novo."
+    "unknown": "Algo deu errado. Tente de novo.",
+    "tenant_not_found": "Não encontramos esse salão. Confira se o endereço está certo."
+  },
+  "tenant": {
+    "loading": "Carregando…",
+    "comingSoon": "Em breve você vai poder marcar seu horário por aqui."
   }
 }

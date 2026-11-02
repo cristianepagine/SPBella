@@ -12,12 +12,21 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=("../.env", ".env"), extra="ignore")
 
     app_env: Literal["development", "test", "production"] = "development"
-    app_version: str = "0.1.0"
+    app_version: str = "0.2.0"
 
+    # Papel da APLICAÇÃO: sem acesso direto às tabelas dos salões; só entra em um salão
+    # com SET LOCAL ROLE (ver app/core/tenancy.py).
     database_url: str = Field(
-        default="postgresql+psycopg://spbella:spbella@localhost:5432/spbella",
-        description="Conexão do banco principal (schema public + tenants compartilhados).",
+        default="postgresql+psycopg://spbella_app:spbella_app@localhost:5432/spbella",
+        description="Conexão da API com o banco principal (papel da aplicação).",
     )
+    # Papel ADMINISTRADOR: cria schemas, papéis e roda migrações. Usado só pela CLI.
+    database_admin_url: str | None = None
+    db_pool_size: int = 5
+
+    # Prefixo dos papéis do Postgres de cada salão (ex.: spbella_t_studio_ana). Papéis valem
+    # para o servidor inteiro, então o prefixo evita colisão entre sistemas no mesmo servidor.
+    tenant_role_prefix: str = "spbella_"
 
     # Lista separada por vírgula. Ex.: https://app.exemplo.com.br,http://localhost:5173
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173"]

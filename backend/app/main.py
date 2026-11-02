@@ -1,8 +1,12 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health
+from app.api import health, tenants
 from app.core.config import Settings, get_settings
+from app.core.db import Databases
 from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
 from app.core.middleware import REQUEST_ID_HEADER, RequestContextMiddleware
@@ -16,14 +20,22 @@ Guia de uso, convenções (erros, datas, valores, autenticação) e exemplos:
 
 OPENAPI_TAGS = [
     {"name": "Saúde do sistema", "description": "Verificações usadas por monitoramento e deploy."},
+    {"name": "Salão", "description": "Informações de um salão, identificado pelo `slug` na URL."},
 ]
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     configure_logging(settings.log_level)
+    databases = Databases(settings)
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        yield
+        databases.dispose()
 
     app = FastAPI(
+        lifespan=lifespan,
         title="SPBella API",
         version=settings.app_version,
         description=API_DESCRIPTION,
@@ -43,8 +55,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.add_middleware(RequestContextMiddleware)
 
+    app.state.settings = settings
+    app.state.databases = databases
+
     register_error_handlers(app)
     app.include_router(health.router)
+    app.include_router(tenants.router)
     return app
 
 

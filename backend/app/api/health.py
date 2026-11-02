@@ -1,10 +1,9 @@
 from typing import Literal
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 
 from app.core.config import get_settings
-from app.core.db import database_is_ready
 from app.core.errors import ApiError, error_responses
 
 router = APIRouter(prefix="/health", tags=["Saúde do sistema"])
@@ -44,7 +43,7 @@ def liveness() -> HealthResponse:
     response_model=ReadinessResponse,
     responses=error_responses(503),
 )
-def readiness() -> ReadinessResponse:
-    if not database_is_ready():
+def readiness(request: Request) -> ReadinessResponse:
+    if not request.app.state.databases.is_ready():
         raise ApiError(503, "database_unavailable", "Banco de dados indisponível")
     return ReadinessResponse(status="ok", database="ok")

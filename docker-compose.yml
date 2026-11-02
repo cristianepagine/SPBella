@@ -23,12 +23,23 @@ services:
     build: ./backend
     env_file: .env
     environment:
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-spbella}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-spbella}
+      # Papel da aplicação (criado pelo "db init"): não acessa salão nenhum sem SET ROLE.
+      DATABASE_URL: postgresql+psycopg://${APP_DB_USER:-spbella_app}:${APP_DB_PASSWORD:?defina APP_DB_PASSWORD no .env}@db:5432/${POSTGRES_DB:-spbella}
+      # Papel administrador: só a CLI usa (criar salões, migrações).
+      DATABASE_ADMIN_URL: postgresql+psycopg://${POSTGRES_USER:-spbella}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-spbella}
     ports:
       - "127.0.0.1:8000:8000"
     volumes:
       - ./backend/app:/app/app:ro # recarrega ao salvar
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+      - ./backend/migrations:/app/migrations:ro
+    # Em desenvolvimento, prepara o banco e migra os salões a cada subida (os dois são idempotentes).
+    command:
+      - sh
+      - -c
+      - >-
+        python -m app.cli db init &&
+        python -m app.cli tenants migrate --all &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       db:
         condition: service_healthy

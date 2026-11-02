@@ -22,7 +22,10 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U spbella" --health-interval 5s --health-timeout 3s --health-retries 10
     env:
-      DATABASE_URL: postgresql+psycopg://spbella:spbella@localhost:5432/spbella
+      # Superusuário do Postgres de teste: os testes criam bancos e papéis próprios.
+      TEST_ADMIN_DATABASE_URL: postgresql+psycopg://spbella:spbella@localhost:5432/postgres
+      # Falha (em vez de pular) se os testes com banco, como os de isolamento, não puderem rodar.
+      REQUIRE_DB_TESTS: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -31,7 +34,7 @@ jobs:
       - run: uv sync --frozen --python 3.12
       - name: Lint
         run: uv run ruff check . && uv run ruff format --check .
-      - name: Testes (inclui verificação do openapi.json)
+      - name: Testes (isolamento entre salões, openapi.json em dia, etc.)
         run: uv run pytest
 
   frontend:
@@ -59,5 +62,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Imagem da API compila
-        run: docker build -t spbella-api ./backend
+      - name: Sobe o ambiente de desenvolvimento
+        run: |
+          cp .env.example .env
+          docker compose up -d --build --wait --wait-timeout 180
+      - name: Cria os salões de demonstração e consulta pela API
+        run: |
+          docker compose exec -T api python -m app.cli tenants seed-demo
+          docker compose exec -T api python -m app.cli tenants list
+          curl -fsS http://localhost:8000/health/ready
+          curl -fsS http://localhost:8000/t/studio-bella | grep -q '"currency":"BRL"'
+          curl -fsS http://localhost:8000/t/salon-asuncion | grep -q '"currency":"PYG"'
+      - name: Logs em caso de falha
+        if: failure()
+        run: docker compose logs

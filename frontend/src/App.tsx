@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { HomePage } from "./pages/HomePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { TenantHomePage } from "./pages/TenantHomePage";
 
 export function App() {
   return (
@@ -13,6 +14,7 @@ export function App() {
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/:slug" element={<TenantHomePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
