@@ -17,7 +17,7 @@ def render_openapi() -> str:
 
 
 def main() -> None:
-    OPENAPI_PATH.write_text(render_openapi(), encoding="utf-8")
+    OPENAPI_PATH.write_text(render_openapi(), encoding="utf-8", newline="\n")
     print(f"OpenAPI salvo em {OPENAPI_PATH}")
 
 
