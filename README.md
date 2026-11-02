@@ -34,9 +34,11 @@ npm install
 npm run dev                       # app em http://localhost:5173
 ```
 
-- Abra <http://localhost:5173/studio-bella> (Brasil) ou <http://localhost:5173/salon-asuncion> (Paraguai).
-  Login dos dois donos de demonstração: `dono@studio-bella.demo` e `duena@salon-asuncion.demo`, senha
-  `demo-spbella` (o login em si entra na história 3).
+- Abra <http://localhost:5173/studio-bella> (Brasil) ou <http://localhost:5173/salon-asuncion> (Paraguai)
+  e clique em **Área do salão: entrar**. Donos de demonstração: `dono@studio-bella.demo` e
+  `duena@salon-asuncion.demo`, senha `demo-spbella`.
+- Em desenvolvimento, os e-mails (ex.: "esqueci a senha") aparecem no terminal da API
+  (`docker compose logs -f api`).
 - Documentação interativa da API: <http://localhost:8000/docs> (Swagger) e <http://localhost:8000/redoc>.
 - A API recarrega sozinha quando um arquivo em `backend/app/` é salvo. A cada subida, o compose roda
   `db init` e `tenants migrate --all`.
@@ -119,8 +121,11 @@ Depois, atualize o [guia](docs/api/README.md) se mudou alguma convenção e regi
 - **Sem dados pessoais nos logs.** Registre IDs, não nomes, telefones ou e-mails.
 - **Nenhum segredo no repositório.** Só `.env.example`.
 - **Datas em UTC** no banco e na API. **Dinheiro em inteiro** (`*_minor`).
-- Permissões são **sempre** verificadas no back-end.
+- Permissões são **sempre** verificadas no back-end (`CurrentUser`, `OwnerUser`, `StaffUser` em
+  `backend/app/core/auth.py`). O front só esconde botões.
+- Todo formulário público usa Turnstile e limite de tentativas.
 
 ## Status
 
-Histórias 1 (esqueleto) e 2 (multitenancy) concluídas. Próxima: história 3 (login). Ver [backlog](docs/backlog.md).
+Histórias 1 (esqueleto), 2 (multitenancy) e 3 (login) concluídas. Próxima: história 4
+(configurações do salão). Ver [backlog](docs/backlog.md).

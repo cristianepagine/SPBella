@@ -115,6 +115,9 @@ def get_tenant(
     # Salão inexistente, suspenso ou em criação: mesma resposta, para não revelar qual é o caso.
     if tenant is None or tenant.status != "active":
         raise ApiError(404, "tenant_not_found", "Salão não encontrado")
+    # Guardado no pedido (e não no contexto do log): dependências síncronas rodam em outra
+    # thread, e o que é gravado no contexto lá se perde. O log de acesso lê daqui.
+    request.state.tenant_id = str(tenant.id)
     return tenant
 
 

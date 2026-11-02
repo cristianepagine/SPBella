@@ -73,6 +73,17 @@ jobs:
           curl -fsS http://localhost:8000/health/ready
           curl -fsS http://localhost:8000/t/studio-bella | grep -q '"currency":"BRL"'
           curl -fsS http://localhost:8000/t/salon-asuncion | grep -q '"currency":"PYG"'
+      - name: Login de demonstração ponta a ponta
+        run: |
+          curl -fsS -c cookies.txt -X POST http://localhost:8000/t/studio-bella/auth/login \
+            -H 'Content-Type: application/json' \
+            -d '{"email":"dono@studio-bella.demo","password":"demo-spbella"}' -o login.json
+          TOKEN=$(python3 -c "import json; print(json.load(open('login.json'))['access_token'])")
+          curl -fsS http://localhost:8000/t/studio-bella/auth/me -H "Authorization: Bearer $TOKEN"
+          curl -fsS -b cookies.txt -X POST http://localhost:8000/t/studio-bella/auth/refresh -o /dev/null
+          # o token de um salão não vale no outro
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/t/salon-asuncion/auth/me \
+            -H "Authorization: Bearer $TOKEN")" = "401"
       - name: Logs em caso de falha
         if: failure()
         run: docker compose logs

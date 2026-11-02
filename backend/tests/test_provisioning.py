@@ -18,6 +18,7 @@ from app.provisioning import (
     migrate_tenants,
     seed_demo,
 )
+from tests.conftest import production_settings
 
 # --- validações (sem banco) --------------------------------------------------------------
 
@@ -66,7 +67,7 @@ def test_create_tenant_rejects_dsn_ref_outside_the_pattern():
 
 def test_seed_demo_is_refused_in_production():
     with pytest.raises(ProvisioningError, match="produção"):
-        seed_demo(Settings(app_env="production"))
+        seed_demo(production_settings())
 
 
 # --- com banco ---------------------------------------------------------------------------
@@ -81,7 +82,7 @@ def test_created_salon_has_owner_with_argon2_password(db_settings, tenants):
     databases = Databases(db_settings)
 
     with tenant_session(databases, load_tenant(databases, "alpha")) as session:
-        owner = session.query(User).filter_by(role="owner").one()
+        owner = session.query(User).filter_by(email="dono@alpha.test").one()
 
     assert owner.email == "dono@alpha.test"
     assert owner.password_hash.startswith("$argon2id$")

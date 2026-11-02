@@ -10,15 +10,15 @@ demonstração (quando cria dados), **API documentada** (`openapi.json` + [guia]
 |---|---|---|
 | 1 | Esqueleto: estrutura do repositório, Docker Compose, healthcheck, CI, `.env.example`, documentação da API | ✅ Feita |
 | 2 | Multitenancy: tabela de tenants, resolução por slug, sessão com `SET LOCAL ROLE` + `search_path`, CLI `tenants create` / `tenants migrate --all`, testes de isolamento A×B | ✅ Feita |
-| 3 | Login: access token de 15 min, refresh em cookie httpOnly com rotação, token do salão A recusado no B, troca da senha provisória, perfis verificados no back-end, "esqueci a senha", Turnstile e rate limit (o hash argon2 e a tabela `users` já vieram na história 2) | ⏭️ Próxima |
-| 4 | Configurações do salão: nome, fuso, moeda (BRL/PYG), idioma, regras de agendamento | |
+| 3 | Login: access token de 15 min, refresh em cookie httpOnly com rotação, token do salão A recusado no B, troca da senha provisória, perfis verificados no back-end, "esqueci a senha", Turnstile e rate limit (o hash argon2 e a tabela `users` já vieram na história 2) | ✅ Feita |
+| 4 | Configurações do salão: nome, fuso, moeda (BRL/PYG), idioma, regras de agendamento | ⏭️ Próxima |
 | 5 | Serviços e profissionais: duração, preço, quem faz o quê, horário semanal, folgas e bloqueios | |
 | 6 | Clientes com consentimento registrado | |
 | 7 | Agenda interna: dia/semana por profissional; criar, remarcar, cancelar; status | |
 | 8 | Página pública de agendamento com Turnstile, rate limit e link para cancelar/remarcar | |
-| 9 | Fila em Postgres + lembretes por e-mail + botão "Enviar no WhatsApp" (`wa.me`) | |
+| 9 | Fila em Postgres + e-mail real (Amazon SES) para lembretes e "esqueci a senha" + botão "Enviar no WhatsApp" (`wa.me`) | |
 | 10 | Registro manual de pagamento e resumo do dia/mês | |
-| 11 | LGPD: log de auditoria, exportar e excluir/anonimizar titular | |
+| 11 | LGPD: log de auditoria (inclui logins e trocas de senha), exportar e excluir/anonimizar titular | |
 | 12 | PWA instalável, revisão final de i18n, seed de demonstração completo | |
 | — | Deploy: compose de produção, Cloudflare Tunnel, backup diário criptografado para R2 com teste de restauração | |
 
@@ -27,6 +27,9 @@ demonstração (quando cria dados), **API documentada** (`openapi.json` + [guia]
 - **Papel com login por salão + PgBouncer.** Fecha o limite de `SET ROLE` descrito em
   [arquitetura.md](arquitetura.md#isolamento-entre-salões-história-2): mesmo com SQL injection,
   um salão não conseguiria virar outro. Custo: um pool por salão.
+- **Cadastro da equipe pelo dono** (convidar recepção e profissionais com senha provisória). Hoje
+  só pela CLI/seed; entra junto com a história 5, se aprovado.
+- **Limite de tentativas compartilhado** (no Postgres) se a API passar a rodar em mais de um processo.
 - **Suspender, reativar e excluir salão pela CLI** (hoje: só criar; suspender é um UPDATE manual).
 - **Backup contínuo (WAL-G → R2, PITR).** Recomendado logo após o MVP: o backup diário pode perder até 24 h.
 - **WhatsApp pela API oficial.** ⚠️ A Meta cobra por mensagem; exige número verificado e templates aprovados.

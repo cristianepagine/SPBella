@@ -52,10 +52,20 @@ class ErrorResponse(BaseModel):
 class ApiError(Exception):
     """Erro de negócio com código próprio, ex.: ApiError(409, "slot_taken")."""
 
-    def __init__(self, status_code: int, code: str, message: str | None = None) -> None:
+    def __init__(
+        self,
+        status_code: int,
+        code: str,
+        message: str | None = None,
+        *,
+        fields: list[FieldError] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> None:
         self.status_code = status_code
         self.code = code
         self.message = message or HTTPStatus(status_code).phrase
+        self.fields = fields
+        self.headers = headers
 
 
 def error_responses(*status_codes: int) -> dict[int | str, dict[str, Any]]:
@@ -66,29 +76,41 @@ def error_responses(*status_codes: int) -> dict[int | str, dict[str, Any]]:
     }
 
 
-def _body(request: Request, status_code: int, code: str, message: str, fields=None) -> JSONResponse:
+def error_response(
+    request: Request,
+    status_code: int,
+    code: str,
+    message: str | None = None,
+    fields: list[FieldError] | None = None,
+    headers: dict[str, str] | None = None,
+) -> JSONResponse:
+    """Resposta de erro no formato padrão. Use quando a rota precisa DEVOLVER o erro em vez de
+    lançar (ex.: para que o que foi gravado antes do erro seja confirmado no banco)."""
     error = ErrorBody(
         code=code,
-        message=message,
+        message=message or HTTPStatus(status_code).phrase,
         request_id=getattr(request.state, "request_id", None),
         fields=fields,
     )
     return JSONResponse(
         status_code=status_code,
         content=ErrorResponse(error=error).model_dump(exclude_none=True),
+        headers=headers,
     )
 
 
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ApiError)
     async def _api_error(request: Request, exc: ApiError) -> JSONResponse:
-        return _body(request, exc.status_code, exc.code, exc.message)
+        return error_response(
+            request, exc.status_code, exc.code, exc.message, exc.fields, exc.headers
+        )
 
     @app.exception_handler(StarletteHTTPException)
     async def _http_error(request: Request, exc: StarletteHTTPException) -> JSONResponse:
         code = _STATUS_CODES.get(exc.status_code, "error")
         message = exc.detail if isinstance(exc.detail, str) else HTTPStatus(exc.status_code).phrase
-        return _body(request, exc.status_code, code, message)
+        return error_response(request, exc.status_code, code, message)
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
@@ -97,9 +119,9 @@ def register_error_handlers(app: FastAPI) -> None:
             FieldError(field=".".join(str(p) for p in e["loc"] if p != "body"), code=e["type"])
             for e in exc.errors()
         ]
-        return _body(request, 422, "validation_error", "Dados inválidos", fields)
+        return error_response(request, 422, "validation_error", "Dados inválidos", fields)
 
     @app.exception_handler(Exception)
     async def _unexpected(request: Request, exc: Exception) -> JSONResponse:
         log.error("unexpected_error", error_type=type(exc).__name__, path=request.url.path)
-        return _body(request, 500, "internal_error", "Erro interno")
+        return error_response(request, 500, "internal_error", "Erro interno")

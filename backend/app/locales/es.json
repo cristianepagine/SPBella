@@ -1,0 +1,8 @@
+{
+  "email": {
+    "password_reset": {
+      "subject": "Restablecer tu contraseña – {salon}",
+      "body": "¡Hola, {name}!\n\nRecibimos un pedido para crear una nueva contraseña en {salon}.\nPara continuar, abrí el enlace de abajo. Vale por {minutes} minutos y se puede usar una sola vez:\n\n{link}\n\nSi no fuiste vos, podés ignorar este correo. Tu contraseña sigue siendo la misma."
+    }
+  }
+}

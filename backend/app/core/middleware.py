@@ -35,5 +35,7 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
             path=request.url.path,
             status=response.status_code,
             duration_ms=duration_ms,
+            tenant_id=getattr(request.state, "tenant_id", None),
+            user_id=getattr(request.state, "user_id", None),
         )
         return response

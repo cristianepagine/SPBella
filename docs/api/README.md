@@ -114,16 +114,81 @@ Toda resposta de erro tem o mesmo formato:
 
 Códigos específicos de negócio são listados na descrição de cada rota no `openapi.json`.
 
+### Códigos de login e permissão
+
+| HTTP | `code` | Quando acontece | O que o app faz |
+|---|---|---|---|
+| 400 | `turnstile_failed` | Verificação anti-robô falhou | Pede um token novo ao widget e deixa tentar de novo |
+| 400 | `wrong_current_password` | Senha atual errada em `/change-password` | Mostra o erro no campo |
+| 400 | `invalid_reset_token` | Link de "esqueci a senha" vencido, usado ou de outro salão | Oferece pedir outro link |
+| 401 | `invalid_credentials` | E-mail ou senha errados, ou conta desativada (mesma resposta para os três) | Mostra "E-mail ou senha incorretos" |
+| 401 | `not_authenticated` | Sem `Authorization`, token vencido, adulterado ou de outro salão | Chama `/refresh` uma vez e repete o pedido |
+| 401 | `refresh_invalid` | Sessão encerrada ou vencida | Volta para o login |
+| 401 | `refresh_superseded` | Outra aba acabou de renovar a sessão | Tenta `/refresh` de novo uma vez |
+| 403 | `forbidden` | O perfil não tem permissão para a ação | Mostra aviso; não tenta de novo |
+| 403 | `password_change_required` | Senha provisória ainda não trocada | Leva à troca de senha |
+| 403 | `forbidden_origin` | Pedido com `Origin` que não é o do app | — |
+| 422 | `weak_password` | Senha nova fraca; o motivo está em `fields[0].code` | Mostra o motivo |
+| 429 | `too_many_requests` | Tentativas demais; espere o tempo do cabeçalho `Retry-After` (segundos) | Pede para aguardar |
+
 ## Autenticação
 
-*Entra na história 3.* Resumo do que virá:
-access token curto (15 min) no cabeçalho `Authorization: Bearer <token>`, refresh token em cookie
-`httpOnly` restrito a `/t/{slug}/auth`, e o token de um salão não vale em outro.
+### Como funciona
 
-## Limites de uso e formulários públicos
+1. **Login:** `POST /t/{slug}/auth/login` devolve um `access_token` e grava um cookie `httpOnly`
+   (`spbella_refresh`), restrito ao caminho `/t/{slug}/auth`.
+2. **Pedidos autenticados:** cabeçalho `Authorization: Bearer <access_token>`. O token vale
+   **15 minutos** (`expires_in`) e **só para o salão em que foi emitido**.
+3. **Token vencido:** a rota responde `401 not_authenticated`. O app chama
+   `POST /t/{slug}/auth/refresh` (o navegador envia o cookie sozinho) e recebe um access token
+   novo e um cookie novo. Cada cookie de refresh serve **uma vez**.
+4. **Sair:** `POST /t/{slug}/auth/logout`.
 
-*Entra nas histórias 3 e 8.* Formulários públicos (agendamento, login, "esqueci a senha") exigem
-o token do Cloudflare Turnstile e têm limite de tentativas por IP.
+Regras para o app (o front já segue todas):
+- Guarde o access token **só na memória**. Nunca em `localStorage` nem em `sessionStorage`.
+- Toda chamada à API usa `credentials: "include"`, para o navegador enviar e receber o cookie.
+- Ao abrir o app, chame `/refresh` para recuperar a sessão sem pedir a senha de novo.
+- Se várias chamadas recebem 401 ao mesmo tempo, faça **um só** `/refresh` e reaproveite o resultado.
+
+### Perfis
+
+| Perfil | `role` | Pode |
+|---|---|---|
+| Dono | `owner` | Tudo |
+| Recepção | `reception` | Agenda, clientes e pagamentos (a partir das próximas histórias) |
+| Profissional | `professional` | A própria agenda |
+
+O perfil é lido do banco a cada pedido. O campo `role` do token serve só para o app decidir o que
+mostrar. Cada rota documenta no `openapi.json` quais perfis aceita; perfil errado recebe
+`403 forbidden`.
+
+### Senha provisória
+
+Contas criadas pela CLI recebem uma senha provisória e `must_change_password: true`. Até a troca,
+só funcionam `GET /me`, `POST /change-password` e `POST /logout`; o resto responde
+`403 password_change_required`.
+
+### Regras de senha
+
+De 8 a 128 caracteres, com pelo menos 4 caracteres diferentes, sem conter a parte do e-mail antes do
+`@` e diferente da atual. O motivo da recusa vem em `fields[0].code`: `too_short`, `too_long`,
+`too_simple`, `contains_email` ou `same_as_current`.
+
+## Formulários públicos: Turnstile e limite de tentativas
+
+Login, "esqueci a senha" e "criar senha nova" exigem o campo `turnstile_token`, com o token do
+widget [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/). Cada token vale uma
+vez: depois de um erro, o app pede outro ao widget. Em desenvolvimento, sem a chave secreta
+configurada, a verificação é pulada (em produção, isso é proibido).
+
+| Rota | Limite |
+|---|---|
+| `/auth/login` | 10 por conta a cada 15 min; 20 por IP por minuto |
+| `/auth/forgot-password` | 3 por e-mail e 5 por IP a cada 15 min |
+| `/auth/reset-password` | 10 por IP a cada 15 min |
+| `/auth/change-password` | 10 por pessoa a cada 15 min |
+
+Passou do limite: `429 too_many_requests` com o cabeçalho `Retry-After` (segundos).
 
 ## Endpoints
 
@@ -193,3 +258,86 @@ HTTP/1.1 200 OK
 |---|---|
 | 200 | Salão ativo |
 | 404 `tenant_not_found` | Salão inexistente, suspenso ou slug inválido |
+
+### Login
+
+Detalhes de cada campo e de cada erro estão no `openapi.json` (tag **Login**). Exemplos com o
+salão de demonstração (`tenants seed-demo`):
+
+#### `POST /t/{slug}/auth/login` — entrar
+
+```bash
+curl -i -c cookies.txt -X POST http://localhost:8000/t/studio-bella/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email": "dono@studio-bella.demo", "password": "demo-spbella", "turnstile_token": "..."}'
+```
+
+```http
+HTTP/1.1 200 OK
+Set-Cookie: spbella_refresh=...; HttpOnly; Max-Age=2592000; Path=/t/studio-bella/auth; SameSite=strict; Secure
+
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "token_type": "bearer",
+  "expires_in": 900,
+  "user": {
+    "id": "4be637c3-2749-45fd-afaa-52780a6d9cf5",
+    "name": "Ana Demo",
+    "email": "dono@studio-bella.demo",
+    "role": "owner",
+    "must_change_password": false
+  }
+}
+```
+
+#### `GET /t/{slug}/auth/me` — quem sou eu
+
+```bash
+curl http://localhost:8000/t/studio-bella/auth/me -H "Authorization: Bearer $TOKEN"
+```
+
+Responde com o mesmo objeto `user` do login.
+
+#### `POST /t/{slug}/auth/refresh` — renovar a sessão
+
+```bash
+curl -b cookies.txt -c cookies.txt -X POST http://localhost:8000/t/studio-bella/auth/refresh
+```
+
+Responde igual ao login (novo `access_token`, novo cookie). Sem corpo no pedido.
+
+#### `POST /t/{slug}/auth/logout` — sair
+
+```bash
+curl -b cookies.txt -X POST http://localhost:8000/t/studio-bella/auth/logout   # 204
+```
+
+#### `POST /t/{slug}/auth/change-password` — trocar a senha
+
+```bash
+curl -X POST http://localhost:8000/t/studio-bella/auth/change-password \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"current_password": "demo-spbella", "new_password": "minha-senha-nova-1"}'
+```
+
+Responde com uma sessão nova (igual ao login) e encerra as outras sessões da pessoa.
+
+#### `POST /t/{slug}/auth/forgot-password` — esqueci a senha
+
+```bash
+curl -X POST http://localhost:8000/t/studio-bella/auth/forgot-password \
+  -H 'Content-Type: application/json' \
+  -d '{"email": "dono@studio-bella.demo", "turnstile_token": "..."}'    # sempre 202
+```
+
+O e-mail sai no idioma do salão, com o link `<APP_PUBLIC_URL>/{slug}/reset-password#token=...`.
+
+#### `POST /t/{slug}/auth/reset-password` — criar senha nova pelo link
+
+```bash
+curl -X POST http://localhost:8000/t/studio-bella/auth/reset-password \
+  -H 'Content-Type: application/json' \
+  -d '{"token": "<token do link>", "new_password": "minha-senha-nova-1", "turnstile_token": "..."}'
+```
+
+Responde 204 e encerra todas as sessões da pessoa.

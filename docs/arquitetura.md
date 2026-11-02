@@ -78,6 +78,32 @@ para quando o número de salões ou um contrato justificarem.
 - `global_settings` fica para quando houver a primeira configuração global de verdade.
 - `public.jobs` entra na história 9 (fila).
 
+## Login (história 3)
+
+| Tema | Decisão |
+|---|---|
+| Senha | argon2id (`argon2-cffi`); refeito automaticamente no login se os parâmetros ficarem desatualizados |
+| Access token | JWT HS256 de 15 min, com `sub` (usuário), `tid` (salão) e `typ`. Algoritmo fixo na leitura (barra `alg: none`). Fica só na memória do app, nunca em `localStorage`. |
+| Refresh token | Aleatório (256 bits). No banco, só o hash SHA-256. Vai em cookie `httpOnly`, `SameSite=Strict`, `Secure` (produção), com `Path=/t/{slug}/auth`, então o cookie de um salão nunca é enviado para outro. Vale 30 dias e é renovado a cada uso. |
+| Roubo de refresh | Cada uso troca o token. Reapresentar um token já trocado derruba a família inteira (todas as renovações daquele login). Até 30 s depois da troca, tratamos como duas abas renovando ao mesmo tempo: o servidor responde `refresh_superseded` e o app tenta de novo. |
+| Perfil | Lido do banco a cada pedido (não do token). Conta desativada perde o acesso no pedido seguinte. |
+| Senha provisória | `must_change_password`: até trocar, só `/me`, `/change-password` e `/logout` funcionam (`403 password_change_required` no resto). |
+| CSRF | Cookie `SameSite=Strict` mais a checagem de `Origin` nas rotas que mexem no cookie |
+| Robôs | Turnstile em login, "esqueci a senha" e redefinição. Limite de tentativas em memória (por IP, por conta). A regra do WAF do Cloudflare é a primeira barreira. |
+| Enumeração de contas | Mesma resposta (e o mesmo tempo, via verificação de senha falsa) para e-mail inexistente, senha errada e conta desativada; "esqueci a senha" sempre responde 202 |
+| Link de redefinição | Uso único, 30 min, token depois do `#` (não vai para logs nem para o Referer); o app o tira da barra de endereço. Usar o link encerra todas as sessões. |
+| Logs | Salão e usuário (IDs) no log de acesso. Nunca e-mail, senha ou token. |
+
+**Limites conhecidos:**
+- O limite de tentativas vale por processo. Hoje há um processo só; com mais de um, ele precisa ir para o
+  Postgres (está no backlog).
+- O e-mail de "esqueci a senha" é enviado durante o pedido. Na história 9 ele passa para a fila,
+  com envio real pelo Amazon SES. Até lá, em produção, `MAIL_BACKEND=disabled`: **o link não chega**.
+  Por isso, a história 9 precisa vir antes de colocar clientes reais em produção.
+- O log de auditoria de logins e trocas de senha (LGPD) entra na história 11. Até lá, ficam os
+  eventos `login_succeeded`, `login_failed`, `password_changed` etc. no log da aplicação, sem
+  dados pessoais.
+
 ## Pontos de atenção legais
 
 - **LGPD:** o salão é o **controlador** e a Spartacus é a **operadora** → contrato de operador

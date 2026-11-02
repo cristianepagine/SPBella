@@ -4,12 +4,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health, tenants
+from app.api import auth, health, tenants
 from app.core.config import Settings, get_settings
 from app.core.db import Databases
 from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
+from app.core.mailer import build_mailer
 from app.core.middleware import REQUEST_ID_HEADER, RequestContextMiddleware
+from app.core.ratelimit import RateLimiter
+from app.core.turnstile import build_turnstile
 
 API_DESCRIPTION = """
 API do **SPBella**, sistema de agendamento para salões de beleza e estética.
@@ -21,6 +24,10 @@ Guia de uso, convenções (erros, datas, valores, autenticação) e exemplos:
 OPENAPI_TAGS = [
     {"name": "Saúde do sistema", "description": "Verificações usadas por monitoramento e deploy."},
     {"name": "Salão", "description": "Informações de um salão, identificado pelo `slug` na URL."},
+    {
+        "name": "Login",
+        "description": "Entrar, sair, renovar a sessão e trocar ou redefinir a senha.",
+    },
 ]
 
 
@@ -57,10 +64,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.state.settings = settings
     app.state.databases = databases
+    app.state.rate_limiter = RateLimiter(enabled=settings.rate_limit_enabled)
+    app.state.turnstile = build_turnstile(settings)
+    app.state.mailer = build_mailer(settings)
 
     register_error_handlers(app)
     app.include_router(health.router)
     app.include_router(tenants.router)
+    app.include_router(auth.router)
     return app
 
 

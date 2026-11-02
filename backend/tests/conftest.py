@@ -9,7 +9,9 @@ spbella_test_*. Não use um servidor com dados reais.
 """
 
 import os
+import uuid
 from collections.abc import Iterator
+from dataclasses import dataclass
 
 import pytest
 from fastapi.testclient import TestClient
@@ -18,7 +20,11 @@ from sqlalchemy.engine import URL
 from sqlalchemy.pool import NullPool
 
 from app.core.config import Settings
+from app.core.db import Databases
+from app.core.security import hash_password
+from app.core.tenancy import load_tenant, tenant_session
 from app.main import create_app
+from app.models.tenant import User
 from app.provisioning import CreatedTenant, create_tenant, init_database
 from tests.probe import router as probe_router
 
@@ -30,6 +36,18 @@ DEDICATED_DB = "spbella_test_dedicated"
 ROLE_PREFIX = "spbella_test_"
 APP_ROLE = "spbella_test_app"
 APP_PASSWORD = "app-test-password"
+
+
+def production_settings(**overrides) -> Settings:
+    """Configuração de produção válida (passa no validador), para testes."""
+    values = {
+        "app_env": "production",
+        "jwt_secret": "x" * 40,
+        "turnstile_secret_key": "segredo-turnstile",
+        "mail_backend": "disabled",
+        "api_docs_enabled": False,
+    }
+    return Settings(**{**values, **overrides})
 
 
 @pytest.fixture
@@ -87,6 +105,8 @@ def db_settings() -> Iterator[Settings]:
         database_admin_url=_url(admin_main),
         tenant_role_prefix=ROLE_PREFIX,
         db_pool_size=2,
+        cookie_secure=False,  # o cliente de teste usa http://testserver
+        mail_backend="memory",
     )
     init_database(settings)
     yield settings
@@ -114,10 +134,65 @@ def tenants(db_settings: Settings) -> dict[str, CreatedTenant]:
     }
 
 
-@pytest.fixture(scope="session")
+class FakeTurnstile:
+    """Registra as chamadas; `result` decide se a verificação passa."""
+
+    def __init__(self) -> None:
+        self.result = True
+        self.calls: list[tuple[str | None, str]] = []
+
+    def verify(self, token: str | None, ip: str) -> bool:
+        self.calls.append((token, ip))
+        return self.result
+
+
+@pytest.fixture
 def db_client(db_settings: Settings, tenants: dict[str, CreatedTenant]) -> Iterator[TestClient]:
-    """Cliente HTTP com as rotas de teste em /t/{slug}/_probe (ver tests/probe.py)."""
+    """Cliente HTTP novo a cada teste (rate limit e cookies zerados), com as rotas de teste
+    em /t/{slug}/_probe (ver tests/probe.py)."""
     app = create_app(db_settings)
     app.include_router(probe_router)
+    app.state.turnstile = FakeTurnstile()
     with TestClient(app, raise_server_exceptions=False) as client:
         yield client
+
+
+@dataclass
+class SampleUser:
+    slug: str
+    id: uuid.UUID
+    email: str
+    password: str
+    role: str
+
+
+@pytest.fixture
+def make_user(db_settings: Settings, tenants: dict[str, CreatedTenant]):
+    """Cria um usuário com e-mail único. Uso: make_user("alpha", role="reception")."""
+    databases = Databases(db_settings)
+
+    def factory(
+        slug: str = "alpha",
+        *,
+        role: str = "owner",
+        password: str = "senha-forte-123",
+        must_change_password: bool = False,
+        is_active: bool = True,
+    ) -> SampleUser:
+        email = f"{role}-{uuid.uuid4().hex[:8]}@{slug}.test"
+        with tenant_session(databases, load_tenant(databases, slug)) as session:
+            user = User(
+                name=f"Pessoa {role}",
+                email=email,
+                password_hash=hash_password(password),
+                role=role,
+                must_change_password=must_change_password,
+                is_active=is_active,
+            )
+            session.add(user)
+            session.flush()
+            user_id = user.id
+        return SampleUser(slug, user_id, email, password, role)
+
+    yield factory
+    databases.dispose()

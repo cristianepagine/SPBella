@@ -64,10 +64,182 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/t/{slug}/auth/change-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Trocar a senha
+         * @description Troca a senha de quem está logado (inclusive a provisória do primeiro acesso).
+         *
+         *     - `400 wrong_current_password`: senha atual errada.
+         *     - `422 weak_password`: senha nova fraca. `fields[0].code` diz o motivo: `too_short` (menos de 8), `too_long` (mais de 128), `too_simple` (menos de 4 caracteres diferentes), `contains_email` (contém o e-mail) ou `same_as_current`.
+         *     - Encerra **todas** as outras sessões e devolve uma sessão nova (novo access token e novo cookie).
+         *     - Limite: 10 tentativas a cada 15 min.
+         */
+        post: operations["change_password_t__slug__auth_change_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/auth/forgot-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Esqueci a senha
+         * @description Se existir uma conta ativa com o e-mail, envia um link para criar uma senha nova, válido por 30 minutos e de uso único, no idioma do salão. **Sempre** responde 202, exista a conta ou não.
+         *
+         *     O link tem o formato `<app>/{slug}/reset-password#token=<token>`. O token vai depois do `#` para não ir parar em logs de servidor nem no cabeçalho Referer.
+         *
+         *     Exige `turnstile_token`. Limites: 5 pedidos por IP e 3 por e-mail a cada 15 min.
+         */
+        post: operations["forgot_password_t__slug__auth_forgot_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Entrar
+         * @description Confere e-mail e senha. Se estiverem certos, devolve o access token e grava o cookie httpOnly de refresh (restrito a `/t/{slug}/auth`).
+         *
+         *     - E-mail não diferencia maiúsculas.
+         *     - E-mail inexistente, senha errada e conta desativada recebem a **mesma** resposta (`401 invalid_credentials`), para não revelar quem tem conta.
+         *     - Exige `turnstile_token` (`400 turnstile_failed`).
+         *     - Limites: 10 tentativas por conta a cada 15 min e 20 por IP por minuto (`429`, com `Retry-After`).
+         *     - Se `user.must_change_password` vier `true`, o app deve levar à troca de senha.
+         */
+        post: operations["login_t__slug__auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sair
+         * @description Encerra a sessão deste aparelho (a família do refresh) e apaga o cookie. Funciona mesmo com o access token vencido. Sempre responde 204.
+         */
+        post: operations["logout_t__slug__auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Quem sou eu
+         * @description Dados da pessoa logada. Funciona também enquanto a senha provisória não foi trocada. Exige `Authorization: Bearer`.
+         */
+        get: operations["me_t__slug__auth_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Renovar a sessão
+         * @description Usa o cookie de refresh para emitir um novo access token. O cookie é **trocado** a cada chamada (rotação).
+         *
+         *     - Sem cookie, cookie inválido, expirado ou de conta desativada: `401 refresh_invalid` (o cookie é apagado; o app deve voltar ao login).
+         *     - Reapresentar um cookie que já foi trocado é sinal de roubo: **todas** as sessões daquela família são encerradas. Exceção: até 30 s depois da troca, tratamos como duas abas renovando ao mesmo tempo: respondemos `401 refresh_superseded`, sem encerrar nada e sem apagar o cookie; o app deve tentar de novo uma vez.
+         *     - O pedido precisa vir do app (`Origin` permitido) ou não ter `Origin` (`403 forbidden_origin`).
+         */
+        post: operations["refresh_t__slug__auth_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/auth/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Criar senha nova pelo link do e-mail
+         * @description Usa o token do link de "esqueci a senha" para definir uma senha nova.
+         *
+         *     - `400 invalid_reset_token`: token inexistente, vencido, já usado ou de outro salão.
+         *     - `422 weak_password`: mesmas regras de `/change-password`.
+         *     - Encerra **todas** as sessões da pessoa, que entra de novo com a senha nova.
+         *
+         *     Exige `turnstile_token`. Limite: 10 tentativas por IP a cada 15 min.
+         */
+        post: operations["reset_password_t__slug__auth_reset_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ChangePasswordIn */
+        ChangePasswordIn: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
+        };
         /** ErrorBody */
         ErrorBody: {
             /** Code */
@@ -90,6 +262,13 @@ export interface components {
             /** Field */
             field: string;
         };
+        /** ForgotPasswordIn */
+        ForgotPasswordIn: {
+            /** Email */
+            email: string;
+            /** Turnstile Token */
+            turnstile_token?: string | null;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -110,6 +289,24 @@ export interface components {
              */
             version: string;
         };
+        /** LoginIn */
+        LoginIn: {
+            /**
+             * Email
+             * @example dono@studio-bella.demo
+             */
+            email: string;
+            /**
+             * Password
+             * @example demo-spbella
+             */
+            password: string;
+            /**
+             * Turnstile Token
+             * @description Token do widget Cloudflare Turnstile.
+             */
+            turnstile_token?: string | null;
+        };
         /** ReadinessResponse */
         ReadinessResponse: {
             /**
@@ -123,6 +320,36 @@ export interface components {
              * @constant
              */
             status: "ok";
+        };
+        /** ResetPasswordIn */
+        ResetPasswordIn: {
+            /** New Password */
+            new_password: string;
+            /**
+             * Token
+             * @description Token que veio no link do e-mail.
+             */
+            token: string;
+            /** Turnstile Token */
+            turnstile_token?: string | null;
+        };
+        /** SessionOut */
+        SessionOut: {
+            /** Access Token */
+            access_token: string;
+            /**
+             * Expires In
+             * @description Segundos até o access token expirar.
+             * @example 900
+             */
+            expires_in: number;
+            /**
+             * Token Type
+             * @default bearer
+             * @constant
+             */
+            token_type: "bearer";
+            user: components["schemas"]["UserOut"];
         };
         /** TenantPublicInfo */
         TenantPublicInfo: {
@@ -159,6 +386,28 @@ export interface components {
              * @example America/Sao_Paulo
              */
             timezone: string;
+        };
+        /** UserOut */
+        UserOut: {
+            /** Email */
+            email: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Must Change Password
+             * @description Se `true`, a pessoa só pode usar `/me`, `/change-password` e `/logout` até trocar a senha provisória. As demais rotas respondem 403 `password_change_required`.
+             */
+            must_change_password: boolean;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "owner" | "reception" | "professional";
         };
         /** ValidationError */
         ValidationError: {
@@ -268,6 +517,455 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_password_t__slug__auth_change_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    forgot_password_t__slug__auth_forgot_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPasswordIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    login_t__slug__auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    logout_t__slug__auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: {
+                /** @description Enviado automaticamente pelo navegador (cookie httpOnly do login). */
+                spbella_refresh?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    me_t__slug__auth_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_t__slug__auth_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: {
+                /** @description Enviado automaticamente pelo navegador (cookie httpOnly do login). */
+                spbella_refresh?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_password_t__slug__auth_reset_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

@@ -1,0 +1,8 @@
+{
+  "email": {
+    "password_reset": {
+      "subject": "Redefinir sua senha – {salon}",
+      "body": "Olá, {name}!\n\nRecebemos um pedido para criar uma nova senha no {salon}.\nPara continuar, abra o link abaixo. Ele vale por {minutes} minutos e só pode ser usado uma vez:\n\n{link}\n\nSe não foi você, pode ignorar este e-mail. Sua senha continua a mesma."
+    }
+  }
+}

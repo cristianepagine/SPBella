@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from app.core.config import Settings
 from app.core.errors import ApiError
 from app.main import create_app
+from tests.conftest import production_settings
 
 
 class _Payload(BaseModel):
@@ -94,7 +95,7 @@ def test_cors_allows_configured_origin_only(client):
 
 
 def test_docs_can_be_disabled():
-    client = TestClient(create_app(Settings(app_env="production", api_docs_enabled=False)))
+    client = TestClient(create_app(production_settings()))
 
     assert client.get("/docs").status_code == 404
     assert client.get("/openapi.json").status_code == 404

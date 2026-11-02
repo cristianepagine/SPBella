@@ -33,10 +33,55 @@
     "internal_error": "Algo deu errado do nosso lado. Já estamos vendo.",
     "network_error": "Sem conexão com a internet.",
     "unknown": "Algo deu errado. Tente de novo.",
-    "tenant_not_found": "Não encontramos esse salão. Confira se o endereço está certo."
+    "tenant_not_found": "Não encontramos esse salão. Confira se o endereço está certo.",
+    "invalid_credentials": "E-mail ou senha incorretos.",
+    "turnstile_failed": "Não conseguimos confirmar que você não é um robô. Tente de novo.",
+    "forbidden_origin": "Não foi possível concluir por aqui. Abra o sistema pelo endereço oficial.",
+    "refresh_invalid": "Sua sessão terminou. Entre novamente.",
+    "password_change_required": "Troque a senha provisória para continuar.",
+    "wrong_current_password": "A senha atual não confere.",
+    "weak_password": "Essa senha não serve. Escolha outra.",
+    "invalid_reset_token": "Este link venceu ou já foi usado. Peça um novo em \"Esqueci minha senha\".",
+    "weakPassword": {
+      "too_short": "A senha precisa ter pelo menos 8 caracteres.",
+      "too_long": "A senha pode ter no máximo 128 caracteres.",
+      "too_simple": "A senha está muito simples. Misture letras e números diferentes.",
+      "contains_email": "A senha não pode conter o seu e-mail.",
+      "same_as_current": "A senha nova precisa ser diferente da atual."
+    }
   },
   "tenant": {
     "loading": "Carregando…",
     "comingSoon": "Em breve você vai poder marcar seu horário por aqui."
+  },
+  "auth": {
+    "loading": "Carregando…",
+    "staffLogin": "Área do salão: entrar",
+    "loginTitle": "Entrar",
+    "email": "E-mail",
+    "password": "Senha",
+    "submitLogin": "Entrar",
+    "loggingIn": "Entrando…",
+    "forgotLink": "Esqueci minha senha",
+    "changeTitle": "Criar senha nova",
+    "changeIntro": "Escolha uma senha nova para entrar no sistema.",
+    "changeIntroTemporary": "Por segurança, troque a senha provisória que você recebeu antes de continuar.",
+    "temporaryPassword": "Senha provisória",
+    "currentPassword": "Senha atual",
+    "newPassword": "Senha nova",
+    "newPasswordHint": "Pelo menos 8 caracteres. Não use o seu e-mail.",
+    "submitChange": "Salvar senha nova",
+    "forgotTitle": "Esqueci minha senha",
+    "forgotIntro": "Digite o e-mail que você usa para entrar. Vamos mandar um link para criar uma senha nova.",
+    "submitForgot": "Enviar link",
+    "forgotSent": "Pronto! Se esse e-mail tiver conta, o link chega em alguns minutos. Olhe também a caixa de spam.",
+    "backToLogin": "Voltar para o login",
+    "resetTitle": "Criar senha nova",
+    "resetDone": "Senha nova salva! Agora é só entrar.",
+    "resetMissingToken": "Este link está incompleto. Peça um novo em \"Esqueci minha senha\".",
+    "hello": "Olá, {{name}}!",
+    "dashboardIntro": "Em breve a agenda do salão vai aparecer aqui.",
+    "changePasswordLink": "Trocar senha",
+    "logout": "Sair"
   }
 }

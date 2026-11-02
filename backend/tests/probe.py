@@ -9,6 +9,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlalchemy import select, text
 
+from app.core.auth import CurrentUser, OwnerUser, StaffUser
 from app.core.errors import ApiError
 from app.core.tenancy import DbSession
 from app.models.tenant import User
@@ -78,3 +79,18 @@ def create_then_fail(payload: UserIn, db: DbSession) -> dict:
     db.add(User(name=payload.name, email=payload.email, password_hash="x", role="professional"))
     db.flush()
     raise ApiError(409, "forced_failure")
+
+
+@router.get("/any-user")
+def any_user(user: CurrentUser) -> dict:
+    return {"role": user.role}
+
+
+@router.get("/owner-only")
+def owner_only(user: OwnerUser) -> dict:
+    return {"role": user.role}
+
+
+@router.get("/staff-only")
+def staff_only(user: StaffUser) -> dict:
+    return {"role": user.role}
