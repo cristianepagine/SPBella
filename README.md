@@ -10,8 +10,8 @@ só de salão, em `salon`. Ver [docs/template.md](docs/template.md).
 
 | Pasta | O que é |
 |---|---|
-| [`backend/`](backend/) | API em Python 3.12 + FastAPI + SQLAlchemy 2 + Postgres. `app/core` (template) e `app/salon` (vertical) |
-| [`frontend/`](frontend/) | App React + TypeScript + Vite + Tailwind (PWA). `src/core` (template) e `src/salon` (vertical) |
+| [`backend/`](backend/) | API em Python 3.12 + FastAPI + SQLAlchemy 2 + Postgres. `app/core` (template) e `app/spbella` (vertical SPBella) |
+| [`frontend/`](frontend/) | App React + TypeScript + Vite + Tailwind (PWA). `src/core` (template) e `src/spbella` (vertical SPBella) |
 | [`docs/template.md`](docs/template.md) | Como o core e as verticais se encaixam, e como criar um sistema novo |
 | [`docs/api/`](docs/api/) | **Documentação da API**: guia, `openapi.json` e changelog |
 | [`docs/arquitetura.md`](docs/arquitetura.md) | Decisões de arquitetura e pontos legais |
@@ -92,7 +92,7 @@ uv run alembic -n public revision --autogenerate -m "descricao"   # tabelas de c
 uv run alembic -n tenant -x schema=t_studio_bella revision --autogenerate \
     --head core@head -m "descricao"     # genérico (template)
 uv run alembic -n tenant -x schema=t_studio_bella revision --autogenerate \
-    --head salon@head -m "descricao"    # só do salão
+    --head spbella@head -m "descricao"    # só do salão
 ```
 
 Uma migração do salão que precise de uma tabela nova do core declara `depends_on` nela. O
@@ -139,7 +139,7 @@ Depois, atualize o [guia](docs/api/README.md) se mudou alguma convenção e regi
 ## Regras do projeto
 
 - **Textos para o usuário** (o teste `frontend/src/i18n-coverage.test.ts` falha se houver texto
-  escrito direto numa tela ou chave sem tradução) ficam só em `frontend/src/core/i18n/locales/` (textos neutros) e `frontend/src/salon/locales/` (vocabulário do salão), sempre em `pt-BR.json` e `es.json`.
+  escrito direto numa tela ou chave sem tradução) ficam só em `frontend/src/core/i18n/locales/` (textos neutros) e `frontend/src/spbella/locales/` (vocabulário do salão), sempre em `pt-BR.json` e `es.json`.
   A API devolve códigos (`error.code`), nunca frases para o usuário.
 - **Sem dados pessoais nos logs.** Registre IDs, não nomes, telefones ou e-mails.
 - **Nenhum segredo no repositório.** Só `.env.example`.

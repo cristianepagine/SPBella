@@ -21,7 +21,7 @@ from app.core.infra.tenancy import TenantContext
 from app.core.scheduling.models import Appointment, Offering, Provider, WorkingHours
 from app.core.tenants.provisioning import DEMO_PASSWORD
 from app.core.vertical import DemoTenant
-from app.salon.seed import SAMPLE_SERVICES
+from app.spbella.seed import SAMPLE_SERVICES
 
 DEMO_TENANTS = (
     DemoTenant(

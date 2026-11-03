@@ -8,8 +8,8 @@ import { describe, expect, it } from "vitest";
 
 import coreEs from "./core/i18n/locales/es.json";
 import corePt from "./core/i18n/locales/pt-BR.json";
-import salonEs from "./salon/locales/es.json";
-import salonPt from "./salon/locales/pt-BR.json";
+import salonEs from "./spbella/locales/es.json";
+import salonPt from "./spbella/locales/pt-BR.json";
 
 const sources = import.meta.glob<string>(["./**/*.tsx", "./**/*.ts", "!./**/*.test.*", "!./test/**"], {
   query: "?raw",

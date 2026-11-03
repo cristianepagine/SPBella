@@ -279,17 +279,17 @@ def test_create_tenant_takes_less_than_a_minute(db_settings, tenants):
 def test_tenant_migrations_have_one_branch_per_module():
     names = [d.name for d in tenant_version_dirs()]
 
-    assert names == ["core", "salon"]
+    assert names == ["core", "spbella"]
     script = ScriptDirectory.from_config(alembic_config("tenant", ""))
     heads = script.get_heads()
     assert len(heads) == 2  # um por módulo
     core_head, salon_head = sorted(heads, key=lambda h: h.startswith("salon"))
-    # O core nunca depende da vertical (o template é copiado sem a pasta salon)...
+    # O core nunca depende da vertical (o template é copiado sem a pasta spbella)...
     core_chain = {r.revision for r in script.iterate_revisions(core_head, "base")}
     assert not any(rev.startswith("salon") for rev in core_chain)
     # ...e a vertical declara de que parte do core precisa.
     salon_root = script.get_revision("salon_0001_service_prices")
     deps = salon_root.dependencies
     assert "0005_offerings" in ((deps,) if isinstance(deps, str) else deps)
-    assert "salon" in salon_root.branch_labels
+    assert "spbella" in salon_root.branch_labels
     assert "core" in script.get_revision("0001_users").branch_labels

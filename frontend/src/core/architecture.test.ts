@@ -7,7 +7,7 @@ const sources = import.meta.glob<string>("./**/*.{ts,tsx}", {
   eager: true,
 });
 
-const IMPORTS_A_VERTICAL = /(from|import)\s+["'][^"']*\bsalon\//;
+const IMPORTS_A_VERTICAL = /(from|import)\s+["'][^"']*\bspbella\//;
 
 it("o core não importa nada de uma vertical (é o template dos próximos sistemas)", () => {
   const offenders = Object.entries(sources)

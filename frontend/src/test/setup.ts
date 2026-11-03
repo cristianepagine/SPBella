@@ -4,7 +4,7 @@ import { cleanup, configure } from "@testing-library/react";
 import { afterEach } from "vitest";
 
 import { setupI18n } from "../core/i18n";
-import { salonLocales } from "../salon/locales";
+import { salonLocales } from "../spbella/locales";
 
 setupI18n(salonLocales);
 

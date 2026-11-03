@@ -3,7 +3,7 @@
 from sqlalchemy.orm import Session
 
 from app.core.infra.tenancy import TenantContext
-from app.salon.services.api import add_service
+from app.spbella.services.api import add_service
 
 # (nome em pt-BR, nome em es, duração em minutos, preço em BRL, preço em PYG)
 SAMPLE_SERVICES = [

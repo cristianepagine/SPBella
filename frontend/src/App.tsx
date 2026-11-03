@@ -14,8 +14,8 @@ import { HomePage } from "./core/pages/HomePage";
 import { NotFoundPage } from "./core/pages/NotFoundPage";
 import { PrivacyPage } from "./core/pages/PrivacyPage";
 import { TenantLayout } from "./core/pages/TenantLayout";
-import { SALON_NAV } from "./salon/nav";
-import { PublicHomePage } from "./salon/pages/PublicHomePage";
+import { SALON_NAV } from "./spbella/nav";
+import { PublicHomePage } from "./spbella/pages/PublicHomePage";
 
 // Área da equipe em pedaços separados: a página pública (o que o cliente abre no 4G) não baixa
 // o código da agenda, dos clientes etc.
@@ -29,7 +29,7 @@ const ProviderPage = lazy(() => import("./core/pages/app/providers/ProviderPage"
 const ProvidersPage = lazy(() => import("./core/pages/app/providers/ProvidersPage").then((m) => ({ default: m.ProvidersPage })));
 const SettingsPage = lazy(() => import("./core/pages/app/SettingsPage").then((m) => ({ default: m.SettingsPage })));
 const TeamPage = lazy(() => import("./core/pages/app/TeamPage").then((m) => ({ default: m.TeamPage })));
-const ServicesPage = lazy(() => import("./salon/pages/ServicesPage").then((m) => ({ default: m.ServicesPage })));
+const ServicesPage = lazy(() => import("./spbella/pages/ServicesPage").then((m) => ({ default: m.ServicesPage })));
 
 /** Menu da equipe: itens do core + os da vertical (serviços, agenda... nas próximas histórias). */
 const NAV: NavItem[] = [...CORE_NAV, ...SALON_NAV];

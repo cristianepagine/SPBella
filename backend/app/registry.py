@@ -4,6 +4,6 @@ Para criar um sistema novo a partir do template: copie app/core, crie app/<verti
 objeto `Vertical` e troque a linha abaixo.
 """
 
-from app.salon import VERTICAL
+from app.spbella import VERTICAL
 
 __all__ = ["VERTICAL"]

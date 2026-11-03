@@ -34,7 +34,7 @@ def test_only_core_modules_open_connections_or_sessions():
 
 def test_core_never_imports_a_vertical():
     """O core é o template dos próximos sistemas: não pode depender do salão."""
-    pattern = re.compile(r"^\s*(from|import) app\.(salon|registry)\b", re.MULTILINE)
+    pattern = re.compile(r"^\s*(from|import) app\.(spbella|registry)\b", re.MULTILINE)
     offenders = [
         name for name, src in _app_files() if name.startswith("core/") and pattern.search(src)
     ]

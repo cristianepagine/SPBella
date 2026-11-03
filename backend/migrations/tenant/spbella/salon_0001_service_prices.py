@@ -4,7 +4,7 @@ Revision ID: salon_0001_service_prices
 Revises:
 Create Date: 2026-11-03
 
-Primeira migração da vertical salon: começa o ramo "salon", que DEPENDE do core (depends_on),
+Primeira migração da vertical SPBella: começa o ramo "spbella", que DEPENDE do core (depends_on),
 nunca o contrário. Assim o core pode ser copiado para outro sistema sem esta pasta.
 """
 
@@ -15,7 +15,7 @@ from alembic import op
 
 revision: str = "salon_0001_service_prices"
 down_revision: str | None = None
-branch_labels: str | Sequence[str] | None = ("salon",)
+branch_labels: str | Sequence[str] | None = ("spbella",)
 depends_on: str | Sequence[str] | None = ("0005_offerings",)  # tabela offerings do core
 
 

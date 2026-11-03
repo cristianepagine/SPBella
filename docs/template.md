@@ -9,11 +9,11 @@ escrevem só a vertical deles.
 
 | | Core (template) | Vertical `salon` |
 |---|---|---|
-| Back-end | `backend/app/core/` | `backend/app/salon/` |
-| Migrações de tenant | `backend/migrations/tenant/core/` | `backend/migrations/tenant/salon/` |
+| Back-end | `backend/app/core/` | `backend/app/spbella/` |
+| Migrações de tenant | `backend/migrations/tenant/core/` | `backend/migrations/tenant/spbella/` |
 | Migrações do `public` | `backend/migrations/public/` | — (só o core) |
-| Front-end | `frontend/src/core/` | `frontend/src/salon/` |
-| Traduções do front | `frontend/src/core/i18n/locales/` (textos neutros) | `frontend/src/salon/locales/` (vocabulário e textos próprios) |
+| Front-end | `frontend/src/core/` | `frontend/src/spbella/` |
+| Traduções do front | `frontend/src/core/i18n/locales/` (textos neutros) | `frontend/src/spbella/locales/` (vocabulário e textos próprios) |
 | Ligação | `backend/app/registry.py` e `frontend/src/App.tsx` + `main.tsx` | |
 
 Módulos do core no back-end:
@@ -55,7 +55,7 @@ Na vertical `salon`:
    `NavItem` de `src/core/layout/nav.ts`) e as rotas dela dentro de `StaffLayout`.
 
 3. **Migrações:** um **ramo** do Alembic por módulo, no mesmo histórico: `core` (rótulo
-   `core@head`) e o da vertical (rótulo `salon@head`). A primeira migração da vertical não tem
+   `core@head`) e o da vertical (rótulo `spbella@head`). A primeira migração da vertical não tem
    `down_revision`; ela declara `branch_labels=("<vertical>",)` e `depends_on` nas migrações do
    core de que precisa. **O core nunca depende da vertical** (um teste garante): assim a pasta
    `core` pode ser copiada sozinha. O upgrade é sempre para `heads` (um por módulo).
@@ -71,8 +71,8 @@ Na vertical `salon`:
 
 ## Criando um sistema novo a partir do template
 
-1. Copie o repositório e apague `backend/app/salon/`, `backend/migrations/tenant/salon/` e
-   `frontend/src/salon/`.
+1. Copie o repositório e apague `backend/app/spbella/`, `backend/migrations/tenant/spbella/` e
+   `frontend/src/spbella/`.
 2. Crie `backend/app/<vertical>/__init__.py` com um `VERTICAL = Vertical(...)` e aponte
    `backend/app/registry.py` para ele.
 3. Crie `frontend/src/<vertical>/locales/` (pt-BR e es) e a página pública. Ligue os dois em

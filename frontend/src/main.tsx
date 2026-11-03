@@ -7,7 +7,7 @@ import { BrowserRouter } from "react-router";
 
 import { App } from "./App";
 import { setupI18n } from "./core/i18n";
-import { salonLocales } from "./salon/locales";
+import { salonLocales } from "./spbella/locales";
 
 setupI18n(salonLocales);
 

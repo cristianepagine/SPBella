@@ -1,7 +1,7 @@
 """Agenda genérica (core).
 
 - `Offering`: o "item agendável" (nome e duração). Preço e o que mais for específico de um tipo
-  de negócio ficam na vertical (no salão: app/salon/services/models.py).
+  de negócio ficam na vertical (no salão: app/spbella/services/models.py).
 - `Provider`: quem atende (no salão, o profissional), com jornada semanal, folgas e os itens
   que realiza. Agendamentos chegam no SAL-09.
 """

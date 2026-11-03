@@ -4,4 +4,4 @@ Fazem parte do MESMO histórico das de `../core` (o `down_revision` de uma pode 
 outra). Para criar uma aqui:
 
     uv run alembic -n tenant -x schema=t_studio_bella revision --autogenerate \
-        --version-path migrations/tenant/salon -m "descricao"
+        --version-path migrations/tenant/spbella -m "descricao"

@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.salon.services.models import ServicePrice
+from app.spbella.services.models import ServicePrice
 
 
 def offering_extras(db: Session, ids: Sequence[uuid.UUID]) -> dict[uuid.UUID, dict[str, int | str]]:

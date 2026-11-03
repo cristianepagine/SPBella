@@ -1,7 +1,7 @@
 // Garante que pt-BR.json e es.json têm exatamente as mesmas chaves, no core e na vertical.
 import { readFileSync } from "node:fs";
 
-const DIRS = ["../src/core/i18n/locales", "../src/salon/locales"];
+const DIRS = ["../src/core/i18n/locales", "../src/spbella/locales"];
 
 const load = (dir, lang) =>
   JSON.parse(readFileSync(new URL(`${dir}/${lang}.json`, import.meta.url), "utf8"));

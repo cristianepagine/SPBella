@@ -14,7 +14,7 @@ from app.core.accounts.permissions import Permission, permission_doc
 from app.core.infra.errors import ApiError, FieldError, error_responses
 from app.core.infra.tenancy import DbSession, TenantContext, TenantDep
 from app.core.scheduling.models import DURATION_MAX_MIN, DURATION_STEP_MIN, Offering
-from app.salon.services.models import PRICE_MAX_MINOR, ServicePrice
+from app.spbella.services.models import PRICE_MAX_MINOR, ServicePrice
 
 router = APIRouter(prefix="/t/{slug}/services", tags=["Serviços"])
 
