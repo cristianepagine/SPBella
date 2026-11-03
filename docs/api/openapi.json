@@ -1,6 +1,102 @@
 {
   "components": {
     "schemas": {
+      "Actor": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Actor",
+        "type": "object"
+      },
+      "AuditEntryOut": {
+        "properties": {
+          "action": {
+            "description": "O que aconteceu: `customer.created`, `customer.viewed` (alguém abriu a ficha), `customer.updated`, `consent.granted`, `consent.revoked`.",
+            "title": "Action",
+            "type": "string"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Actor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "actor_type": {
+            "description": "`user` = pessoa da equipe (ver `actor`); `customer` = o próprio cliente, pela página pública; `system` = o sistema.",
+            "enum": [
+              "user",
+              "customer",
+              "system"
+            ],
+            "title": "Actor Type",
+            "type": "string"
+          },
+          "entity_id": {
+            "format": "uuid",
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "entity_type": {
+            "examples": [
+              "customer"
+            ],
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Nomes dos campos envolvidos (ex.: `phone`). Os valores nunca são guardados.",
+            "examples": [
+              [
+                "email",
+                "phone"
+              ]
+            ],
+            "items": {
+              "type": "string"
+            },
+            "title": "Fields",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "occurred_at",
+          "action",
+          "entity_type",
+          "entity_id",
+          "actor_type",
+          "actor",
+          "fields"
+        ],
+        "title": "AuditEntryOut",
+        "type": "object"
+      },
       "ChangePasswordIn": {
         "properties": {
           "current_password": {
@@ -19,6 +115,274 @@
           "new_password"
         ],
         "title": "ChangePasswordIn",
+        "type": "object"
+      },
+      "ConsentChange": {
+        "properties": {
+          "granted": {
+            "description": "`true` registra a concordância; `false` a retira.",
+            "title": "Granted",
+            "type": "boolean"
+          },
+          "purpose": {
+            "enum": [
+              "service",
+              "reminders",
+              "marketing"
+            ],
+            "title": "Purpose",
+            "type": "string"
+          }
+        },
+        "required": [
+          "purpose",
+          "granted"
+        ],
+        "title": "ConsentChange",
+        "type": "object"
+      },
+      "ConsentOut": {
+        "properties": {
+          "granted_at": {
+            "format": "date-time",
+            "title": "Granted At",
+            "type": "string"
+          },
+          "policy_version": {
+            "description": "Versão da política de privacidade aceita.",
+            "title": "Policy Version",
+            "type": "string"
+          },
+          "purpose": {
+            "enum": [
+              "service",
+              "reminders",
+              "marketing"
+            ],
+            "title": "Purpose",
+            "type": "string"
+          },
+          "source": {
+            "description": "`staff` = registrado pela equipe; `public_booking` = pelo cliente na página.",
+            "enum": [
+              "staff",
+              "public_booking"
+            ],
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "purpose",
+          "granted_at",
+          "source",
+          "policy_version"
+        ],
+        "title": "ConsentOut",
+        "type": "object"
+      },
+      "CustomerChanges": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "maxLength": 254,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "`null` apaga o e-mail.",
+            "title": "Email"
+          },
+          "locale": {
+            "anyOf": [
+              {
+                "enum": [
+                  "pt-BR",
+                  "es"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "`null` volta ao idioma padrão.",
+            "title": "Locale"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "title": "CustomerChanges",
+        "type": "object"
+      },
+      "CustomerOut": {
+        "properties": {
+          "consents": {
+            "description": "Consentimentos em vigor. `service` = usar os dados para o atendimento (obrigatório); `reminders` = receber lembretes e confirmações; `marketing` = receber novidades e promoções.",
+            "items": {
+              "$ref": "#/components/schemas/ConsentOut"
+            },
+            "title": "Consents",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "locale": {
+            "anyOf": [
+              {
+                "enum": [
+                  "pt-BR",
+                  "es"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Idioma das mensagens; `null` = idioma padrão do estabelecimento.",
+            "title": "Locale"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "phone": {
+            "description": "Formato internacional E.164.",
+            "examples": [
+              "+5511988887777"
+            ],
+            "title": "Phone",
+            "type": "string"
+          },
+          "phone_display": {
+            "examples": [
+              "+55 11 98888-7777"
+            ],
+            "title": "Phone Display",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "phone",
+          "phone_display",
+          "email",
+          "locale",
+          "created_at",
+          "updated_at",
+          "consents"
+        ],
+        "title": "CustomerOut",
+        "type": "object"
+      },
+      "CustomerPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CustomerSummary"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "CustomerPage",
+        "type": "object"
+      },
+      "CustomerSummary": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "phone": {
+            "description": "Formato internacional E.164.",
+            "examples": [
+              "+5511988887777"
+            ],
+            "title": "Phone",
+            "type": "string"
+          },
+          "phone_display": {
+            "examples": [
+              "+55 11 98888-7777"
+            ],
+            "title": "Phone Display",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "phone",
+          "phone_display"
+        ],
+        "title": "CustomerSummary",
         "type": "object"
       },
       "ErrorBody": {
@@ -283,6 +647,82 @@
           "locale"
         ],
         "title": "MyChanges",
+        "type": "object"
+      },
+      "NewCustomer": {
+        "properties": {
+          "consents": {
+            "description": "Com o que o cliente concordou. Precisa incluir `service`. `service` = usar os dados para o atendimento (obrigatório); `reminders` = receber lembretes e confirmações; `marketing` = receber novidades e promoções.",
+            "examples": [
+              [
+                "service",
+                "reminders"
+              ]
+            ],
+            "items": {
+              "enum": [
+                "service",
+                "reminders",
+                "marketing"
+              ],
+              "type": "string"
+            },
+            "title": "Consents",
+            "type": "array"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "maxLength": 254,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "locale": {
+            "anyOf": [
+              {
+                "enum": [
+                  "pt-BR",
+                  "es"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locale"
+          },
+          "name": {
+            "examples": [
+              "Maria Silva"
+            ],
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "phone": {
+            "description": "Como a pessoa digitar: `(11) 98888-7777`, `0981 123456` ou com `+DDI`. Sem DDI, vale o país do estabelecimento.",
+            "examples": [
+              "(11) 98888-7777"
+            ],
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Phone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "phone",
+          "consents"
+        ],
+        "title": "NewCustomer",
         "type": "object"
       },
       "NewMember": {
@@ -783,7 +1223,7 @@
   "info": {
     "description": "API do **SPBella** (Agenda Salão), sistema de agendamento para salões e barbearias.\n\nGuia de uso, convenções (erros, datas, valores, autenticação) e exemplos: `docs/api/README.md` no repositório.",
     "title": "SPBella API",
-    "version": "0.6.0"
+    "version": "0.7.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -897,6 +1337,147 @@
         "tags": [
           "Estabelecimento"
         ]
+      }
+    },
+    "/t/{slug}/audit": {
+      "get": {
+        "description": "Registros mais recentes primeiro. Filtre por `entity_id` (ex.: o ID de um cliente) para ver o histórico de uma ficha. Para ver mais, repita a chamada com `before` = `occurred_at` do último registro recebido.\n\nO log só aceita inclusão: ninguém, nem o dono, consegue alterar ou apagar registros.",
+        "operationId": "list_audit_t__slug__audit_get",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Só deste registro.",
+            "in": "query",
+            "name": "entity_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Só deste registro.",
+              "title": "Entity Id"
+            }
+          },
+          {
+            "description": "Só antes deste instante.",
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Só antes deste instante.",
+              "title": "Before"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEntryOut"
+                  },
+                  "title": "Response List Audit T  Slug  Audit Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Consultar o log de auditoria",
+        "tags": [
+          "Auditoria"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "audit.view"
       }
     },
     "/t/{slug}/auth/change-password": {
@@ -1616,6 +2197,525 @@
         ]
       }
     },
+    "/t/{slug}/customers": {
+      "get": {
+        "description": "Em ordem alfabética, com paginação (`limit` e `offset`). A busca entra na SAL-07.",
+        "operationId": "list_customers_t__slug__customers_get",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Listar clientes",
+        "tags": [
+          "Clientes"
+        ],
+        "x-allowed-roles": [
+          "owner",
+          "reception"
+        ],
+        "x-required-permission": "customers.manage"
+      },
+      "post": {
+        "description": "Cadastra o cliente e registra os consentimentos informados, com a versão atual da política de privacidade e quem registrou. Fica no log de auditoria.\n\n- `422` com `fields[0].code`: `invalid_phone`, `invalid_email` ou `consent_required` (faltou o `service` em `consents`).",
+        "operationId": "create_customer_t__slug__customers_post",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewCustomer"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cadastrar cliente",
+        "tags": [
+          "Clientes"
+        ],
+        "x-allowed-roles": [
+          "owner",
+          "reception"
+        ],
+        "x-required-permission": "customers.manage"
+      }
+    },
+    "/t/{slug}/customers/{customer_id}": {
+      "get": {
+        "description": "Dados e consentimentos em vigor. Cada consulta fica no log de auditoria (`customer.viewed`).",
+        "operationId": "get_customer_t__slug__customers__customer_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Ver ficha do cliente",
+        "tags": [
+          "Clientes"
+        ],
+        "x-allowed-roles": [
+          "owner",
+          "reception"
+        ],
+        "x-required-permission": "customers.manage"
+      },
+      "patch": {
+        "description": "Só os campos enviados mudam. O log de auditoria guarda **quais** campos mudaram (nunca os valores). Enviar um valor igual ao atual não gera registro.\n\n- `422` com `fields[0].code`: `invalid_phone` ou `invalid_email`.",
+        "operationId": "change_customer_t__slug__customers__customer_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerChanges"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Alterar dados do cliente",
+        "tags": [
+          "Clientes"
+        ],
+        "x-allowed-roles": [
+          "owner",
+          "reception"
+        ],
+        "x-required-permission": "customers.manage"
+      }
+    },
+    "/t/{slug}/customers/{customer_id}/consents": {
+      "post": {
+        "description": "`service` = usar os dados para o atendimento (obrigatório); `reminders` = receber lembretes e confirmações; `marketing` = receber novidades e promoções.\n\n`granted: true` registra a concordância (com a versão atual da política); `granted: false` a retira, guardando a data. O histórico nunca é apagado. Repetir o estado atual não muda nada.",
+        "operationId": "change_consent_t__slug__customers__customer_id__consents_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsentChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Registrar ou retirar consentimento",
+        "tags": [
+          "Clientes"
+        ],
+        "x-allowed-roles": [
+          "owner",
+          "reception"
+        ],
+        "x-required-permission": "customers.manage"
+      }
+    },
     "/t/{slug}/settings": {
       "get": {
         "description": "Nome, idioma padrão, fuso e moeda do estabelecimento.",
@@ -2229,6 +3329,14 @@
     {
       "description": "Nome, idioma padrão, fuso e moeda do estabelecimento (só o dono).",
       "name": "Configurações"
+    },
+    {
+      "description": "Cadastro de clientes com consentimento (LGPD). Cada consulta e alteração fica no log de auditoria.",
+      "name": "Clientes"
+    },
+    {
+      "description": "Quem criou, viu ou alterou dados pessoais, e quando (só o dono).",
+      "name": "Auditoria"
     }
   ]
 }

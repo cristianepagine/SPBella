@@ -1,9 +1,9 @@
-import { type FormEvent, useEffect, useId, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { type TenantSettings, useSaveSettings, useSettings } from "../../api/settings";
 import { useAuth } from "../../auth/AuthProvider";
-import { Card, FormError, SubmitButton, TextField } from "../../components/form";
+import { Card, FormError, SelectField, SubmitButton, TextField } from "../../components/form";
 import { type Language, SUPPORTED_LANGUAGES } from "../../i18n";
 import { formatDateTime, formatLocale, formatMoney, timeZoneLabel } from "../../i18n/format";
 
@@ -54,7 +54,7 @@ function SettingsForm({ current }: { current: TenantSettings }) {
           onChange={(e) => setName(e.target.value)}
         />
 
-        <Select
+        <SelectField
           label={t("settings.locale")}
           hint={t("settings.localeHint")}
           value={locale}
@@ -62,7 +62,7 @@ function SettingsForm({ current }: { current: TenantSettings }) {
           options={SUPPORTED_LANGUAGES.map((lang) => ({ value: lang, label: t(`language.${lang}`) }))}
         />
 
-        <Select
+        <SelectField
           label={t("settings.timezone")}
           value={timezone}
           onChange={setTimezone}
@@ -93,46 +93,5 @@ function SettingsForm({ current }: { current: TenantSettings }) {
         <SubmitButton busy={save.isPending}>{t("settings.save")}</SubmitButton>
       </form>
     </Card>
-  );
-}
-
-function Select({
-  label,
-  hint,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  hint?: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: { value: string; label: string }[];
-}) {
-  const id = useId();
-  return (
-    <div className="mb-4">
-      <label htmlFor={id} className="mb-1 block font-medium text-slate-800">
-        {label}
-      </label>
-      <select
-        id={id}
-        aria-describedby={hint ? `${id}-hint` : undefined}
-        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      {hint && (
-        <p id={`${id}-hint`} className="mt-1 text-sm text-slate-500">
-          {hint}
-        </p>
-      )}
-    </div>
   );
 }

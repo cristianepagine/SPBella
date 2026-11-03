@@ -24,7 +24,8 @@ Módulos do core no back-end:
 | `core/tenants/` | tenants (salões), CLI de provisionamento, dados públicos | SAL-01 |
 | `core/accounts/` | usuários, perfis, login, senha | SAL-02 |
 | `core/system/` | healthcheck | — |
-| `core/customers/`, `core/audit/` | clientes, consentimento, auditoria | SAL-04, SAL-07 |
+| `core/customers/` | clientes, telefones (E.164), consentimento por finalidade | SAL-04, SAL-07 |
+| `core/audit/` | log de auditoria só de inclusão; `record(...)` na mesma transação da mudança | SAL-04 |
 | `core/scheduling/` | profissionais, jornadas, bloqueios, agendamentos, horários livres | SAL-06, 08–10, 13 |
 | `core/notifications/` | fila, `NotificationChannel`, e-mail, wa.me | SAL-14, 15 |
 | `core/reports/` | relatórios e Excel | SAL-16 |

@@ -2,6 +2,16 @@
 
 Mudanças visíveis para quem consome a API. Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.7.0] - 2026-11-03
+
+### Adicionado
+- Clientes (`customers.manage`): `GET/POST /t/{slug}/customers`,
+  `GET/PATCH /t/{slug}/customers/{customer_id}`, `POST /t/{slug}/customers/{customer_id}/consents`.
+- Consentimentos por finalidade (`service`, obrigatório; `reminders`; `marketing`), com versão da
+  política, origem e quem registrou.
+- Auditoria (`audit.view`): `GET /t/{slug}/audit` (filtro `entity_id`, paginação por `before`).
+- Códigos de campo em `422 validation_error`: `invalid_phone`, `invalid_email`, `consent_required`.
+
 ## [0.6.0] - 2026-11-02
 
 ### Adicionado

@@ -11,5 +11,8 @@
   },
   "settings": {
     "name": "Nombre del salón"
+  },
+  "customers": {
+    "localeDefault": "El mismo del salón"
   }
 }

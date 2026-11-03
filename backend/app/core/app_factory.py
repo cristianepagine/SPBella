@@ -8,6 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.accounts import api as accounts_api
 from app.core.accounts import team_api
+from app.core.audit import api as audit_api
+from app.core.customers import api as customers_api
 from app.core.infra.config import Settings
 from app.core.infra.db import Databases
 from app.core.infra.errors import register_error_handlers
@@ -39,6 +41,15 @@ CORE_OPENAPI_TAGS = [
     {
         "name": "Configurações",
         "description": "Nome, idioma padrão, fuso e moeda do estabelecimento (só o dono).",
+    },
+    {
+        "name": "Clientes",
+        "description": "Cadastro de clientes com consentimento (LGPD). Cada consulta e "
+        "alteração fica no log de auditoria.",
+    },
+    {
+        "name": "Auditoria",
+        "description": "Quem criou, viu ou alterou dados pessoais, e quando (só o dono).",
     },
 ]
 
@@ -86,6 +97,8 @@ def build_app(settings: Settings, vertical: Vertical) -> FastAPI:
     app.include_router(accounts_api.router)
     app.include_router(team_api.router)
     app.include_router(settings_api.router)
+    app.include_router(customers_api.router)
+    app.include_router(audit_api.router)
     for router in vertical.routers:
         app.include_router(router)
     return app

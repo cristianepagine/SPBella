@@ -11,5 +11,8 @@
   },
   "settings": {
     "name": "Nome do salão"
+  },
+  "customers": {
+    "localeDefault": "O mesmo do salão"
   }
 }

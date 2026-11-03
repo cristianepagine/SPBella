@@ -70,7 +70,7 @@ describe("traduções", () => {
       for (const match of code.matchAll(jsxText)) {
         const text = match[1].trim();
         if (/^[\w.]+$/.test(text) && !/\s/.test(text) && /[a-z][A-Z]|^[A-Z]/.test(text)) continue;
-        if (/=>|[;=]|\)\s*$|^\w+\s*\(/.test(text)) continue; // código, não texto
+        if (/=>|[;=]|&&|\|\||\)\s*$|^\w+\s*\(/.test(text)) continue; // código, não texto
         offenders.push(`${file}: "${text}"`);
       }
       for (const match of code.matchAll(visibleAttr)) offenders.push(`${file}: ${match[1]}="${match[2]}"`);

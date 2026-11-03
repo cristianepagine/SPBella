@@ -412,6 +412,94 @@ Números, moeda e datas seguem a convenção do **país** do estabelecimento, no
 (em um salão paraguaio, o guarani aparece como "Gs. 150.000"). Horários em 24 h, sempre no fuso
 do estabelecimento.
 
+### Clientes
+
+Para quem tem `customers.manage` (dono e recepção). Toda consulta da ficha, alteração e mudança
+de consentimento fica no **log de auditoria**.
+
+#### `POST /t/{slug}/customers` — cadastrar
+
+```bash
+curl -X POST http://localhost:8000/t/studio-bella/customers -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"name": "Maria Silva", "phone": "(11) 98888-7777", "email": "maria@exemplo.com",
+       "consents": ["service", "reminders"]}'
+```
+
+```json
+{
+  "id": "…", "name": "Maria Silva",
+  "phone": "+5511988887777", "phone_display": "+55 11 98888-7777",
+  "email": "maria@exemplo.com", "locale": null,
+  "created_at": "2026-11-03T13:30:00Z", "updated_at": "2026-11-03T13:30:00Z",
+  "consents": [
+    {"purpose": "reminders", "granted_at": "…", "source": "staff", "policy_version": "2026-11-02"},
+    {"purpose": "service",   "granted_at": "…", "source": "staff", "policy_version": "2026-11-02"}
+  ]
+}
+```
+
+- **Telefone:** aceito como a pessoa digitar. Sem `+DDI`, vale o país do estabelecimento
+  (`0981 123456` num salão paraguaio vira `+595981123456`). Sempre devolvido em E.164 (`phone`)
+  e formatado para leitura (`phone_display`).
+- **Consentimento:** `service` (usar os dados para o atendimento) é **obrigatório**;
+  `reminders` (lembretes e confirmações) e `marketing` (novidades) são opcionais. Cada um é
+  registrado com a versão da política de privacidade, a origem (`staff` ou `public_booking`) e
+  quem registrou.
+- `422 validation_error` com `fields[0].code`: `invalid_phone`, `invalid_email` ou
+  `consent_required`.
+
+#### `GET /t/{slug}/customers` — listar
+
+Ordem alfabética, `limit` (até 100) e `offset`. Responde `{"items": [...], "total": 123}`.
+A busca por nome ou telefone entra na SAL-07.
+
+#### `GET /t/{slug}/customers/{customer_id}` — ficha
+
+Gera um registro `customer.viewed` na auditoria. Cliente de outro salão: `404 not_found`.
+
+#### `PATCH /t/{slug}/customers/{customer_id}` — alterar
+
+Só os campos enviados mudam; `"email": null` apaga o e-mail. Enviar um valor igual ao atual
+não gera registro na auditoria.
+
+#### `POST /t/{slug}/customers/{customer_id}/consents` — dar ou retirar consentimento
+
+`{"purpose": "marketing", "granted": false}`. O histórico nunca é apagado: retirar preenche a
+data de retirada; dar de novo cria um registro novo com a versão atual da política.
+
+### Auditoria
+
+Só para quem tem `audit.view` (hoje, o dono).
+
+#### `GET /t/{slug}/audit` — quem fez o quê
+
+Parâmetros opcionais: `entity_id` (ex.: o ID de um cliente), `before` (paginação: o
+`occurred_at` do último registro recebido) e `limit` (até 100). Mais recentes primeiro.
+
+```json
+[
+  {
+    "id": "…", "occurred_at": "2026-11-03T13:31:02.481Z",
+    "action": "customer.updated", "entity_type": "customer", "entity_id": "…",
+    "actor_type": "user", "actor": {"id": "…", "name": "Rita Recepção"},
+    "fields": ["email", "phone"]
+  }
+]
+```
+
+| `action` | Quando |
+|---|---|
+| `customer.created` | Cliente cadastrado (`fields` = campos preenchidos) |
+| `customer.viewed` | Alguém abriu a ficha |
+| `customer.updated` | Dados alterados (`fields` = campos que mudaram) |
+| `consent.granted` / `consent.revoked` | Consentimento dado ou retirado (`fields` = finalidades) |
+
+- **`fields` traz só os nomes dos campos.** Os valores (nome, telefone, e-mail) nunca vão para a
+  auditoria nem para os logs da aplicação.
+- **O log só aceita inclusão.** O papel do salão no banco não tem `UPDATE`, `DELETE` nem
+  `TRUNCATE` na tabela, e um trigger barra alterações até do administrador.
+
 ### Equipe
 
 Só para quem tem `team.manage` (hoje, o dono). Ainda não há envio de e-mail (SAL-14): a senha

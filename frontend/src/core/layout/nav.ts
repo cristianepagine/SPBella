@@ -16,6 +16,12 @@ export type NavItem = {
 /** Itens do core. A vertical acrescenta os seus em App.tsx. */
 export const CORE_NAV: NavItem[] = [
   { id: "home", labelKey: "nav.home", to: salonPath.app, end: true },
+  {
+    id: "customers",
+    labelKey: "nav.customers",
+    to: salonPath.customers,
+    permission: "customers.manage",
+  },
   { id: "team", labelKey: "nav.team", to: salonPath.team, permission: "team.manage" },
   {
     id: "settings",

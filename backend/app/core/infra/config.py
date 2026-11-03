@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=("../.env", ".env"), extra="ignore")
 
     app_env: Literal["development", "test", "production"] = "development"
-    app_version: str = "0.6.0"
+    app_version: str = "0.7.0"
 
     # Papel da APLICAÇÃO: sem acesso direto às tabelas dos salões; só entra em um salão
     # com SET LOCAL ROLE (ver app/core/infra/tenancy.py).
@@ -49,6 +49,10 @@ class Settings(BaseSettings):
     password_reset_minutes: int = 30
     # Cookies só por HTTPS. Desligue apenas em testes com cliente HTTP puro.
     cookie_secure: bool = True
+
+    # Versão da política de privacidade aceita nos consentimentos dos clientes (LGPD). Troque
+    # quando o texto da política mudar: consentimentos novos passam a registrar a versão nova.
+    privacy_policy_version: str = "2026-11-02"
 
     # Endereço do app (front), usado nos links enviados por e-mail.
     app_public_url: str = "http://localhost:5173"

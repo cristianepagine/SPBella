@@ -51,7 +51,13 @@
     },
     "email_taken": "Já existe alguém com esse e-mail na equipe.",
     "cannot_change_self": "Você não pode mudar o seu próprio perfil nem se desativar.",
-    "last_owner": "Precisa haver pelo menos um dono ativo."
+    "last_owner": "Precisa haver pelo menos um dono ativo.",
+    "fields": {
+      "invalid_phone": "Esse telefone não parece certo. Confira o DDD e o número.",
+      "invalid_email": "Esse e-mail não parece certo.",
+      "consent_required": "Para cadastrar, o cliente precisa concordar com o uso dos dados para o atendimento.",
+      "invalid_timezone": "Fuso horário desconhecido."
+    }
   },
   "tenant": {
     "loading": "Carregando…",
@@ -91,7 +97,8 @@
     "label": "Menu",
     "home": "Início",
     "team": "Equipe",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "customers": "Clientes"
   },
   "roles": {
     "owner": "Dono(a)",
@@ -142,5 +149,60 @@
   "currency": {
     "BRL": "Real (R$)",
     "PYG": "Guarani (Gs.)"
+  },
+  "customers": {
+    "title": "Clientes",
+    "new": "Novo cliente",
+    "empty": "Ainda não há clientes cadastrados.",
+    "save": "Salvar",
+    "saved": "Pronto! Os dados foram salvos.",
+    "previous": "Anterior",
+    "next": "Próxima",
+    "pageOf": "Página {{page}} de {{pages}}",
+    "phoneHint": "Com DDD. Para número de outro país, comece com + e o código do país.",
+    "localeDefault": "O mesmo do estabelecimento",
+    "fields": {
+      "name": "Nome",
+      "phone": "Telefone (WhatsApp)",
+      "emailOptional": "E-mail (opcional)",
+      "locale": "Idioma das mensagens"
+    }
+  },
+  "consent": {
+    "title": "Consentimento (LGPD)",
+    "intro": "Marque só o que o cliente aceitou. Ele pode mudar de ideia quando quiser.",
+    "ask": {
+      "service": "Concorda que usemos estes dados para o atendimento (obrigatório)",
+      "reminders": "Aceita receber confirmações e lembretes de horário",
+      "marketing": "Aceita receber novidades e promoções"
+    },
+    "short": {
+      "service": "atendimento",
+      "reminders": "lembretes",
+      "marketing": "novidades e promoções"
+    },
+    "serviceWithdrawn": "O cliente retirou a concordância com o uso dos dados para o atendimento. Não marque novos horários sem conversar com ele."
+  },
+  "audit": {
+    "title": "Histórico",
+    "intro": "Quem cadastrou, abriu ou alterou esta ficha. Este histórico não pode ser apagado.",
+    "actions": {
+      "customer.created": "Cadastrou o cliente ({{fields}})",
+      "customer.viewed": "Abriu a ficha",
+      "customer.updated": "Alterou: {{fields}}",
+      "consent.granted": "Registrou consentimento: {{fields}}",
+      "consent.revoked": "Retirou consentimento: {{fields}}"
+    },
+    "actor": {
+      "user": "Equipe",
+      "customer": "O próprio cliente",
+      "system": "Sistema"
+    },
+    "fields": {
+      "name": "nome",
+      "phone": "telefone",
+      "email": "e-mail",
+      "locale": "idioma"
+    }
   }
 }

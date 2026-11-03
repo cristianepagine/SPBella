@@ -5,6 +5,9 @@ import { RequirePermission } from "./core/auth/RequirePermission";
 import { LanguageSwitcher } from "./core/components/LanguageSwitcher";
 import { CORE_NAV, type NavItem } from "./core/layout/nav";
 import { StaffLayout } from "./core/layout/StaffLayout";
+import { CustomerPage } from "./core/pages/app/customers/CustomerPage";
+import { CustomersPage } from "./core/pages/app/customers/CustomersPage";
+import { NewCustomerPage } from "./core/pages/app/customers/NewCustomerPage";
 import { StaffHomePage } from "./core/pages/app/HomePage";
 import { SettingsPage } from "./core/pages/app/SettingsPage";
 import { TeamPage } from "./core/pages/app/TeamPage";
@@ -40,6 +43,11 @@ export function App() {
               <Route element={<RequireFullAccess />}>
                 <Route path="app" element={<StaffLayout nav={NAV} />}>
                   <Route index element={<StaffHomePage />} />
+                  <Route element={<RequirePermission permission="customers.manage" />}>
+                    <Route path="customers" element={<CustomersPage />} />
+                    <Route path="customers/new" element={<NewCustomerPage />} />
+                    <Route path="customers/:customerId" element={<CustomerPage />} />
+                  </Route>
                   <Route element={<RequirePermission permission="team.manage" />}>
                     <Route path="team" element={<TeamPage />} />
                   </Route>

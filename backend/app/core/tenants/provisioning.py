@@ -47,6 +47,8 @@ COUNTRY_DEFAULTS = {
 MIGRATION_LOCK_KEY = 7_412_026_001  # chave do advisory lock de "tenants migrate"
 PLANS = ("base", "whatsapp_api")
 TENANT_EDITABLE_COLUMNS = ("name", "locale", "timezone")
+# Tabelas de tenant que só aceitam INSERT (o papel do tenant não pode alterar nem apagar).
+APPEND_ONLY_TABLES = ("audit_log",)
 
 DEMO_PASSWORD = "demo-spbella"  # noqa: S105 - só para os tenants de demonstração
 
@@ -118,8 +120,8 @@ def _ensure_app_role(conn: Connection, app_url: str) -> str:
 def _grant_tenant_tables(conn: Connection, schema: str, role: str) -> None:
     """Dá ao papel do salão leitura e escrita nas tabelas do schema (roda após cada migração).
 
-    Restrições extras por tabela (ex.: log de auditoria só aceita INSERT) são feitas com
-    trigger na própria migração, porque este GRANT é reaplicado a cada migração.
+    Tabelas só de inserção (APPEND_ONLY_TABLES, ex.: log de auditoria) perdem UPDATE, DELETE e
+    TRUNCATE logo em seguida; a migração delas também cria um trigger que barra alterações.
     """
     s, r = sql.Identifier(schema), sql.Identifier(role)
     _run(
@@ -130,6 +132,14 @@ def _grant_tenant_tables(conn: Connection, schema: str, role: str) -> None:
     )
     _run(conn, sql.SQL("GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA {} TO {}").format(s, r))
     _run(conn, sql.SQL("REVOKE ALL ON TABLE {}.alembic_version FROM {}").format(s, r))
+    for table in APPEND_ONLY_TABLES:
+        if _run(conn, sql.SQL("SELECT to_regclass(%s)"), (f'"{schema}"."{table}"',))[0][0]:
+            _run(
+                conn,
+                sql.SQL("REVOKE UPDATE, DELETE, TRUNCATE ON TABLE {}.{} FROM {}").format(
+                    s, sql.Identifier(table), r
+                ),
+            )
 
 
 def _tenant_revision(conn: Connection, schema: str) -> str | None:

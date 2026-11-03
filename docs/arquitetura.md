@@ -82,6 +82,12 @@ timezone)`, aplicado pelo `db init`). Slug, status, plano, moeda e os nomes de s
 continuam bloqueados pelo próprio banco, e um teste prova isso. A alteração passa por uma
 única função (`update_tenant_profile`), sempre com o ID do tenant da requisição.
 
+**Auditoria (SAL-04):** `audit_log` em cada schema de tenant, gravado na mesma transação da
+mudança (`app/core/audit/service.py`). Só inclusão, por duas barreiras: o papel do tenant perde
+`UPDATE`/`DELETE`/`TRUNCATE` (`APPEND_ONLY_TABLES`, reaplicado a cada migração) e um trigger
+recusa alterações até do administrador. Guarda nomes de campos, nunca valores. O horário usa
+`clock_timestamp()` (e não `now()`) para ordenar registros da mesma transação.
+
 **Mudanças em relação à proposta inicial:**
 - A tabela `public.tenant_migrations` não foi criada. A versão de cada salão fica na
   `alembic_version` do próprio schema (`tenants list` mostra), e os erros de migração aparecem na saída de

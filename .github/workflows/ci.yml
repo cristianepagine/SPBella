@@ -94,6 +94,15 @@ jobs:
             -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
             -d '{"timezone":"America/Manaus"}' -o /dev/null
           curl -fsS http://localhost:8000/t/studio-bella | grep -q '"timezone":"America/Manaus"'
+          # recepção cadastra cliente; dono vê no histórico; recepção não vê a auditoria
+          CLIENTE=$(curl -fsS -X POST http://localhost:8000/t/studio-bella/customers \
+            -H "Authorization: Bearer $RECEPCAO" -H 'Content-Type: application/json' \
+            -d '{"name":"Cliente CI","phone":"(11) 98888-7777","consents":["service"]}' \
+            | python3 -c "import sys, json; print(json.load(sys.stdin)['id'])")
+          curl -fsS "http://localhost:8000/t/studio-bella/audit?entity_id=$CLIENTE" \
+            -H "Authorization: Bearer $TOKEN" | grep -q '"customer.created"'
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/t/studio-bella/audit \
+            -H "Authorization: Bearer $RECEPCAO")" = "403"
           # o token de um salão não vale no outro
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/t/salon-asuncion/auth/me \
             -H "Authorization: Bearer $TOKEN")" = "401"

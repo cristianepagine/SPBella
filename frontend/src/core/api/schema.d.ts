@@ -64,6 +64,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/t/{slug}/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar o log de auditoria
+         * @description Registros mais recentes primeiro. Filtre por `entity_id` (ex.: o ID de um cliente) para ver o histórico de uma ficha. Para ver mais, repita a chamada com `before` = `occurred_at` do último registro recebido.
+         *
+         *     O log só aceita inclusão: ninguém, nem o dono, consegue alterar ou apagar registros.
+         */
+        get: operations["list_audit_t__slug__audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/t/{slug}/auth/change-password": {
         parameters: {
             query?: never;
@@ -233,6 +255,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/t/{slug}/customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar clientes
+         * @description Em ordem alfabética, com paginação (`limit` e `offset`). A busca entra na SAL-07.
+         */
+        get: operations["list_customers_t__slug__customers_get"];
+        put?: never;
+        /**
+         * Cadastrar cliente
+         * @description Cadastra o cliente e registra os consentimentos informados, com a versão atual da política de privacidade e quem registrou. Fica no log de auditoria.
+         *
+         *     - `422` com `fields[0].code`: `invalid_phone`, `invalid_email` ou `consent_required` (faltou o `service` em `consents`).
+         */
+        post: operations["create_customer_t__slug__customers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/customers/{customer_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver ficha do cliente
+         * @description Dados e consentimentos em vigor. Cada consulta fica no log de auditoria (`customer.viewed`).
+         */
+        get: operations["get_customer_t__slug__customers__customer_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Alterar dados do cliente
+         * @description Só os campos enviados mudam. O log de auditoria guarda **quais** campos mudaram (nunca os valores). Enviar um valor igual ao atual não gera registro.
+         *
+         *     - `422` com `fields[0].code`: `invalid_phone` ou `invalid_email`.
+         */
+        patch: operations["change_customer_t__slug__customers__customer_id__patch"];
+        trace?: never;
+    };
+    "/t/{slug}/customers/{customer_id}/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registrar ou retirar consentimento
+         * @description `service` = usar os dados para o atendimento (obrigatório); `reminders` = receber lembretes e confirmações; `marketing` = receber novidades e promoções.
+         *
+         *     `granted: true` registra a concordância (com a versão atual da política); `granted: false` a retira, guardando a data. O histórico nunca é apagado. Repetir o estado atual não muda nada.
+         */
+        post: operations["change_consent_t__slug__customers__customer_id__consents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/t/{slug}/settings": {
         parameters: {
             query?: never;
@@ -336,12 +432,191 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Actor */
+        Actor: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+        };
+        /** AuditEntryOut */
+        AuditEntryOut: {
+            /**
+             * Action
+             * @description O que aconteceu: `customer.created`, `customer.viewed` (alguém abriu a ficha), `customer.updated`, `consent.granted`, `consent.revoked`.
+             */
+            action: string;
+            actor: components["schemas"]["Actor"] | null;
+            /**
+             * Actor Type
+             * @description `user` = pessoa da equipe (ver `actor`); `customer` = o próprio cliente, pela página pública; `system` = o sistema.
+             * @enum {string}
+             */
+            actor_type: "user" | "customer" | "system";
+            /**
+             * Entity Id
+             * Format: uuid
+             */
+            entity_id: string;
+            /**
+             * Entity Type
+             * @example customer
+             */
+            entity_type: string;
+            /**
+             * Fields
+             * @description Nomes dos campos envolvidos (ex.: `phone`). Os valores nunca são guardados.
+             * @example [
+             *       "email",
+             *       "phone"
+             *     ]
+             */
+            fields: string[];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+        };
         /** ChangePasswordIn */
         ChangePasswordIn: {
             /** Current Password */
             current_password: string;
             /** New Password */
             new_password: string;
+        };
+        /** ConsentChange */
+        ConsentChange: {
+            /**
+             * Granted
+             * @description `true` registra a concordância; `false` a retira.
+             */
+            granted: boolean;
+            /**
+             * Purpose
+             * @enum {string}
+             */
+            purpose: "service" | "reminders" | "marketing";
+        };
+        /** ConsentOut */
+        ConsentOut: {
+            /**
+             * Granted At
+             * Format: date-time
+             */
+            granted_at: string;
+            /**
+             * Policy Version
+             * @description Versão da política de privacidade aceita.
+             */
+            policy_version: string;
+            /**
+             * Purpose
+             * @enum {string}
+             */
+            purpose: "service" | "reminders" | "marketing";
+            /**
+             * Source
+             * @description `staff` = registrado pela equipe; `public_booking` = pelo cliente na página.
+             * @enum {string}
+             */
+            source: "staff" | "public_booking";
+        };
+        /** CustomerChanges */
+        CustomerChanges: {
+            /**
+             * Email
+             * @description `null` apaga o e-mail.
+             */
+            email?: string | null;
+            /**
+             * Locale
+             * @description `null` volta ao idioma padrão.
+             */
+            locale?: ("pt-BR" | "es") | null;
+            /** Name */
+            name?: string | null;
+            /** Phone */
+            phone?: string | null;
+        };
+        /** CustomerOut */
+        CustomerOut: {
+            /**
+             * Consents
+             * @description Consentimentos em vigor. `service` = usar os dados para o atendimento (obrigatório); `reminders` = receber lembretes e confirmações; `marketing` = receber novidades e promoções.
+             */
+            consents: components["schemas"]["ConsentOut"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Email */
+            email: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Locale
+             * @description Idioma das mensagens; `null` = idioma padrão do estabelecimento.
+             */
+            locale: ("pt-BR" | "es") | null;
+            /** Name */
+            name: string;
+            /**
+             * Phone
+             * @description Formato internacional E.164.
+             * @example +5511988887777
+             */
+            phone: string;
+            /**
+             * Phone Display
+             * @example +55 11 98888-7777
+             */
+            phone_display: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** CustomerPage */
+        CustomerPage: {
+            /** Items */
+            items: components["schemas"]["CustomerSummary"][];
+            /** Total */
+            total: number;
+        };
+        /** CustomerSummary */
+        CustomerSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Phone
+             * @description Formato internacional E.164.
+             * @example +5511988887777
+             */
+            phone: string;
+            /**
+             * Phone Display
+             * @example +55 11 98888-7777
+             */
+            phone_display: string;
         };
         /** ErrorBody */
         ErrorBody: {
@@ -441,6 +716,33 @@ export interface components {
              * @description Idioma da pessoa. `null` volta a usar o idioma padrão do estabelecimento.
              */
             locale: ("pt-BR" | "es") | null;
+        };
+        /** NewCustomer */
+        NewCustomer: {
+            /**
+             * Consents
+             * @description Com o que o cliente concordou. Precisa incluir `service`. `service` = usar os dados para o atendimento (obrigatório); `reminders` = receber lembretes e confirmações; `marketing` = receber novidades e promoções.
+             * @example [
+             *       "service",
+             *       "reminders"
+             *     ]
+             */
+            consents: ("service" | "reminders" | "marketing")[];
+            /** Email */
+            email?: string | null;
+            /** Locale */
+            locale?: ("pt-BR" | "es") | null;
+            /**
+             * Name
+             * @example Maria Silva
+             */
+            name: string;
+            /**
+             * Phone
+             * @description Como a pessoa digitar: `(11) 98888-7777`, `0981 123456` ou com `+DDI`. Sem DDI, vale o país do estabelecimento.
+             * @example (11) 98888-7777
+             */
+            phone: string;
         };
         /** NewMember */
         NewMember: {
@@ -765,6 +1067,71 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_audit_t__slug__audit_get: {
+        parameters: {
+            query?: {
+                /** @description Só deste registro. */
+                entity_id?: string | null;
+                /** @description Só antes deste instante. */
+                before?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEntryOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -1263,6 +1630,319 @@ export interface operations {
             };
             /** @description Too Many Requests */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_customers_t__slug__customers_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_customer_t__slug__customers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCustomer"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_customer_t__slug__customers__customer_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customer_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_customer_t__slug__customers__customer_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customer_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerChanges"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    change_consent_t__slug__customers__customer_id__consents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customer_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsentChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
