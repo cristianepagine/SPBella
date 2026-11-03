@@ -385,14 +385,16 @@ Só para quem tem `settings.manage` (hoje, o dono).
 Corpo com qualquer combinação de `name`, `locale` (`pt-BR` ou `es`), `timezone`, `buffer_min`
 (intervalo mínimo entre atendimentos: 0 a 120, de 5 em 5), `slot_step_min` (passo dos horários
 livres: 5, 10, 15, 20, 30 ou 60), `min_notice_min` (antecedência mínima na página pública: 0 a
-10080 minutos, de 15 em 15) e `max_days_ahead` (até quantos dias à frente a página pública
-aceita: 1 a 365). Vale **na hora** para todo mundo: a página pública
+10080 minutos, de 15 em 15), `max_days_ahead` (até quantos dias à frente a página pública
+aceita: 1 a 365) e `whatsapp_phone` (número do botão de WhatsApp na página pública, como a pessoa
+digita; guardado no formato internacional; texto vazio tira o botão). Vale **na hora** para todo mundo: a página pública
 (`GET /t/{slug}`), a agenda e os e-mails.
 
 - **A moeda não muda por aqui.** Os preços são guardados na menor unidade da moeda, então trocar
   BRL por PYG mudaria o valor de todos eles. Campos desconhecidos (`currency`, `slug`, `plan`...)
   são ignorados. Além disso, o próprio banco só deixa a API alterar nome, idioma e fuso.
 - Fuso desconhecido: `422 validation_error` com `fields[0].code = invalid_timezone`.
+- Telefone inválido: `422 validation_error` com `fields[0].code = invalid_phone`.
 
 ### Minha conta
 
@@ -608,12 +610,14 @@ Sem login. É o que a página `/{slug}` do app usa. Nada aqui devolve dados de c
 {
   "offerings": [{"id": "…", "name": "Corte feminino", "duration_min": 60, "extras": {"price_minor": 8000}}],
   "providers": [{"id": "…", "name": "Paula", "color": "sky", "offering_ids": ["…"]}],
-  "min_notice_min": 60, "max_days_ahead": 60, "privacy_policy_version": "2026-11-02"
+  "min_notice_min": 60, "max_days_ahead": 60, "privacy_policy_version": "2026-11-02",
+  "whatsapp_phone": "+5511988887777"
 }
 ```
 
 - Só serviços ativos que pelo menos um profissional ativo faz.
 - `extras` vem da vertical: no salão, o preço (`price_minor`, na menor unidade da moeda).
+- `whatsapp_phone`: número comercial que o dono cadastrou, ou `null` (sem botão na página).
 
 #### `GET /t/{slug}/booking/availability?offering_id=…&date=AAAA-MM-DD[&provider_id=…]`
 

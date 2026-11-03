@@ -577,6 +577,21 @@
             },
             "title": "Providers",
             "type": "array"
+          },
+          "whatsapp_phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "WhatsApp do estabelecimento (E.164), se o dono cadastrou.",
+            "examples": [
+              "+5511988887777"
+            ],
+            "title": "Whatsapp Phone"
           }
         },
         "required": [
@@ -584,7 +599,8 @@
           "providers",
           "min_notice_min",
           "max_days_ahead",
-          "privacy_policy_version"
+          "privacy_policy_version",
+          "whatsapp_phone"
         ],
         "title": "Catalog",
         "type": "object"
@@ -2313,6 +2329,19 @@
               }
             ],
             "title": "Timezone"
+          },
+          "whatsapp_phone": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Como a pessoa digita. Texto vazio tira o botão.",
+            "title": "Whatsapp Phone"
           }
         },
         "title": "SettingsChanges",
@@ -2543,6 +2572,21 @@
             },
             "title": "Timezone Options",
             "type": "array"
+          },
+          "whatsapp_phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Página pública: número do botão de WhatsApp (E.164). Vazio = sem botão.",
+            "examples": [
+              "+5511988887777"
+            ],
+            "title": "Whatsapp Phone"
           }
         },
         "required": [
@@ -2555,7 +2599,8 @@
           "buffer_min",
           "slot_step_min",
           "min_notice_min",
-          "max_days_ahead"
+          "max_days_ahead",
+          "whatsapp_phone"
         ],
         "title": "TenantSettings",
         "type": "object"
@@ -2789,7 +2834,7 @@
   "info": {
     "description": "API do **SPBella** (Agenda Salão), sistema de agendamento para salões e barbearias.\n\nGuia de uso, convenções (erros, datas, valores, autenticação) e exemplos: `docs/api/README.md` no repositório.",
     "title": "SPBella API",
-    "version": "0.14.0"
+    "version": "0.15.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -4758,7 +4803,7 @@
     },
     "/t/{slug}/booking/catalog": {
       "get": {
-        "description": "O que o cliente pode escolher, sem dados pessoais: serviços ativos (com o preço, no salão), profissionais ativos (só o nome de exibição e a cor) e as regras de antecedência.",
+        "description": "O que o cliente pode escolher, sem dados pessoais: serviços ativos (com o preço, no salão), profissionais ativos (só o nome de exibição e a cor), as regras de antecedência e o WhatsApp do estabelecimento.",
         "operationId": "get_catalog_t__slug__booking_catalog_get",
         "parameters": [
           {
@@ -6694,7 +6739,7 @@
         "x-required-permission": "settings.manage"
       },
       "patch": {
-        "description": "Só os campos enviados mudam. Vale na hora para todo mundo (página pública, agenda, e-mails).\n\n- `buffer_min`: intervalo mínimo entre atendimentos (0 a 120, de 5 em 5).\n- `slot_step_min`: passo dos horários livres (5, 10, 15, 20, 30 ou 60).\n- `min_notice_min`: antecedência mínima na página pública (0 a 10080, de 15 em 15).\n- `max_days_ahead`: até quantos dias à frente a página pública aceita (1 a 365).\n- `422 validation_error` com `fields[0].code = invalid_timezone`: fuso desconhecido.\n- A moeda não muda por aqui (ver `currency`).",
+        "description": "Só os campos enviados mudam. Vale na hora para todo mundo (página pública, agenda, e-mails).\n\n- `buffer_min`: intervalo mínimo entre atendimentos (0 a 120, de 5 em 5).\n- `slot_step_min`: passo dos horários livres (5, 10, 15, 20, 30 ou 60).\n- `min_notice_min`: antecedência mínima na página pública (0 a 10080, de 15 em 15).\n- `max_days_ahead`: até quantos dias à frente a página pública aceita (1 a 365).\n- `whatsapp_phone`: número do botão na página pública; texto vazio tira o botão.\n- `422 validation_error` com `fields[0].code`: `invalid_timezone` (fuso desconhecido) ou `invalid_phone`.\n- A moeda não muda por aqui (ver `currency`).",
         "operationId": "change_settings_t__slug__settings_patch",
         "parameters": [
           {

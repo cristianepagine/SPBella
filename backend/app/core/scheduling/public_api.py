@@ -74,6 +74,10 @@ class Catalog(BaseModel):
     min_notice_min: int = Field(description="Antecedência mínima para marcar, em minutos.")
     max_days_ahead: int = Field(description="Até quantos dias à frente dá para marcar.")
     privacy_policy_version: str
+    whatsapp_phone: str | None = Field(
+        description="WhatsApp do estabelecimento (E.164), se o dono cadastrou.",
+        examples=["+5511988887777"],
+    )
 
 
 Purpose = Literal["service", "reminders", "marketing"]
@@ -151,7 +155,8 @@ def _window(tenant: TenantContext, rules: ScheduleSettings) -> tuple[datetime, d
     summary="Serviços e profissionais da página",
     description=(
         "O que o cliente pode escolher, sem dados pessoais: serviços ativos (com o preço, no "
-        "salão), profissionais ativos (só o nome de exibição e a cor) e as regras de antecedência."
+        "salão), profissionais ativos (só o nome de exibição e a cor), as regras de antecedência "
+        "e o WhatsApp do estabelecimento."
     ),
     response_model=Catalog,
     responses=error_responses(404),
@@ -186,6 +191,7 @@ def get_catalog(request: Request, db: DbSession) -> Catalog:
         min_notice_min=rules.min_notice_min,
         max_days_ahead=rules.max_days_ahead,
         privacy_policy_version=request.app.state.settings.privacy_policy_version,
+        whatsapp_phone=rules.whatsapp_phone,
     )
 
 

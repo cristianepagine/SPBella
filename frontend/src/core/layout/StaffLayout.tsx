@@ -27,7 +27,7 @@ export function StaffLayout({ nav }: { nav: NavItem[] }) {
 
   return (
     <NavContext.Provider value={items}>
-      <header className="mb-4 rounded-2xl bg-white p-4 shadow-sm">
+      <header className="mb-4 rounded-2xl bg-white p-4 shadow-sm print:hidden">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate font-bold text-brand-900">{tenant.name}</p>

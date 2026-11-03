@@ -45,6 +45,47 @@ def test_owner_sees_the_settings(db_client, owner_token):
     assert "America/Manaus" in body["timezone_options"]
 
 
+def test_whatsapp_is_normalized_and_shown_on_public_page(db_client, owner_token):
+    response = _patch(db_client, owner_token, whatsapp_phone="(11) 98888-7777")
+
+    assert response.status_code == 200
+    assert response.json()["whatsapp_phone"] == "+5511988887777"
+    catalog = db_client.get(f"/t/{SLUG}/booking/catalog").json()
+    assert catalog["whatsapp_phone"] == "+5511988887777"
+
+
+def test_empty_whatsapp_removes_the_button(db_client, owner_token):
+    _patch(db_client, owner_token, whatsapp_phone="(11) 98888-7777")
+
+    response = _patch(db_client, owner_token, whatsapp_phone="  ")
+
+    assert response.json()["whatsapp_phone"] is None
+    assert db_client.get(f"/t/{SLUG}/booking/catalog").json()["whatsapp_phone"] is None
+
+
+def test_invalid_whatsapp_is_refused_and_keeps_the_old_one(db_client, owner_token):
+    _patch(db_client, owner_token, whatsapp_phone="(11) 98888-7777")
+
+    response = _patch(db_client, owner_token, whatsapp_phone="123", buffer_min=10)
+
+    assert response.status_code == 422
+    assert response.json()["error"]["fields"][0] == {
+        "field": "whatsapp_phone",
+        "code": "invalid_phone",
+    }
+    body = db_client.get(f"/t/{SLUG}/settings", headers=bearer(owner_token)).json()
+    assert body["whatsapp_phone"] == "+5511988887777"
+    assert body["buffer_min"] != 10
+
+
+def test_changing_other_settings_keeps_the_whatsapp(db_client, owner_token):
+    _patch(db_client, owner_token, whatsapp_phone="(11) 98888-7777")
+
+    response = _patch(db_client, owner_token, buffer_min=5)
+
+    assert response.json()["whatsapp_phone"] == "+5511988887777"
+
+
 def test_paraguayan_salon_gets_paraguayan_timezone(db_client, make_user):
     token = access_token(db_client, make_user("beta", role="owner"))
 

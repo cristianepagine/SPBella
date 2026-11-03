@@ -47,9 +47,10 @@ function SettingsForm({ current }: { current: TenantSettings }) {
   const [step, setStep] = useState(current.slot_step_min);
   const [notice, setNotice] = useState(current.min_notice_min);
   const [daysAhead, setDaysAhead] = useState(current.max_days_ahead);
+  const [whatsapp, setWhatsapp] = useState(current.whatsapp_phone ?? "");
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => setSaved(false), [name, locale, timezone, buffer, step, notice, daysAhead]);
+  useEffect(() => setSaved(false), [name, locale, timezone, buffer, step, notice, daysAhead, whatsapp]);
 
   const display = formatLocale(i18n.language, current.country);
 
@@ -64,6 +65,7 @@ function SettingsForm({ current }: { current: TenantSettings }) {
         slot_step_min: step,
         min_notice_min: notice,
         max_days_ahead: daysAhead,
+        whatsapp_phone: whatsapp,
       })
       .then(
       () => true,
@@ -141,6 +143,16 @@ function SettingsForm({ current }: { current: TenantSettings }) {
             value: String(d),
             label: t("settings.upToDays", { count: d }),
           }))}
+        />
+
+        <TextField
+          label={t("settings.whatsapp")}
+          hint={t("settings.whatsappHint")}
+          type="tel"
+          autoComplete="off"
+          maxLength={32}
+          value={whatsapp}
+          onChange={(e) => setWhatsapp(e.target.value)}
         />
 
         <div className="mb-4">

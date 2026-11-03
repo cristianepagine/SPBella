@@ -41,6 +41,13 @@ export const CORE_NAV: NavItem[] = [
   },
   { id: "team", labelKey: "nav.team", to: salonPath.team, permission: "team.manage", order: 80 },
   {
+    id: "share",
+    labelKey: "nav.share",
+    to: salonPath.share,
+    permission: "settings.manage",
+    order: 85,
+  },
+  {
     id: "settings",
     labelKey: "nav.settings",
     to: salonPath.settings,

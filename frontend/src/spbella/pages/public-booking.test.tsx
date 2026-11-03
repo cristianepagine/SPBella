@@ -58,6 +58,24 @@ async function chooseUntilDetails() {
 }
 
 describe("página pública de agendamento", () => {
+  it("mostra o botão de WhatsApp com o número do salão", async () => {
+    setup({ "GET /t/alpha/booking/catalog": json({ ...catalog, whatsapp_phone: "+5511988887777" }) });
+    renderWithProviders(<App />, { route: "/alpha" });
+
+    const button = await screen.findByRole("link", { name: "Falar no WhatsApp" });
+    const href = button.getAttribute("href")!;
+    expect(href.startsWith("https://wa.me/5511988887777?text=")).toBe(true);
+    expect(decodeURIComponent(href)).toContain("Studio Alpha");
+  });
+
+  it("sem número cadastrado, não mostra o botão", async () => {
+    setup({ "GET /t/alpha/booking/catalog": json({ ...catalog, whatsapp_phone: null }) });
+    renderWithProviders(<App />, { route: "/alpha" });
+
+    await screen.findByRole("button", { name: /Corte feminino/ });
+    expect(screen.queryByRole("link", { name: "Falar no WhatsApp" })).not.toBeInTheDocument();
+  });
+
   it("mostra serviços com preço e só os profissionais que fazem o serviço", async () => {
     setup();
     renderWithProviders(<App />, { route: "/alpha" });

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { BookingFlow } from "../../core/pages/booking/BookingFlow";
+import { WhatsAppContact } from "../../core/pages/booking/WhatsAppContact";
 import { formatLocale, formatMoney } from "../../core/i18n/format";
 import { useCurrentTenant } from "../../core/pages/TenantLayout";
 
@@ -20,6 +21,7 @@ export function PublicHomePage() {
     <section className="rounded-2xl bg-white p-6 shadow-sm">
       <h1 className="text-2xl font-bold text-brand-900">{tenant.name}</h1>
       <p className="mb-6 mt-1 text-slate-600">{t("salon.publicIntro")}</p>
+      <WhatsAppContact />
       <BookingFlow
         offeringDetail={(o) =>
           typeof o.extras?.price_minor === "number"

@@ -152,5 +152,5 @@ Depois, atualize o [guia](docs/api/README.md) se mudou alguma convenção e regi
 
 ## Status
 
-Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 a SAL-11 concluídas.
-Próxima: SAL-12 (link curto, botão de WhatsApp e QR code). A LGPD-01 vem depois das SAL. Ver [backlog](docs/backlog.md).
+Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 a SAL-12 concluídas.
+Próxima: SAL-13 (cancelar ou remarcar pelo link recebido). A LGPD-01 vem depois das SAL. Ver [backlog](docs/backlog.md).

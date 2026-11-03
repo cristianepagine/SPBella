@@ -27,6 +27,7 @@ const AgendaPage = lazy(() => import("./core/pages/app/agenda/AgendaPage").then(
 const StaffHomePage = lazy(() => import("./core/pages/app/HomePage").then((m) => ({ default: m.StaffHomePage })));
 const ProviderPage = lazy(() => import("./core/pages/app/providers/ProviderPage").then((m) => ({ default: m.ProviderPage })));
 const ProvidersPage = lazy(() => import("./core/pages/app/providers/ProvidersPage").then((m) => ({ default: m.ProvidersPage })));
+const SharePage = lazy(() => import("./core/pages/app/SharePage").then((m) => ({ default: m.SharePage })));
 const SettingsPage = lazy(() => import("./core/pages/app/SettingsPage").then((m) => ({ default: m.SettingsPage })));
 const TeamPage = lazy(() => import("./core/pages/app/TeamPage").then((m) => ({ default: m.TeamPage })));
 const ServicesPage = lazy(() => import("./spbella/pages/ServicesPage").then((m) => ({ default: m.ServicesPage })));
@@ -39,7 +40,7 @@ export function App() {
   const { t } = useTranslation();
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col px-4 py-4 md:max-w-3xl">
-      <header className="mb-4 flex justify-end">
+      <header className="mb-4 flex justify-end print:hidden">
         <LanguageSwitcher />
       </header>
       <main className="flex-1">
@@ -77,6 +78,7 @@ export function App() {
                     </Route>
                     <Route element={<RequirePermission permission="settings.manage" />}>
                       <Route path="settings" element={<SettingsPage />} />
+                      <Route path="share" element={<SharePage />} />
                     </Route>
                     <Route path="*" element={<NotFoundPage />} />
                   </Route>

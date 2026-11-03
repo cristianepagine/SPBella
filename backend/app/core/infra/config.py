@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=("../.env", ".env"), extra="ignore")
 
     app_env: Literal["development", "test", "production"] = "development"
-    app_version: str = "0.14.0"
+    app_version: str = "0.15.0"
 
     # Papel da APLICAÇÃO: sem acesso direto às tabelas dos salões; só entra em um salão
     # com SET LOCAL ROLE (ver app/core/infra/tenancy.py).

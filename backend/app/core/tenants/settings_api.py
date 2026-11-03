@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from app.core.accounts.auth import require_permission
 from app.core.accounts.models import User
 from app.core.accounts.permissions import Permission, permission_doc
+from app.core.customers.phones import InvalidPhoneError, normalize_phone
 from app.core.infra.errors import ApiError, FieldError, error_responses
 from app.core.infra.logging import log
 from app.core.infra.tenancy import (
@@ -76,6 +77,10 @@ class TenantSettings(BaseModel):
     max_days_ahead: int = Field(
         description="Página pública: até quantos dias à frente dá para marcar (1 a 365)."
     )
+    whatsapp_phone: str | None = Field(
+        description="Página pública: número do botão de WhatsApp (E.164). Vazio = sem botão.",
+        examples=["+5511988887777"],
+    )
 
 
 class SettingsChanges(BaseModel):
@@ -86,9 +91,26 @@ class SettingsChanges(BaseModel):
     slot_step_min: SlotStep | None = None
     min_notice_min: int | None = Field(default=None, ge=0, le=10080, multiple_of=15)
     max_days_ahead: int | None = Field(default=None, ge=1, le=365)
+    whatsapp_phone: str | None = Field(
+        default=None, max_length=32, description="Como a pessoa digita. Texto vazio tira o botão."
+    )
 
 
-RULE_FIELDS = ("buffer_min", "slot_step_min", "min_notice_min", "max_days_ahead")
+RULE_FIELDS = ("buffer_min", "slot_step_min", "min_notice_min", "max_days_ahead", "whatsapp_phone")
+
+
+def _whatsapp_or_none(raw: str, country: str) -> str | None:
+    if not raw.strip():
+        return None
+    try:
+        return normalize_phone(raw, country)
+    except InvalidPhoneError:
+        raise ApiError(
+            422,
+            "validation_error",
+            "Telefone inválido",
+            fields=[FieldError(field="whatsapp_phone", code="invalid_phone")],
+        ) from None
 
 
 def _out(tenant: TenantContext, db: DbSession) -> TenantSettings:
@@ -101,6 +123,7 @@ def _out(tenant: TenantContext, db: DbSession) -> TenantSettings:
         slot_step_min=rules.slot_step_min,
         min_notice_min=rules.min_notice_min,
         max_days_ahead=rules.max_days_ahead,
+        whatsapp_phone=rules.whatsapp_phone,
         name=tenant.name,
         locale=tenant.locale,
         timezone=tenant.timezone,
@@ -132,7 +155,9 @@ def get_settings(tenant: TenantDep, db: DbSession, _user: SettingsManager) -> Te
         "- `slot_step_min`: passo dos horários livres (5, 10, 15, 20, 30 ou 60).\n"
         "- `min_notice_min`: antecedência mínima na página pública (0 a 10080, de 15 em 15).\n"
         "- `max_days_ahead`: até quantos dias à frente a página pública aceita (1 a 365).\n"
-        "- `422 validation_error` com `fields[0].code = invalid_timezone`: fuso desconhecido.\n"
+        "- `whatsapp_phone`: número do botão na página pública; texto vazio tira o botão.\n"
+        "- `422 validation_error` com `fields[0].code`: `invalid_timezone` (fuso desconhecido) ou "
+        "`invalid_phone`.\n"
         "- A moeda não muda por aqui (ver `currency`)."
     ),
     response_model=TenantSettings,
@@ -147,6 +172,8 @@ def change_settings(
     user: SettingsManager,
 ) -> TenantSettings:
     changes = payload.model_dump(exclude_none=True)
+    if "whatsapp_phone" in changes:
+        changes["whatsapp_phone"] = _whatsapp_or_none(changes["whatsapp_phone"], tenant.country)
     rules_changes = {k: changes.pop(k) for k in RULE_FIELDS if k in changes}
     if rules_changes:
         rules = db.get(ScheduleSettings, 1)

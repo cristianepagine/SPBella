@@ -182,3 +182,5 @@ class ScheduleSettings(TenantBase):
     # Página pública: antecedência mínima para marcar (minutos) e até quantos dias à frente.
     min_notice_min: Mapped[int] = mapped_column(server_default=text("60"))
     max_days_ahead: Mapped[int] = mapped_column(SmallInteger, server_default=text("60"))
+    # Página pública: número do botão de WhatsApp (E.164); vazio = sem botão.
+    whatsapp_phone: Mapped[str | None] = mapped_column(String(16))

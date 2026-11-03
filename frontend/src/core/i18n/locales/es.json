@@ -122,7 +122,8 @@
     "settings": "Configuración",
     "customers": "Clientes",
     "providers": "Profesionales",
-    "agenda": "Agenda"
+    "agenda": "Agenda",
+    "share": "Difundir"
   },
   "roles": {
     "owner": "Dueño(a)",
@@ -187,7 +188,9 @@
     "daysAhead": "Hasta cuándo se puede agendar (página pública)",
     "daysAheadHint": "Cuántos días hacia adelante la página pública muestra horarios.",
     "upToDays_one": "Hasta {{count}} día adelante",
-    "upToDays_other": "Hasta {{count}} días adelante"
+    "upToDays_other": "Hasta {{count}} días adelante",
+    "whatsapp": "WhatsApp del establecimiento (opcional)",
+    "whatsappHint": "Aparece como botón en la página pública. Dejalo vacío para no mostrarlo."
   },
   "currency": {
     "BRL": "Real (R$)",
@@ -424,6 +427,22 @@
     "confirm": "Confirmar reserva",
     "doneTitle": "¡Turno reservado!",
     "doneText": "{{service}} con {{provider}}, {{day}} a las {{time}}. ¡Te esperamos!",
-    "again": "Reservar otro turno"
+    "again": "Reservar otro turno",
+    "whatsappButton": "Hablar por WhatsApp",
+    "whatsappMessage": "¡Hola! Vengo de la página de reservas de {{salon}}."
+  },
+  "share": {
+    "title": "Difundir",
+    "intro": "Compartí tu página para que los clientes reserven solos.",
+    "linkLabel": "Enlace de tu página",
+    "copy": "Copiar enlace",
+    "copied": "¡Enlace copiado!",
+    "copyFailed": "No se pudo copiar solo. El enlace está seleccionado: copialo desde el celular o el teclado.",
+    "sendWhatsapp": "Enviar por WhatsApp",
+    "message": "Reservá tu turno en {{salon}}: {{link}}",
+    "instagramHint": "En Instagram, pegá el enlace en la biografía del perfil.",
+    "posterCall": "Apuntá la cámara del celular y reservá tu turno",
+    "qrLabel": "Código QR para {{link}}",
+    "print": "Imprimir cartel"
   }
 }

@@ -18,7 +18,13 @@ from app.core.customers.phones import normalize_phone
 from app.core.customers.search import normalize_text
 from app.core.infra.security import hash_password
 from app.core.infra.tenancy import TenantContext
-from app.core.scheduling.models import Appointment, Offering, Provider, WorkingHours
+from app.core.scheduling.models import (
+    Appointment,
+    Offering,
+    Provider,
+    ScheduleSettings,
+    WorkingHours,
+)
 from app.core.tenants.provisioning import DEMO_PASSWORD
 from app.core.vertical import DemoTenant
 from app.spbella.seed import SAMPLE_SERVICES
@@ -116,8 +122,13 @@ def seed_demo_salon(session: Session, tenant: TenantContext) -> None:
         )
         session.add(provider)
     session.flush()
+    session.get(ScheduleSettings, 1).whatsapp_phone = normalize_phone(
+        DEMO_WHATSAPP[tenant.locale], tenant.country
+    )
     _demo_appointments(session, tenant)
 
+
+DEMO_WHATSAPP = {"pt-BR": "(11) 98111-0000", "es": "0981 110000"}
 
 DEMO_CUSTOMERS = {
     "pt-BR": [

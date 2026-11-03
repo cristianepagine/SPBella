@@ -471,7 +471,7 @@ export interface paths {
         };
         /**
          * Serviços e profissionais da página
-         * @description O que o cliente pode escolher, sem dados pessoais: serviços ativos (com o preço, no salão), profissionais ativos (só o nome de exibição e a cor) e as regras de antecedência.
+         * @description O que o cliente pode escolher, sem dados pessoais: serviços ativos (com o preço, no salão), profissionais ativos (só o nome de exibição e a cor), as regras de antecedência e o WhatsApp do estabelecimento.
          */
         get: operations["get_catalog_t__slug__booking_catalog_get"];
         put?: never;
@@ -783,7 +783,8 @@ export interface paths {
          *     - `slot_step_min`: passo dos horários livres (5, 10, 15, 20, 30 ou 60).
          *     - `min_notice_min`: antecedência mínima na página pública (0 a 10080, de 15 em 15).
          *     - `max_days_ahead`: até quantos dias à frente a página pública aceita (1 a 365).
-         *     - `422 validation_error` com `fields[0].code = invalid_timezone`: fuso desconhecido.
+         *     - `whatsapp_phone`: número do botão na página pública; texto vazio tira o botão.
+         *     - `422 validation_error` com `fields[0].code`: `invalid_timezone` (fuso desconhecido) ou `invalid_phone`.
          *     - A moeda não muda por aqui (ver `currency`).
          */
         patch: operations["change_settings_t__slug__settings_patch"];
@@ -1179,6 +1180,12 @@ export interface components {
             privacy_policy_version: string;
             /** Providers */
             providers: components["schemas"]["PublicProvider"][];
+            /**
+             * Whatsapp Phone
+             * @description WhatsApp do estabelecimento (E.164), se o dono cadastrou.
+             * @example +5511988887777
+             */
+            whatsapp_phone: string | null;
         };
         /** ChangePasswordIn */
         ChangePasswordIn: {
@@ -1893,6 +1900,11 @@ export interface components {
             slot_step_min?: (5 | 10 | 15 | 20 | 30 | 60) | null;
             /** Timezone */
             timezone?: string | null;
+            /**
+             * Whatsapp Phone
+             * @description Como a pessoa digita. Texto vazio tira o botão.
+             */
+            whatsapp_phone?: string | null;
         };
         /** StatusChange */
         StatusChange: {
@@ -2026,6 +2038,12 @@ export interface components {
              * @description Fusos sugeridos para o país.
              */
             timezone_options: string[];
+            /**
+             * Whatsapp Phone
+             * @description Página pública: número do botão de WhatsApp (E.164). Vazio = sem botão.
+             * @example +5511988887777
+             */
+            whatsapp_phone: string | null;
         };
         /** TimeOffOut */
         TimeOffOut: {

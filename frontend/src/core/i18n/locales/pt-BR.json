@@ -122,7 +122,8 @@
     "settings": "Configurações",
     "customers": "Clientes",
     "providers": "Profissionais",
-    "agenda": "Agenda"
+    "agenda": "Agenda",
+    "share": "Divulgar"
   },
   "roles": {
     "owner": "Dono(a)",
@@ -187,7 +188,9 @@
     "daysAhead": "Até quando dá para marcar (página pública)",
     "daysAheadHint": "Quantos dias à frente a página pública mostra horários.",
     "upToDays_one": "Até {{count}} dia à frente",
-    "upToDays_other": "Até {{count}} dias à frente"
+    "upToDays_other": "Até {{count}} dias à frente",
+    "whatsapp": "WhatsApp do estabelecimento (opcional)",
+    "whatsappHint": "Aparece como botão na página pública. Deixe vazio para não mostrar."
   },
   "currency": {
     "BRL": "Real (R$)",
@@ -424,6 +427,22 @@
     "confirm": "Confirmar agendamento",
     "doneTitle": "Horário marcado!",
     "doneText": "{{service}} com {{provider}}, {{day}} às {{time}}. Até lá!",
-    "again": "Marcar outro horário"
+    "again": "Marcar outro horário",
+    "whatsappButton": "Falar no WhatsApp",
+    "whatsappMessage": "Olá! Vim pela página de agendamento de {{salon}}."
+  },
+  "share": {
+    "title": "Divulgar",
+    "intro": "Compartilhe sua página para os clientes agendarem sozinhos.",
+    "linkLabel": "Link da sua página",
+    "copy": "Copiar link",
+    "copied": "Link copiado!",
+    "copyFailed": "Não deu para copiar sozinho. O link está selecionado: copie pelo celular ou pelo teclado.",
+    "sendWhatsapp": "Enviar pelo WhatsApp",
+    "message": "Agende seu horário em {{salon}}: {{link}}",
+    "instagramHint": "No Instagram, cole o link na bio do perfil.",
+    "posterCall": "Aponte a câmera do celular e agende seu horário",
+    "qrLabel": "QR code para {{link}}",
+    "print": "Imprimir cartaz"
   }
 }

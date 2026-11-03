@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../../../App";
-import { json, mockApi, salon, session } from "../../../test/api";
+import { apiError, json, mockApi, salon, session } from "../../../test/api";
 import { renderWithProviders } from "../../../test/render";
 import { resetSessions } from "../../auth/session";
 import i18n, { changeLanguage, clearLanguagePreference } from "../../i18n";
@@ -25,6 +25,7 @@ const settings = (overrides = {}) => ({
   timezone_options: ["America/Sao_Paulo", "America/Manaus"],
   buffer_min: 0,
   slot_step_min: 15,
+  whatsapp_phone: null,
   ...overrides,
 });
 
@@ -60,7 +61,27 @@ describe("configurações do salão", () => {
       timezone: "America/Manaus",
       buffer_min: 0,
       slot_step_min: 15,
+      whatsapp_phone: "",
     });
+  });
+
+  it("salva o WhatsApp do salão e mostra o erro de número inválido", async () => {
+    const requests = mockApi(
+      asOwner({
+        "GET /t/alpha/settings": json(settings()),
+        "PATCH /t/alpha/settings": apiError(422, "validation_error", [
+          { field: "whatsapp_phone", code: "invalid_phone" },
+        ]),
+      }),
+    );
+    renderWithProviders(<App />, { route: "/alpha/app/settings" });
+
+    await userEvent.type(await screen.findByLabelText("WhatsApp do estabelecimento (opcional)"), "123");
+    await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+    expect(await screen.findByText(/Esse telefone não parece certo/)).toBeInTheDocument();
+    const patch = requests.find((r) => r.method === "PATCH")!;
+    expect((await patch.json()).whatsapp_phone).toBe("123");
   });
 
   it("define o intervalo entre atendimentos e o passo dos horários", async () => {

@@ -135,7 +135,7 @@ describe("serviços", () => {
 
     const nav = await screen.findByRole("navigation", { name: "Menu" });
     expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual([
-      "Início", "Agenda", "Clientes", "Serviços", "Profissionais", "Equipe", "Configurações",
+      "Início", "Agenda", "Clientes", "Serviços", "Profissionais", "Equipe", "Divulgar", "Configurações",
     ]);  // prettier-ignore
     unmount();
     resetSessions();

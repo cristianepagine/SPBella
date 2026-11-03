@@ -2,6 +2,12 @@
 
 Mudanças visíveis para quem consome a API. Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.15.0] - 2026-11-03
+
+### Adicionado
+- `whatsapp_phone` em `GET/PATCH /t/{slug}/settings` (número do botão da página pública; texto
+  vazio tira o botão; `422` com `invalid_phone`) e em `GET /t/{slug}/booking/catalog`.
+
 ## [0.14.0] - 2026-11-03
 
 ### Adicionado
