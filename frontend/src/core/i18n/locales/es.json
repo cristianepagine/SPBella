@@ -48,7 +48,10 @@
       "too_simple": "La contraseña es muy simple. Mezclá letras y números distintos.",
       "contains_email": "La contraseña no puede contener tu correo.",
       "same_as_current": "La contraseña nueva tiene que ser distinta de la actual."
-    }
+    },
+    "email_taken": "Ya hay alguien con ese correo en el equipo.",
+    "cannot_change_self": "No podés cambiar tu propio perfil ni desactivarte.",
+    "last_owner": "Tiene que haber al menos un dueño activo."
   },
   "tenant": {
     "loading": "Cargando…",
@@ -83,5 +86,44 @@
     "dashboardIntro": "Muy pronto la agenda va a aparecer aquí.",
     "changePasswordLink": "Cambiar contraseña",
     "logout": "Salir"
+  },
+  "nav": {
+    "label": "Menú",
+    "home": "Inicio",
+    "team": "Equipo"
+  },
+  "roles": {
+    "owner": "Dueño(a)",
+    "reception": "Recepción",
+    "professional": "Profesional"
+  },
+  "home": {
+    "intro": {
+      "owner": "Aquí administrás todo: equipo, configuración y, muy pronto, servicios, agenda e informes.",
+      "reception": "Aquí vas a manejar la agenda y los clientes. La agenda llega muy pronto.",
+      "professional": "Aquí va a aparecer tu agenda. Llega muy pronto."
+    }
+  },
+  "forbidden": {
+    "title": "Sin acceso",
+    "text": "Tu perfil no tiene acceso a esta área. Si lo necesitás, hablá con el dueño o la dueña.",
+    "back": "Volver al inicio"
+  },
+  "team": {
+    "title": "Equipo",
+    "addTitle": "Agregar persona",
+    "name": "Nombre",
+    "role": "Perfil",
+    "add": "Agregar",
+    "you": "vos",
+    "inactive": "Desactivado",
+    "pendingFirstLogin": "Todavía no ingresó por primera vez",
+    "changeRole": "Perfil de {{name}}",
+    "deactivate": "Desactivar",
+    "activate": "Reactivar",
+    "newPassword": "Nueva contraseña provisoria",
+    "passwordFor": "Contraseña provisoria de {{name}}:",
+    "passwordHint": "Pasale esta contraseña a la persona. Ingresa con el correo {{email}} y va a crear una contraseña propia. Esta contraseña no se muestra de nuevo.",
+    "passwordDone": "Ya la anoté"
   }
 }

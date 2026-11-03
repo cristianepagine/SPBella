@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.accounts import api as accounts_api
+from app.core.accounts import team_api
 from app.core.infra.config import Settings
 from app.core.infra.db import Databases
 from app.core.infra.errors import register_error_handlers
@@ -29,6 +30,10 @@ CORE_OPENAPI_TAGS = [
     {
         "name": "Login",
         "description": "Entrar, sair, renovar a sessão e trocar ou redefinir a senha.",
+    },
+    {
+        "name": "Equipe",
+        "description": "Quem tem acesso ao sistema e com qual perfil (só o dono).",
     },
 ]
 
@@ -74,6 +79,7 @@ def build_app(settings: Settings, vertical: Vertical) -> FastAPI:
     app.include_router(system_api.router)
     app.include_router(tenants_api.router)
     app.include_router(accounts_api.router)
+    app.include_router(team_api.router)
     for router in vertical.routers:
         app.include_router(router)
     return app

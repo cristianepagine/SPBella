@@ -13,7 +13,6 @@ Papéis no Postgres:
 - O administrador é dono dos schemas e das tabelas; os papéis de salão não podem alterar estrutura.
 """
 
-import re
 import uuid
 from dataclasses import dataclass
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -26,7 +25,12 @@ from app.core.accounts.models import User
 from app.core.infra.config import Settings
 from app.core.infra.db import Databases, resolve_dsn_ref
 from app.core.infra.migrations import upgrade_public, upgrade_tenant
-from app.core.infra.security import generate_temporary_password, hash_password
+from app.core.infra.security import (
+    generate_temporary_password,
+    hash_password,
+    is_valid_email,
+    normalize_email,
+)
 from app.core.infra.tenancy import (
     TenantContext,
     is_valid_slug,
@@ -40,7 +44,6 @@ COUNTRY_DEFAULTS = {
     "BR": {"locale": "pt-BR", "timezone": "America/Sao_Paulo", "currency": "BRL"},
     "PY": {"locale": "es", "timezone": "America/Asuncion", "currency": "PYG"},
 }
-EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 MIGRATION_LOCK_KEY = 7_412_026_001  # chave do advisory lock de "tenants migrate"
 PLANS = ("base", "whatsapp_api")
 
@@ -191,8 +194,8 @@ def create_tenant(
         )
     if country not in COUNTRY_DEFAULTS:
         raise ProvisioningError("país deve ser BR ou PY")
-    owner_email = owner_email.strip().lower()
-    if not EMAIL_PATTERN.match(owner_email):
+    owner_email = normalize_email(owner_email)
+    if not is_valid_email(owner_email):
         raise ProvisioningError("e-mail do dono inválido")
     if not name.strip() or not owner_name.strip():
         raise ProvisioningError("nome do salão e do dono são obrigatórios")

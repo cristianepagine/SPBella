@@ -2,6 +2,15 @@
 
 Mudanças visíveis para quem consome a API. Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.5.0] - 2026-11-02
+
+### Adicionado
+- `user.permissions` nas respostas de login, refresh, troca de senha e `GET /auth/me`.
+- Equipe (só quem tem `team.manage`): `GET /t/{slug}/team`, `POST /t/{slug}/team`,
+  `PATCH /t/{slug}/team/{member_id}`, `POST /t/{slug}/team/{member_id}/reset-password`.
+- Extensões no `openapi.json`: `x-required-permission` e `x-allowed-roles` em cada rota protegida.
+- Códigos de erro: `email_taken`, `cannot_change_self`, `last_owner`.
+
 ## [0.4.0] - 2026-11-02
 
 ### Alterado

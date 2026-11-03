@@ -81,6 +81,14 @@ jobs:
           TOKEN=$(python3 -c "import json; print(json.load(open('login.json'))['access_token'])")
           curl -fsS http://localhost:8000/t/studio-bella/auth/me -H "Authorization: Bearer $TOKEN"
           curl -fsS -b cookies.txt -X POST http://localhost:8000/t/studio-bella/auth/refresh -o /dev/null
+          # recepção não acessa a equipe (403); dono acessa
+          curl -fsS -X POST http://localhost:8000/t/studio-bella/auth/login \
+            -H 'Content-Type: application/json' \
+            -d '{"email":"recepcao@studio-bella.demo","password":"demo-spbella"}' -o recepcao.json
+          RECEPCAO=$(python3 -c "import json; print(json.load(open('recepcao.json'))['access_token'])")
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/t/studio-bella/team \
+            -H "Authorization: Bearer $RECEPCAO")" = "403"
+          curl -fsS http://localhost:8000/t/studio-bella/team -H "Authorization: Bearer $TOKEN" -o /dev/null
           # o token de um salão não vale no outro
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/t/salon-asuncion/auth/me \
             -H "Authorization: Bearer $TOKEN")" = "401"

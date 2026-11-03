@@ -39,8 +39,14 @@ npm run dev                       # app em http://localhost:5173
 ```
 
 - Abra <http://localhost:5173/studio-bella> (Brasil) ou <http://localhost:5173/salon-asuncion> (Paraguai)
-  e clique em **Área do salão: entrar**. Donos de demonstração: `dono@studio-bella.demo` e
-  `duena@salon-asuncion.demo`, senha `demo-spbella`.
+  e clique em **Área do salão: entrar**. Cada salão de demonstração tem um acesso de cada perfil,
+  todos com a senha `demo-spbella`:
+
+  | Perfil | Studio Bella (BR) | Salón Asunción (PY) |
+  |---|---|---|
+  | Dono | `dono@studio-bella.demo` | `duena@salon-asuncion.demo` |
+  | Recepção | `recepcao@studio-bella.demo` | `recepcion@salon-asuncion.demo` |
+  | Profissional | `profissional@studio-bella.demo` | `profesional@salon-asuncion.demo` |
 - Em desenvolvimento, os e-mails (ex.: "esqueci a senha") aparecem no terminal da API
   (`docker compose logs -f api`).
 - Documentação interativa da API: <http://localhost:8000/docs> (Swagger) e <http://localhost:8000/redoc>.
@@ -127,11 +133,13 @@ Depois, atualize o [guia](docs/api/README.md) se mudou alguma convenção e regi
 - **Sem dados pessoais nos logs.** Registre IDs, não nomes, telefones ou e-mails.
 - **Nenhum segredo no repositório.** Só `.env.example`.
 - **Datas em UTC** no banco e na API. **Dinheiro em inteiro** (`*_minor`).
-- Permissões são **sempre** verificadas no back-end (`CurrentUser`, `OwnerUser`, `StaffUser` em
-  `backend/app/core/accounts/auth.py`). O front só esconde botões.
+- Permissões são **sempre** verificadas no back-end: toda rota de salão usa
+  `require_permission(Permission.X)` e declara `openapi_extra=permission_doc(Permission.X)`
+  (`backend/app/core/accounts/`). O front só esconde botões. O teste `test_permissions.py`
+  falha se uma rota nova esquecer disso.
 - Todo formulário público usa Turnstile e limite de tentativas.
 
 ## Status
 
-Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 concluída (exceto os serviços
-de exemplo, que chegam com SAL-05). Próxima: SAL-02 (telas por perfil). Ver [backlog](docs/backlog.md).
+Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 e SAL-02 concluídas (os
+serviços de exemplo do SAL-01 chegam com SAL-05). Próxima: SAL-03 (configurações e idioma do salão). Ver [backlog](docs/backlog.md).

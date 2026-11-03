@@ -11,7 +11,7 @@ Ordem: SAL-01 a SAL-04 primeiro, isolados no **core** (ver [template.md](templat
 | ID | Épico | História | Critério de aceite | Status |
 |---|---|---|---|---|
 | SAL-01 | Base | Como Cristiane, crio um novo cliente (tenant) por comando | Um comando cria schema, aplica migrações, cria o dono e carrega serviços de exemplo em menos de 1 minuto | 🟡 Feita, exceto os **serviços de exemplo**, que entram com a tabela de serviços (SAL-05) pelo gancho `seed_tenant`, já pronto e testado |
-| SAL-02 | Base | Como usuário, entro com e-mail e senha e vejo só o que meu perfil permite | Dono, recepção e profissional têm telas e rotas distintas; acesso indevido retorna 403 (testado) | 🟡 Login, perfis e 403 prontos. Faltam o menu e as telas por perfil |
+| SAL-02 | Base | Como usuário, entro com e-mail e senha e vejo só o que meu perfil permite | Dono, recepção e profissional têm telas e rotas distintas; acesso indevido retorna 403 (testado) | ✅ Feita. Matriz de permissões, menu e início por perfil, tela de equipe (dono), varredura automática de 403 em todas as rotas |
 | SAL-03 | Base | Como dono, uso o sistema em PT ou ES | Todos os textos vêm de arquivos de tradução; troca de idioma sem recarregar | 🟡 Textos e troca prontos. Falta a tela de configurações do salão (idioma, fuso, moeda) |
 | SAL-04 | Base | Como dono, vejo quem alterou dados de clientes | Log de auditoria com usuário, ação e data; consentimento registrado no cadastro do cliente | |
 | SAL-05 | Cadastros | Como dono, cadastro serviços com nome, preço e duração | Serviço pode ser ativado ou desativado; preço na moeda do tenant | |
@@ -42,7 +42,6 @@ Ordem: SAL-01 a SAL-04 primeiro, isolados no **core** (ver [template.md](templat
 - **Backup contínuo (WAL-G → R2, PITR).** Recomendado logo após o MVP: o backup diário pode perder até 24 h.
 - **Papel com login por tenant + PgBouncer.** Fecha o limite de `SET ROLE` descrito em
   [arquitetura.md](arquitetura.md#isolamento-entre-salões-história-2). Custo: um pool por tenant.
-- **Cadastro da equipe pelo dono** (convidar recepção e profissionais). Proposto para entrar junto com SAL-06.
 - **Limite de tentativas compartilhado** (no Postgres), se a API passar a rodar em mais de um processo.
 - **Suspender, reativar e excluir tenant pela CLI** (hoje: só criar; suspender é um UPDATE manual).
 - Comissões dos profissionais (fora do escopo por decisão comercial).

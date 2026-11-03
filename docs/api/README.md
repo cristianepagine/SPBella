@@ -126,6 +126,9 @@ Códigos específicos de negócio são listados na descrição de cada rota no `
 | 401 | `refresh_invalid` | Sessão encerrada ou vencida | Volta para o login |
 | 401 | `refresh_superseded` | Outra aba acabou de renovar a sessão | Tenta `/refresh` de novo uma vez |
 | 403 | `forbidden` | O perfil não tem permissão para a ação | Mostra aviso; não tenta de novo |
+| 409 | `email_taken` | Já existe alguém com esse e-mail na equipe | Mostra o erro no campo |
+| 409 | `cannot_change_self` | Tentou mudar o próprio perfil ou se desativar | Mostra o aviso |
+| 409 | `last_owner` | A mudança deixaria o salão sem nenhum dono ativo | Mostra o aviso |
 | 403 | `password_change_required` | Senha provisória ainda não trocada | Leva à troca de senha |
 | 403 | `forbidden_origin` | Pedido com `Origin` que não é o do app | — |
 | 422 | `weak_password` | Senha nova fraca; o motivo está em `fields[0].code` | Mostra o motivo |
@@ -150,17 +153,33 @@ Regras para o app (o front já segue todas):
 - Ao abrir o app, chame `/refresh` para recuperar a sessão sem pedir a senha de novo.
 - Se várias chamadas recebem 401 ao mesmo tempo, faça **um só** `/refresh` e reaproveite o resultado.
 
-### Perfis
+### Perfis e permissões
 
-| Perfil | `role` | Pode |
-|---|---|---|
-| Dono | `owner` | Tudo |
-| Recepção | `reception` | Agenda, clientes e pagamentos (a partir das próximas histórias) |
-| Profissional | `professional` | A própria agenda |
+As rotas exigem uma **permissão**, e cada perfil tem um conjunto fixo de permissões. A matriz
+fica em `backend/app/core/accounts/permissions.py` e é a fonte única de verdade:
 
-O perfil é lido do banco a cada pedido. O campo `role` do token serve só para o app decidir o que
-mostrar. Cada rota documenta no `openapi.json` quais perfis aceita; perfil errado recebe
-`403 forbidden`.
+| Permissão | O que libera | Dono | Recepção | Profissional |
+|---|---|:-:|:-:|:-:|
+| `team.manage` | Cadastrar e desativar a equipe | ✅ | | |
+| `settings.manage` | Configurações do salão (SAL-03) | ✅ | | |
+| `audit.view` | Ver quem alterou dados de clientes (SAL-04) | ✅ | | |
+| `catalog.manage` | Serviços e preços (SAL-05) | ✅ | | |
+| `providers.manage` | Profissionais e jornadas (SAL-06) | ✅ | | |
+| `customers.manage` | Cadastrar e buscar clientes (SAL-07) | ✅ | ✅ | |
+| `agenda.view_all` | Agenda de todos os profissionais (SAL-08) | ✅ | ✅ | |
+| `agenda.view_own` | A própria agenda (SAL-08) | ✅ | ✅ | ✅ |
+| `agenda.manage` | Criar, mover, cancelar, marcar falta (SAL-09) | ✅ | ✅ | |
+| `time_off.manage` | Bloqueios: almoço, férias, feriado (SAL-10) | ✅ | | |
+| `reports.view` | Relatórios e Excel (SAL-16) | ✅ | | |
+
+- O perfil é lido do banco **a cada pedido**. Mudar o perfil de alguém vale no pedido seguinte,
+  mesmo com o token antigo.
+- `user.permissions` (no login e em `/me`) é a lista de permissões da pessoa. O app usa essa
+  lista para montar o menu, e o servidor confere de novo em cada rota.
+- Cada rota protegida traz no `openapi.json` os campos `x-required-permission` (a permissão) e
+  `x-allowed-roles` (os perfis que a têm). Sem a permissão: `403 forbidden`.
+- Um teste (`backend/tests/test_permissions.py`) percorre **todas** as rotas de salão com os três
+  perfis e confirma o 403. Uma rota nova sem permissão declarada faz o teste falhar.
 
 ### Senha provisória
 
@@ -341,3 +360,43 @@ curl -X POST http://localhost:8000/t/studio-bella/auth/reset-password \
 ```
 
 Responde 204 e encerra todas as sessões da pessoa.
+
+### Equipe
+
+Só para quem tem `team.manage` (hoje, o dono). Ainda não há envio de e-mail (SAL-14): a senha
+provisória volta na resposta **uma única vez**, e o dono a repassa à pessoa.
+
+#### `GET /t/{slug}/team` — listar
+
+```json
+[
+  {
+    "id": "7f1c2a4e-...", "name": "Rita Recepção", "email": "recepcao@studio-bella.demo",
+    "role": "reception", "is_active": true, "must_change_password": false,
+    "last_login_at": "2026-11-02T13:05:00Z", "created_at": "2026-11-01T10:00:00Z"
+  }
+]
+```
+
+#### `POST /t/{slug}/team` — cadastrar
+
+```bash
+curl -X POST http://localhost:8000/t/studio-bella/team -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"name": "Carla Souza", "email": "carla@exemplo.com", "role": "professional"}'
+```
+
+```json
+{ "member": { "id": "...", "role": "professional", "must_change_password": true, "...": "..." },
+  "temporary_password": "Xy7kq2PvA9mN" }
+```
+
+#### `PATCH /t/{slug}/team/{member_id}` — alterar
+
+Corpo com qualquer combinação de `name`, `role` e `is_active`. Desativar encerra as sessões da
+pessoa na hora. Ninguém muda o próprio perfil nem se desativa (`409 cannot_change_self`), e
+precisa sobrar pelo menos um dono ativo (`409 last_owner`).
+
+#### `POST /t/{slug}/team/{member_id}/reset-password` — nova senha provisória
+
+Devolve `{member, temporary_password}`, obriga a troca no próximo login e encerra as sessões.

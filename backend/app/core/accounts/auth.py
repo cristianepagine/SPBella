@@ -16,6 +16,7 @@ from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.accounts.models import User
+from app.core.accounts.permissions import Permission, permissions_for
 from app.core.infra.config import Settings
 from app.core.infra.errors import ApiError
 from app.core.infra.tenancy import DbSession, TenantContext, TenantDep
@@ -107,16 +108,17 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 UserPendingPasswordChange = Annotated[User, Depends(get_user_even_with_pending_password_change)]
 
 
-def require_roles(*roles: str):
-    """Uso: `user: Annotated[User, require_roles("owner", "reception")]`."""
+def require_permission(permission: Permission):
+    """Uso na rota:
+
+        user: Annotated[User, require_permission(Permission.TEAM_MANAGE)]
+
+    e, no decorator, `openapi_extra=permission_doc(Permission.TEAM_MANAGE)`.
+    """
 
     def dependency(user: CurrentUser) -> User:
-        if user.role not in roles:
+        if permission not in permissions_for(user.role):
             raise ApiError(403, "forbidden", "Seu perfil não tem permissão")
         return user
 
     return Depends(dependency)
-
-
-OwnerUser = Annotated[User, require_roles("owner")]
-StaffUser = Annotated[User, require_roles("owner", "reception")]

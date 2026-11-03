@@ -42,12 +42,20 @@ Módulos do core no back-end:
    | `seed_tenant(session, tenant)` | Dados iniciais de **todo** tenant novo. Roda dentro do `tenants create`, na mesma transação do dono: se falhar, o tenant inteiro é desfeito. |
    | `demo_tenants`, `seed_demo(session, tenant)` | Tenants de demonstração (`tenants seed-demo`) |
 
+   No front, a vertical acrescenta itens ao menu da equipe (`NAV` em `src/App.tsx`, no formato
+   `NavItem` de `src/core/layout/nav.ts`) e as rotas dela dentro de `StaffLayout`.
+
 3. **Migrações:** um único histórico do Alembic. Uma migração da vertical pode depender de
    uma do core (`down_revision`), nunca o contrário.
 4. **Textos:** o core escreve neutro ("equipe", "estabelecimento"). A vertical troca o
    vocabulário sobrescrevendo as mesmas chaves ("salão") e acrescenta as suas.
 5. **Na dúvida, fica na vertical.** Algo só sobe para o core quando um segundo sistema
    precisar dele. Assim o core não cresce com abstrações que ninguém usa.
+6. **Permissões:** os perfis (dono, recepção, profissional) e a matriz de permissões são do core
+   (`app/core/accounts/permissions.py`). Uma rota da vertical usa
+   `require_permission(Permission.X)` e `openapi_extra=permission_doc(Permission.X)`. Se a
+   vertical precisar de uma permissão nova, ela entra na matriz do core e no
+   `test_permission_matrix`.
 
 ## Criando um sistema novo a partir do template
 

@@ -194,6 +194,127 @@
         "title": "LoginIn",
         "type": "object"
       },
+      "MemberChanges": {
+        "properties": {
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "`false` desativa a conta e encerra as sessões na hora.",
+            "title": "Is Active"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "enum": [
+                  "owner",
+                  "reception",
+                  "professional"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "`owner` (dono), `reception` (recepção) ou `professional` (profissional).",
+            "title": "Role"
+          }
+        },
+        "title": "MemberChanges",
+        "type": "object"
+      },
+      "MemberWithPassword": {
+        "properties": {
+          "member": {
+            "$ref": "#/components/schemas/TeamMember"
+          },
+          "temporary_password": {
+            "description": "Senha provisória. Aparece SÓ nesta resposta; a pessoa troca no 1º login.",
+            "title": "Temporary Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "member",
+          "temporary_password"
+        ],
+        "title": "MemberWithPassword",
+        "type": "object"
+      },
+      "NewMember": {
+        "properties": {
+          "email": {
+            "examples": [
+              "carla@studio-bella.com"
+            ],
+            "maxLength": 254,
+            "title": "Email",
+            "type": "string"
+          },
+          "name": {
+            "examples": [
+              "Carla Souza"
+            ],
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "role": {
+            "description": "`owner` (dono), `reception` (recepção) ou `professional` (profissional).",
+            "enum": [
+              "owner",
+              "reception",
+              "professional"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "role"
+        ],
+        "title": "NewMember",
+        "type": "object"
+      },
+      "Permission": {
+        "enum": [
+          "team.manage",
+          "settings.manage",
+          "audit.view",
+          "catalog.manage",
+          "providers.manage",
+          "customers.manage",
+          "agenda.view_all",
+          "agenda.view_own",
+          "agenda.manage",
+          "time_off.manage",
+          "reports.view"
+        ],
+        "title": "Permission",
+        "type": "string"
+      },
       "ReadinessResponse": {
         "properties": {
           "database": {
@@ -279,6 +400,70 @@
         "title": "SessionOut",
         "type": "object"
       },
+      "TeamMember": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "last_login_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Login At"
+          },
+          "must_change_password": {
+            "description": "Ainda não trocou a senha provisória.",
+            "title": "Must Change Password",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "owner",
+              "reception",
+              "professional"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "is_active",
+          "must_change_password",
+          "last_login_at",
+          "created_at"
+        ],
+        "title": "TeamMember",
+        "type": "object"
+      },
       "TenantPublicInfo": {
         "properties": {
           "country": {
@@ -361,6 +546,19 @@
             "title": "Name",
             "type": "string"
           },
+          "permissions": {
+            "description": "O que o perfil pode fazer. O app usa esta lista para montar o menu; o servidor confere a permissão em cada rota (ver tabela no guia da API).",
+            "examples": [
+              [
+                "agenda.view_own"
+              ]
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "title": "Permissions",
+            "type": "array"
+          },
           "role": {
             "enum": [
               "owner",
@@ -376,7 +574,8 @@
           "name",
           "email",
           "role",
-          "must_change_password"
+          "must_change_password",
+          "permissions"
         ],
         "title": "UserOut",
         "type": "object"
@@ -433,7 +632,7 @@
   "info": {
     "description": "API do **SPBella** (Agenda Salão), sistema de agendamento para salões e barbearias.\n\nGuia de uso, convenções (erros, datas, valores, autenticação) e exemplos: `docs/api/README.md` no repositório.",
     "title": "SPBella API",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -1184,6 +1383,416 @@
           "Login"
         ]
       }
+    },
+    "/t/{slug}/team": {
+      "get": {
+        "description": "Todas as pessoas com acesso ao sistema, inclusive as desativadas.",
+        "operationId": "list_team_t__slug__team_get",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TeamMember"
+                  },
+                  "title": "Response List Team T  Slug  Team Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Listar a equipe",
+        "tags": [
+          "Equipe"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "team.manage"
+      },
+      "post": {
+        "description": "Cria o acesso com uma senha provisória, devolvida **uma única vez** em `temporary_password`. No primeiro login, a pessoa é obrigada a trocá-la.\n\n- `409 email_taken`: já existe alguém com esse e-mail neste estabelecimento.\n- `422 validation_error`: e-mail inválido (`fields[0].code = invalid_email`).",
+        "operationId": "add_member_t__slug__team_post",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewMember"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberWithPassword"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cadastrar pessoa na equipe",
+        "tags": [
+          "Equipe"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "team.manage"
+      }
+    },
+    "/t/{slug}/team/{member_id}": {
+      "patch": {
+        "description": "Muda nome, perfil ou ativa/desativa. Só os campos enviados mudam.\n\n- Desativar encerra todas as sessões da pessoa na hora.\n- `409 cannot_change_self`: ninguém muda o próprio perfil nem desativa a si mesmo (evita ficar trancado do lado de fora).\n- `409 last_owner`: precisa sobrar pelo menos um dono ativo.\n- `404 not_found`: a pessoa não existe neste estabelecimento.",
+        "operationId": "change_member_t__slug__team__member_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "member_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Member Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberChanges"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamMember"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Alterar pessoa da equipe",
+        "tags": [
+          "Equipe"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "team.manage"
+      }
+    },
+    "/t/{slug}/team/{member_id}/reset-password": {
+      "post": {
+        "description": "Para quando a pessoa esqueceu a senha e o e-mail não chega. Gera uma senha provisória nova (devolvida uma única vez), obriga a troca no próximo login e encerra todas as sessões da pessoa.",
+        "operationId": "reset_member_password_t__slug__team__member_id__reset_password_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "member_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Member Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberWithPassword"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Gerar nova senha provisória",
+        "tags": [
+          "Equipe"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "team.manage"
+      }
     }
   },
   "tags": [
@@ -1198,6 +1807,10 @@
     {
       "description": "Entrar, sair, renovar a sessão e trocar ou redefinir a senha.",
       "name": "Login"
+    },
+    {
+      "description": "Quem tem acesso ao sistema e com qual perfil (só o dono).",
+      "name": "Equipe"
     }
   ]
 }

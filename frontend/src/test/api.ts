@@ -45,6 +45,26 @@ export const session = (user: Record<string, unknown> = {}, token = "access-1"):
     email: "ana@alpha.test",
     role: "owner",
     must_change_password: false,
+    permissions: [...PERMISSIONS[(user.role as keyof typeof PERMISSIONS) ?? "owner"]],
     ...user,
   } as Session["user"],
 });
+
+/** Mesma matriz do servidor (backend/app/core/accounts/permissions.py). */
+export const PERMISSIONS = {
+  owner: [
+    "agenda.manage",
+    "agenda.view_all",
+    "agenda.view_own",
+    "audit.view",
+    "catalog.manage",
+    "customers.manage",
+    "providers.manage",
+    "reports.view",
+    "settings.manage",
+    "team.manage",
+    "time_off.manage",
+  ],
+  reception: ["agenda.manage", "agenda.view_all", "agenda.view_own", "customers.manage"],
+  professional: ["agenda.view_own"],
+} as const;

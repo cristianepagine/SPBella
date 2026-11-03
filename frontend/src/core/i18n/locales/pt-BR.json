@@ -48,7 +48,10 @@
       "too_simple": "A senha está muito simples. Misture letras e números diferentes.",
       "contains_email": "A senha não pode conter o seu e-mail.",
       "same_as_current": "A senha nova precisa ser diferente da atual."
-    }
+    },
+    "email_taken": "Já existe alguém com esse e-mail na equipe.",
+    "cannot_change_self": "Você não pode mudar o seu próprio perfil nem se desativar.",
+    "last_owner": "Precisa haver pelo menos um dono ativo."
   },
   "tenant": {
     "loading": "Carregando…",
@@ -83,5 +86,44 @@
     "dashboardIntro": "Em breve a agenda vai aparecer aqui.",
     "changePasswordLink": "Trocar senha",
     "logout": "Sair"
+  },
+  "nav": {
+    "label": "Menu",
+    "home": "Início",
+    "team": "Equipe"
+  },
+  "roles": {
+    "owner": "Dono(a)",
+    "reception": "Recepção",
+    "professional": "Profissional"
+  },
+  "home": {
+    "intro": {
+      "owner": "Aqui você administra tudo: equipe, configurações e, em breve, serviços, agenda e relatórios.",
+      "reception": "Aqui você vai cuidar da agenda e dos clientes. A agenda chega em breve.",
+      "professional": "Aqui vai aparecer a sua agenda. Ela chega em breve."
+    }
+  },
+  "forbidden": {
+    "title": "Sem acesso",
+    "text": "Seu perfil não tem acesso a esta área. Se precisar, fale com o dono ou a dona.",
+    "back": "Voltar ao início"
+  },
+  "team": {
+    "title": "Equipe",
+    "addTitle": "Cadastrar pessoa",
+    "name": "Nome",
+    "role": "Perfil",
+    "add": "Cadastrar",
+    "you": "você",
+    "inactive": "Desativado",
+    "pendingFirstLogin": "Ainda não entrou pela primeira vez",
+    "changeRole": "Perfil de {{name}}",
+    "deactivate": "Desativar",
+    "activate": "Reativar",
+    "newPassword": "Nova senha provisória",
+    "passwordFor": "Senha provisória de {{name}}:",
+    "passwordHint": "Passe esta senha para a pessoa. Ela entra com o e-mail {{email}} e vai criar uma senha só dela. Esta senha não aparece de novo.",
+    "passwordDone": "Já anotei"
   }
 }

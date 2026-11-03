@@ -4,13 +4,15 @@ Usam exatamente as mesmas dependências das rotas reais (DbSession / TenantDep).
 """
 
 import uuid
+from typing import Annotated
 
 from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlalchemy import select, text
 
-from app.core.accounts.auth import CurrentUser, OwnerUser, StaffUser
+from app.core.accounts.auth import CurrentUser, require_permission
 from app.core.accounts.models import User
+from app.core.accounts.permissions import Permission
 from app.core.infra.errors import ApiError
 from app.core.infra.tenancy import DbSession
 
@@ -87,10 +89,10 @@ def any_user(user: CurrentUser) -> dict:
 
 
 @router.get("/owner-only")
-def owner_only(user: OwnerUser) -> dict:
+def owner_only(user: Annotated[User, require_permission(Permission.TEAM_MANAGE)]) -> dict:
     return {"role": user.role}
 
 
 @router.get("/staff-only")
-def staff_only(user: StaffUser) -> dict:
+def staff_only(user: Annotated[User, require_permission(Permission.AGENDA_MANAGE)]) -> dict:
     return {"role": user.role}

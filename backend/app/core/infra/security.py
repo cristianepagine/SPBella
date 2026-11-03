@@ -1,4 +1,5 @@
 import hashlib
+import re
 import secrets
 from functools import lru_cache
 
@@ -6,6 +7,8 @@ from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
 
 _hasher = PasswordHasher()  # argon2id com os parâmetros recomendados pela biblioteca
+
+EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 PASSWORD_MIN_LENGTH = 8
 PASSWORD_MAX_LENGTH = 128
@@ -35,6 +38,14 @@ def burn_password_check() -> None:
     """Gasta o mesmo tempo de uma verificação real. Usado quando o e-mail não existe, para
     que o tempo de resposta não revele quais e-mails têm conta."""
     verify_password(_dummy_hash(), "x")
+
+
+def normalize_email(email: str) -> str:
+    return email.strip().lower()
+
+
+def is_valid_email(email: str) -> bool:
+    return bool(EMAIL_PATTERN.match(email)) and len(email) <= 254
 
 
 def password_problem(password: str, email: str) -> str | None:

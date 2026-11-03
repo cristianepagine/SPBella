@@ -15,6 +15,8 @@ from sqlalchemy import select, update
 
 from app.core.accounts.auth import UserPendingPasswordChange, create_access_token
 from app.core.accounts.models import PasswordResetToken, RefreshToken, User
+from app.core.accounts.permissions import Permission, permissions_for
+from app.core.accounts.sessions import revoke_all_sessions
 from app.core.infra.config import Settings
 from app.core.infra.errors import ApiError, FieldError, error_response, error_responses
 from app.core.infra.i18n import translate
@@ -66,6 +68,22 @@ class UserOut(BaseModel):
         description="Se `true`, a pessoa só pode usar `/me`, `/change-password` e `/logout` "
         "até trocar a senha provisória. As demais rotas respondem 403 `password_change_required`."
     )
+    permissions: list[Permission] = Field(
+        description="O que o perfil pode fazer. O app usa esta lista para montar o menu; "
+        "o servidor confere a permissão em cada rota (ver tabela no guia da API).",
+        examples=[["agenda.view_own"]],
+    )
+
+    @classmethod
+    def of(cls, user: User) -> "UserOut":
+        return cls(
+            id=user.id,
+            name=user.name,
+            email=user.email,
+            role=user.role,
+            must_change_password=user.must_change_password,
+            permissions=sorted(permissions_for(user.role)),
+        )
 
 
 class SessionOut(BaseModel):
@@ -174,7 +192,7 @@ def _start_session(
     session = SessionOut(
         access_token=access_token,
         expires_in=expires_in,
-        user=UserOut.model_validate(user, from_attributes=True),
+        user=UserOut.of(user),
     )
     return session, refresh_token
 
@@ -183,14 +201,6 @@ def _revoke_family(db: DbSession, family_id: uuid.UUID) -> None:
     db.execute(
         update(RefreshToken)
         .where(RefreshToken.family_id == family_id, RefreshToken.revoked_at.is_(None))
-        .values(revoked_at=_now())
-    )
-
-
-def _revoke_all_sessions(db: DbSession, user_id: uuid.UUID) -> None:
-    db.execute(
-        update(RefreshToken)
-        .where(RefreshToken.user_id == user_id, RefreshToken.revoked_at.is_(None))
         .values(revoked_at=_now())
     )
 
@@ -358,7 +368,7 @@ def logout(
     responses=error_responses(401, 404),
 )
 def me(user: UserPendingPasswordChange) -> UserOut:
-    return UserOut.model_validate(user, from_attributes=True)
+    return UserOut.of(user)
 
 
 @router.post(
@@ -400,7 +410,7 @@ def change_password(
 
     user.password_hash = hash_password(payload.new_password)
     user.must_change_password = False
-    _revoke_all_sessions(db, user.id)
+    revoke_all_sessions(db, user.id)
     log.info("password_changed", tenant_id=str(tenant.id), user_id=str(user.id))
     return _start_session(request, response, db, tenant, user)[0]
 
@@ -493,6 +503,6 @@ def reset_password(
         .where(PasswordResetToken.user_id == user.id, PasswordResetToken.used_at.is_(None))
         .values(used_at=now)
     )
-    _revoke_all_sessions(db, user.id)
+    revoke_all_sessions(db, user.id)
     log.info("password_reset_completed", tenant_id=str(tenant.id), user_id=str(user.id))
     return Response(status_code=204)

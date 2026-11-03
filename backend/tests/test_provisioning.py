@@ -180,9 +180,13 @@ def test_seed_demo_creates_two_salons_once(db_settings, tenants):
     assert second == []
     databases = Databases(db_settings)
     with tenant_session(databases, load_tenant(databases, "salon-asuncion")) as session:
-        owner = session.query(User).one()
-    assert verify_password(owner.password_hash, DEMO_PASSWORD)
-    assert owner.must_change_password is False
+        people = {u.role: u for u in session.query(User)}
+    # um acesso de cada perfil, para mostrar as três visões ao cliente (SAL-02)
+    assert set(people) == {"owner", "reception", "professional"}
+    assert people["reception"].email == "recepcion@salon-asuncion.demo"
+    for user in people.values():
+        assert verify_password(user.password_hash, DEMO_PASSWORD)
+        assert user.must_change_password is False
 
 
 def test_cli_migrate_returns_error_code_on_failure(db_settings, tenants, monkeypatch, capsys):

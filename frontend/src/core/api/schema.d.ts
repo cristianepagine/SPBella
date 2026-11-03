@@ -229,6 +229,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/t/{slug}/team": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar a equipe
+         * @description Todas as pessoas com acesso ao sistema, inclusive as desativadas.
+         */
+        get: operations["list_team_t__slug__team_get"];
+        put?: never;
+        /**
+         * Cadastrar pessoa na equipe
+         * @description Cria o acesso com uma senha provisória, devolvida **uma única vez** em `temporary_password`. No primeiro login, a pessoa é obrigada a trocá-la.
+         *
+         *     - `409 email_taken`: já existe alguém com esse e-mail neste estabelecimento.
+         *     - `422 validation_error`: e-mail inválido (`fields[0].code = invalid_email`).
+         */
+        post: operations["add_member_t__slug__team_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/team/{member_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Alterar pessoa da equipe
+         * @description Muda nome, perfil ou ativa/desativa. Só os campos enviados mudam.
+         *
+         *     - Desativar encerra todas as sessões da pessoa na hora.
+         *     - `409 cannot_change_self`: ninguém muda o próprio perfil nem desativa a si mesmo (evita ficar trancado do lado de fora).
+         *     - `409 last_owner`: precisa sobrar pelo menos um dono ativo.
+         *     - `404 not_found`: a pessoa não existe neste estabelecimento.
+         */
+        patch: operations["change_member_t__slug__team__member_id__patch"];
+        trace?: never;
+    };
+    "/t/{slug}/team/{member_id}/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Gerar nova senha provisória
+         * @description Para quando a pessoa esqueceu a senha e o e-mail não chega. Gera uma senha provisória nova (devolvida uma única vez), obriga a troca no próximo login e encerra todas as sessões da pessoa.
+         */
+        post: operations["reset_member_password_t__slug__team__member_id__reset_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -307,6 +379,54 @@ export interface components {
              */
             turnstile_token?: string | null;
         };
+        /** MemberChanges */
+        MemberChanges: {
+            /**
+             * Is Active
+             * @description `false` desativa a conta e encerra as sessões na hora.
+             */
+            is_active?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /**
+             * Role
+             * @description `owner` (dono), `reception` (recepção) ou `professional` (profissional).
+             */
+            role?: ("owner" | "reception" | "professional") | null;
+        };
+        /** MemberWithPassword */
+        MemberWithPassword: {
+            member: components["schemas"]["TeamMember"];
+            /**
+             * Temporary Password
+             * @description Senha provisória. Aparece SÓ nesta resposta; a pessoa troca no 1º login.
+             */
+            temporary_password: string;
+        };
+        /** NewMember */
+        NewMember: {
+            /**
+             * Email
+             * @example carla@studio-bella.com
+             */
+            email: string;
+            /**
+             * Name
+             * @example Carla Souza
+             */
+            name: string;
+            /**
+             * Role
+             * @description `owner` (dono), `reception` (recepção) ou `professional` (profissional).
+             * @enum {string}
+             */
+            role: "owner" | "reception" | "professional";
+        };
+        /**
+         * Permission
+         * @enum {string}
+         */
+        Permission: "team.manage" | "settings.manage" | "audit.view" | "catalog.manage" | "providers.manage" | "customers.manage" | "agenda.view_all" | "agenda.view_own" | "agenda.manage" | "time_off.manage" | "reports.view";
         /** ReadinessResponse */
         ReadinessResponse: {
             /**
@@ -350,6 +470,37 @@ export interface components {
              */
             token_type: "bearer";
             user: components["schemas"]["UserOut"];
+        };
+        /** TeamMember */
+        TeamMember: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Email */
+            email: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Last Login At */
+            last_login_at: string | null;
+            /**
+             * Must Change Password
+             * @description Ainda não trocou a senha provisória.
+             */
+            must_change_password: boolean;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "owner" | "reception" | "professional";
         };
         /** TenantPublicInfo */
         TenantPublicInfo: {
@@ -403,6 +554,14 @@ export interface components {
             must_change_password: boolean;
             /** Name */
             name: string;
+            /**
+             * Permissions
+             * @description O que o perfil pode fazer. O app usa esta lista para montar o menu; o servidor confere a permissão em cada rota (ver tabela no guia da API).
+             * @example [
+             *       "agenda.view_own"
+             *     ]
+             */
+            permissions: components["schemas"]["Permission"][];
             /**
              * Role
              * @enum {string}
@@ -966,6 +1125,270 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_team_t__slug__team_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamMember"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_member_t__slug__team_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewMember"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberWithPassword"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    change_member_t__slug__team__member_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                member_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberChanges"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamMember"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    reset_member_password_t__slug__team__member_id__reset_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                member_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberWithPassword"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
