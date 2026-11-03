@@ -2,6 +2,16 @@
 
 Mudanças visíveis para quem consome a API. Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.12.0] - 2026-11-03
+
+### Adicionado
+- Agendamentos pela equipe (`agenda.manage`): `POST /t/{slug}/appointments`,
+  `PATCH /t/{slug}/appointments/{appointment_id}` (mover) e
+  `POST /t/{slug}/appointments/{appointment_id}/status`.
+- Códigos: `409 slot_taken`, `outside_working_hours`, `provider_time_off`,
+  `customer_without_consent`, `too_early`, `not_active`; `422 provider_cannot_do`,
+  `unknown_provider`, `unknown_offering`, `unknown_customer`, `invalid_time_step`.
+
 ## [0.11.0] - 2026-11-03
 
 ### Adicionado

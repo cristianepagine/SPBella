@@ -65,7 +65,18 @@
       "end_before_start": "El último día es anterior al primero.",
       "too_long": "El período puede tener como máximo un año."
     },
-    "user_already_linked": "Esa cuenta ya está vinculada a otro profesional."
+    "user_already_linked": "Esa cuenta ya está vinculada a otro profesional.",
+    "slot_taken": "Ese horario ya está ocupado (puede que lo hayan tomado recién). Elegí otro.",
+    "outside_working_hours": "Ese horario queda fuera del horario del profesional.",
+    "provider_time_off": "El profesional está de franco ese día.",
+    "customer_without_consent": "El cliente retiró la autorización para usar sus datos en la atención. Hablá con él antes de agendar.",
+    "provider_cannot_do": "Ese profesional no hace ese servicio.",
+    "unknown_provider": "Ese profesional ya no existe o está desactivado. Actualizá la página.",
+    "unknown_offering": "Ese servicio ya no existe o está desactivado. Actualizá la página.",
+    "unknown_customer": "No se encontró ese cliente. Actualizá la página.",
+    "invalid_time_step": "Usá horarios de 5 en 5 minutos (ej.: 9:00, 9:05, 9:10).",
+    "too_early": "Solo se puede marcar atendido o ausencia después del horario.",
+    "not_active": "Ese turno ya terminó o fue cancelado."
   },
   "tenant": {
     "loading": "Cargando…",
@@ -303,6 +314,30 @@
       "completed": "Atendido",
       "no_show": "No vino",
       "cancelled": "Cancelado"
+    }
+  },
+  "booking": {
+    "new": "Nuevo turno",
+    "title": "Nuevo turno",
+    "customer": "Cliente",
+    "changeCustomer": "Cambiar",
+    "service": "Servicio",
+    "serviceOption": "{{name}} ({{minutes}} min)",
+    "noServices": "Este profesional todavía no tiene servicios marcados. Ajustalo en Profesionales.",
+    "date": "Día",
+    "time": "Horario",
+    "when": "Cuándo",
+    "save": "Agendar",
+    "squeeze": "Agendar igual (turno extra)",
+    "saveMove": "Guardar nuevo horario",
+    "close": "Cerrar",
+    "actions": {
+      "confirmed": "Confirmar",
+      "completed": "Atendido",
+      "no_show": "No vino",
+      "cancelled": "Cancelar",
+      "scheduled": "Reactivar",
+      "move": "Mover"
     }
   }
 }

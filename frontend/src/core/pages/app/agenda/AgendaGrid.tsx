@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import type { Agenda } from "../../../api/agenda";
+import type { Agenda, AgendaAppointment } from "../../../api/agenda";
 import { dayLabel, hhmmToMinutes, isoWeekday, localDate, minutesOfDay } from "../../../i18n/zoned";
 import { PROVIDER_COLOR_CLASS } from "../../../layout/colors";
 import { AppointmentCard, providerOf } from "./AppointmentCard";
@@ -19,11 +19,13 @@ export function AgendaGrid({
   dates,
   locale,
   columnsBy,
+  onSelect,
 }: {
   agenda: Agenda;
   dates: string[];
   locale: string;
   columnsBy: "provider" | "day";
+  onSelect: (item: AgendaAppointment) => void;
 }) {
   const { t } = useTranslation();
   const tz = agenda.timezone;
@@ -105,6 +107,7 @@ export function AgendaGrid({
                         agenda={agenda}
                         locale={locale}
                         showProvider={columnsBy === "day"}
+                        onSelect={onSelect}
                       />
                     </div>
                   );

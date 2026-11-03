@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { type Agenda, type AppointmentStatus, useAgenda } from "../../../api/agenda";
+import {
+  type Agenda,
+  type AgendaAppointment,
+  type AppointmentStatus,
+  useAgenda,
+} from "../../../api/agenda";
+import { useCan } from "../../../auth/permissions";
 import { useAuth } from "../../../auth/AuthProvider";
 import { FormError } from "../../../components/form";
 import { formatLocale } from "../../../i18n/format";
@@ -9,6 +15,8 @@ import { addDays, dayLabel, mondayOf, todayIn } from "../../../i18n/zoned";
 import { useCurrentTenant } from "../../TenantLayout";
 import { AgendaGrid } from "./AgendaGrid";
 import { AgendaList } from "./AgendaList";
+import { AppointmentPanel } from "./AppointmentPanel";
+import { BookingForm } from "./BookingForm";
 import { STATUS_CLASS } from "./AppointmentCard";
 
 type View = "day" | "week";
@@ -23,6 +31,9 @@ export function AgendaPage() {
   const [view, setView] = useState<View>("day");
   const [day, setDay] = useState(() => todayIn(tenant.timezone));
   const [providerId, setProviderId] = useState("");
+  const [selected, setSelected] = useState<AgendaAppointment | null>(null);
+  const [booking, setBooking] = useState(false);
+  const can = useCan();
 
   const start = view === "week" ? mondayOf(day) : day;
   const days = view === "week" ? 7 : 1;
@@ -37,7 +48,18 @@ export function AgendaPage() {
   return (
     <section className="flex flex-col gap-4">
       <div className="rounded-2xl bg-white p-4 shadow-sm">
-        <h1 className="mb-3 text-2xl font-bold text-brand-900">{t("agenda.title")}</h1>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h1 className="text-2xl font-bold text-brand-900">{t("agenda.title")}</h1>
+          {can("agenda.manage") && !booking && (
+            <button
+              type="button"
+              onClick={() => setBooking(true)}
+              className="rounded-xl bg-brand-700 px-4 py-2 font-medium text-white"
+            >
+              {t("booking.new")}
+            </button>
+          )}
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <NavButton label={t("agenda.previous")} onClick={() => setDay(addDays(day, -days))}>
             ‹
@@ -72,6 +94,16 @@ export function AgendaPage() {
         <Legend />
       </div>
 
+      {booking && <BookingForm day={day} onDone={() => setBooking(false)} />}
+      {selected && agenda.data && (
+        <AppointmentPanel
+          item={selected}
+          agenda={agenda.data}
+          locale={locale}
+          onClose={() => setSelected(null)}
+        />
+      )}
+
       {agenda.isPending && <p role="status">{t("auth.loading")}</p>}
       {agenda.isError && <FormError error={agenda.error} />}
       {agenda.data?.own_provider_missing && (
@@ -84,12 +116,13 @@ export function AgendaPage() {
       )}
       {agenda.data && agenda.data.providers.length > 0 && (
         <>
-          <AgendaList agenda={agenda.data} dates={dates} locale={locale} />
+          <AgendaList agenda={agenda.data} dates={dates} locale={locale} onSelect={setSelected} />
           <AgendaGrid
             agenda={agenda.data}
             dates={dates}
             locale={locale}
             columnsBy={view === "day" ? "provider" : "day"}
+            onSelect={setSelected}
           />
         </>
       )}

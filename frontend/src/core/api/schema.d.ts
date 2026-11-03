@@ -88,6 +88,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/t/{slug}/appointments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Marcar horário
+         * @description Agenda um cliente com um profissional.
+         *
+         *     - `409 slot_taken`: o profissional já tem alguém nesse horário (inclusive quando duas pessoas tentam o mesmo horário ao mesmo tempo: só uma consegue).
+         *     - `409 outside_working_hours` / `409 provider_time_off`: fora da jornada ou em folga. Mande `allow_outside_hours: true` para encaixar mesmo assim (nunca vale por cima de outro cliente).
+         *     - `409 customer_without_consent`: o cliente retirou a autorização de uso dos dados para atendimento.
+         *     - `422 provider_cannot_do`, `unknown_provider`, `unknown_offering`, `unknown_customer`, `invalid_time_step` (minutos de 5 em 5).
+         */
+        post: operations["create_appointment_t__slug__appointments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/appointments/{appointment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Mover agendamento
+         * @description Muda o horário, o profissional e/ou o serviço (o fim é recalculado). Só agendamentos ativos (`scheduled`, `confirmed`) podem ser movidos (`409 not_active`).
+         *
+         *     - `409 slot_taken`: o profissional já tem alguém nesse horário (inclusive quando duas pessoas tentam o mesmo horário ao mesmo tempo: só uma consegue).
+         *     - `409 outside_working_hours` / `409 provider_time_off`: fora da jornada ou em folga. Mande `allow_outside_hours: true` para encaixar mesmo assim (nunca vale por cima de outro cliente).
+         *     - `409 customer_without_consent`: o cliente retirou a autorização de uso dos dados para atendimento.
+         *     - `422 provider_cannot_do`, `unknown_provider`, `unknown_offering`, `unknown_customer`, `invalid_time_step` (minutos de 5 em 5).
+         */
+        patch: operations["move_appointment_t__slug__appointments__appointment_id__patch"];
+        trace?: never;
+    };
+    "/t/{slug}/appointments/{appointment_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirmar, marcar atendido, falta ou cancelar
+         * @description - `completed` (atendido) e `no_show` (faltou) só depois do horário de início (`409 too_early`).
+         *     - `cancelled` libera o horário na hora.
+         *     - Voltar um cancelado para `scheduled`/`confirmed` só se o horário ainda estiver livre (`409 slot_taken`).
+         */
+        post: operations["change_status_t__slug__appointments__appointment_id__status_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/t/{slug}/audit": {
         parameters: {
             query?: never;
@@ -796,6 +868,49 @@ export interface components {
              */
             starts_at: string;
         };
+        /** AppointmentOut */
+        AppointmentOut: {
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Offering Id
+             * Format: uuid
+             */
+            offering_id: string;
+            /**
+             * Provider Id
+             * Format: uuid
+             */
+            provider_id: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "staff" | "public";
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "scheduled" | "confirmed" | "completed" | "no_show" | "cancelled";
+        };
         /** AuditEntryOut */
         AuditEntryOut: {
             /**
@@ -1063,6 +1178,20 @@ export interface components {
              */
             temporary_password: string;
         };
+        /** MoveAppointment */
+        MoveAppointment: {
+            /**
+             * Allow Outside Hours
+             * @default false
+             */
+            allow_outside_hours: boolean;
+            /** Offering Id */
+            offering_id?: string | null;
+            /** Provider Id */
+            provider_id?: string | null;
+            /** Starts At */
+            starts_at?: string | null;
+        };
         /** MyChanges */
         MyChanges: {
             /**
@@ -1070,6 +1199,37 @@ export interface components {
              * @description Idioma da pessoa. `null` volta a usar o idioma padrão do estabelecimento.
              */
             locale: ("pt-BR" | "es") | null;
+        };
+        /** NewAppointment */
+        NewAppointment: {
+            /**
+             * Allow Outside Hours
+             * @description Encaixe: aceita fora da jornada ou em folga.
+             * @default false
+             */
+            allow_outside_hours: boolean;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /**
+             * Offering Id
+             * Format: uuid
+             */
+            offering_id: string;
+            /**
+             * Provider Id
+             * Format: uuid
+             */
+            provider_id: string;
+            /**
+             * Starts At
+             * Format: date-time
+             * @description Início em UTC (ou com fuso). O fim é calculado pela duração do serviço.
+             * @example 2026-11-03T13:00:00Z
+             */
+            starts_at: string;
         };
         /** NewCustomer */
         NewCustomer: {
@@ -1351,6 +1511,15 @@ export interface components {
             name?: string | null;
             /** Timezone */
             timezone?: string | null;
+        };
+        /** StatusChange */
+        StatusChange: {
+            /**
+             * Status
+             * @description `confirmed`, `completed` (atendido), `no_show` (faltou), `cancelled`, ou `scheduled` (voltar a agendado).
+             * @enum {string}
+             */
+            status: "scheduled" | "confirmed" | "completed" | "no_show" | "cancelled";
         };
         /** TeamMember */
         TeamMember: {
@@ -1707,6 +1876,224 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_appointment_t__slug__appointments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewAppointment"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppointmentOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    move_appointment_t__slug__appointments__appointment_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointment_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveAppointment"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppointmentOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    change_status_t__slug__appointments__appointment_id__status_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointment_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatusChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppointmentOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

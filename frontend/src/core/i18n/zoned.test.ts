@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { addDays, dayLabel, isoWeekday, localDate, minutesOfDay, mondayOf, timeLabel } from "./zoned";
+import {
+  addDays,
+  dayLabel,
+  isoWeekday,
+  localDate,
+  minutesOfDay,
+  mondayOf,
+  timeLabel,
+  zonedToUtc,
+} from "./zoned";
 
 describe("horário no fuso do estabelecimento", () => {
   it("vira o dia pelo fuso do salão, não pelo do aparelho", () => {
@@ -26,5 +35,18 @@ describe("horário no fuso do estabelecimento", () => {
     expect(isoWeekday("2027-03-14")).toBe(6); // domingo
     expect(mondayOf("2027-03-14")).toBe("2027-03-08");
     expect(dayLabel("2027-03-09", "pt-BR")).toBe("ter., 09/03");
+  });
+});
+
+describe("dia e hora do salão para UTC", () => {
+  it("converte pelo fuso do estabelecimento", () => {
+    expect(zonedToUtc("2026-11-03", "10:00", "America/Sao_Paulo")).toBe("2026-11-03T13:00:00.000Z");
+    expect(zonedToUtc("2026-11-03", "23:30", "America/Asuncion")).toBe("2026-11-04T02:30:00.000Z");
+  });
+
+  it("acerta antes e depois de uma mudança de horário de verão", () => {
+    // Nova York: 14/03/2027 adianta o relógio (UTC-5 → UTC-4)
+    expect(zonedToUtc("2027-03-13", "10:00", "America/New_York")).toBe("2027-03-13T15:00:00.000Z");
+    expect(zonedToUtc("2027-03-15", "10:00", "America/New_York")).toBe("2027-03-15T14:00:00.000Z");
   });
 });

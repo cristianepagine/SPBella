@@ -72,3 +72,21 @@ export function hhmmToMinutes(value: string): number {
   const [h, m] = value.split(":").map(Number);
   return h * 60 + m;
 }
+
+/**
+ * Dia e hora locais do estabelecimento → instante UTC (ISO). Ex.: ("2026-11-03", "10:00",
+ * "America/Sao_Paulo") → "2026-11-03T13:00:00.000Z". Funciona também com horário de verão.
+ */
+export function zonedToUtc(day: string, hhmm: string, timeZone: string): string {
+  const [y, m, d] = day.split("-").map(Number);
+  const [h, min] = hhmm.split(":").map(Number);
+  const wanted = Date.UTC(y, m - 1, d, h, min);
+  let guess = wanted;
+  for (let i = 0; i < 2; i += 1) {
+    const local = parts(new Date(guess), timeZone);
+    const [ly, lm, ld] = local.date.split("-").map(Number);
+    const seen = Date.UTC(ly, lm - 1, ld, local.hour, local.minute);
+    guess += wanted - seen; // corrige pela diferença entre o que queríamos e o que o fuso mostra
+  }
+  return new Date(guess).toISOString();
+}

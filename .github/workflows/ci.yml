@@ -128,6 +128,17 @@ jobs:
             | python3 -c "import sys, json; d = json.load(sys.stdin); assert d['appointments'], d"
           docker compose exec -T db psql -U spbella -d spbella -tAc \
             "SELECT 1 FROM pg_constraint WHERE conname = 'ex_appointments_no_double_booking'" | grep -q 1
+          # recepção marca um horário (encaixe às 23:00 de daqui a 30 dias); o mesmo horário de novo = 409
+          AGENDA=$(curl -fsS "http://localhost:8000/t/studio-bella/agenda?start=$SEMANA&days=7" \
+            -H "Authorization: Bearer $RECEPCAO")
+          BODY=$(echo "$AGENDA" | python3 -c "import sys, json, datetime as d; a = json.load(sys.stdin)['appointments'][0]; \
+          t = (d.datetime.now(d.UTC) + d.timedelta(days=30)).replace(hour=2, minute=0, second=0, microsecond=0); \
+          print(json.dumps({'provider_id': a['provider_id'], 'offering_id': a['offering_id'], \
+          'customer_id': a['customer_id'], 'starts_at': t.isoformat(), 'allow_outside_hours': True}))")
+          curl -fsS -X POST http://localhost:8000/t/studio-bella/appointments -H "Authorization: Bearer $RECEPCAO" \
+            -H 'Content-Type: application/json' -d "$BODY" -o /dev/null
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8000/t/studio-bella/appointments \
+            -H "Authorization: Bearer $RECEPCAO" -H 'Content-Type: application/json' -d "$BODY")" = "409"
           # o token de um salão não vale no outro
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/t/salon-asuncion/auth/me \
             -H "Authorization: Bearer $TOKEN")" = "401"

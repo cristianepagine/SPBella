@@ -22,12 +22,14 @@ export function AppointmentCard({
   agenda,
   locale,
   showProvider = true,
+  onSelect,
 }: {
   item: AgendaAppointment;
   agenda: Agenda;
   locale: string;
   /** Desligado quando a coluna já é do profissional. */
   showProvider?: boolean;
+  onSelect?: (item: AgendaAppointment) => void;
 }) {
   const { t } = useTranslation();
   const provider = providerOf(agenda, item.provider_id);
@@ -35,8 +37,10 @@ export function AppointmentCard({
   const to = timeLabel(item.ends_at, agenda.timezone, locale);
 
   return (
-    <div
-      className={`h-full overflow-hidden rounded-lg border-l-4 px-2 py-1 text-sm ${STATUS_CLASS[item.status]}`}
+    <button
+      type="button"
+      onClick={() => onSelect?.(item)}
+      className={`block h-full w-full overflow-hidden rounded-lg border-l-4 px-2 py-1 text-left text-sm ${STATUS_CLASS[item.status]}`}
     >
       <p className="font-medium">
         {t("agenda.timeRange", { from, to })} {item.customer_name}
@@ -55,6 +59,6 @@ export function AppointmentCard({
         {item.source === "public" && ` · ${t("agenda.online")}`}
         {item.customer_phone_display && ` · ${item.customer_phone_display}`}
       </p>
-    </div>
+    </button>
   );
 }

@@ -1,11 +1,21 @@
 import { useTranslation } from "react-i18next";
 
-import type { Agenda } from "../../../api/agenda";
+import type { Agenda, AgendaAppointment } from "../../../api/agenda";
 import { dayLabel, localDate } from "../../../i18n/zoned";
 import { AppointmentCard, providerOf } from "./AppointmentCard";
 
 /** Celular: lista dia a dia, em ordem de horário. */
-export function AgendaList({ agenda, dates, locale }: { agenda: Agenda; dates: string[]; locale: string }) {
+export function AgendaList({
+  agenda,
+  dates,
+  locale,
+  onSelect,
+}: {
+  agenda: Agenda;
+  dates: string[];
+  locale: string;
+  onSelect: (item: AgendaAppointment) => void;
+}) {
   const { t } = useTranslation();
 
   return (
@@ -36,7 +46,7 @@ export function AgendaList({ agenda, dates, locale }: { agenda: Agenda; dates: s
             <ul className="flex flex-col gap-2">
               {items.map((item) => (
                 <li key={item.id}>
-                  <AppointmentCard item={item} agenda={agenda} locale={locale} />
+                  <AppointmentCard item={item} agenda={agenda} locale={locale} onSelect={onSelect} />
                 </li>
               ))}
             </ul>

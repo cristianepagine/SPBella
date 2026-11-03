@@ -78,7 +78,7 @@ describe("agenda", () => {
 
     const list = await screen.findByRole("region", { name: "Agenda em lista" });
     expect(within(list).getByText(/Confirmado · marcado pela página/)).toBeInTheDocument();
-    const noShow = within(list).getByText(/Faltou/).closest("div")!;
+    const noShow = within(list).getByText(/Faltou/).closest("button")!;
     expect(noShow.className).toContain("border-red-600");
     expect(screen.getByRole("list", { name: "Legenda" })).toHaveTextContent("Cancelado");
   });

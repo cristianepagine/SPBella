@@ -500,6 +500,49 @@ meia-noite local do dia seguinte ao último. `GET` lista as folgas que ainda nã
   (`btree_gist` + `tstzrange`, intervalo `[início, fim)`) por profissional, só entre agendamentos
   ativos. Um agendamento pode começar exatamente quando o anterior termina.
 
+#### `POST /t/{slug}/appointments` — marcar horário
+
+Quem tem `agenda.manage` (dono e recepção).
+
+```bash
+curl -X POST http://localhost:8000/t/studio-bella/appointments -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"provider_id": "…", "offering_id": "…", "customer_id": "…",
+       "starts_at": "2026-11-03T13:00:00Z"}'
+```
+
+O fim é calculado pela duração do serviço. Horários de 5 em 5 minutos.
+
+| Resposta | Quando |
+|---|---|
+| `201` | Marcado (`status: "scheduled"`, `source: "staff"`) |
+| `409 slot_taken` | O profissional já tem alguém nesse horário. Vale também quando duas pessoas tentam o mesmo horário ao mesmo tempo: só uma consegue |
+| `409 outside_working_hours` / `409 provider_time_off` | Fora da jornada ou em folga. Reenvie com `"allow_outside_hours": true` para um **encaixe** (nunca vale por cima de outro cliente) |
+| `409 customer_without_consent` | O cliente retirou a autorização de uso dos dados para atendimento |
+| `422 provider_cannot_do` | O profissional não faz esse serviço |
+| `422 unknown_provider` / `unknown_offering` / `unknown_customer` | Não existe ou está desativado |
+| `422 invalid_time_step` | Minutos fora do passo de 5 |
+
+**Como a dupla reserva é impedida:** antes de conferir o horário, a API trava a linha do
+profissional (`SELECT … FOR UPDATE`), então pedidos simultâneos para o mesmo profissional entram em
+fila. Se algo escapar, a constraint de exclusão do banco recusa e a resposta continua sendo
+`409 slot_taken`.
+
+#### `PATCH /t/{slug}/appointments/{appointment_id}` — mover
+
+Qualquer combinação de `starts_at`, `provider_id` e `offering_id` (o fim é recalculado), mais
+`allow_outside_hours`. Mesmos erros de marcar; só agendamentos ativos podem ser movidos
+(`409 not_active`). Mover alguns minutos dentro do próprio horário não conflita com ele mesmo.
+
+#### `POST /t/{slug}/appointments/{appointment_id}/status` — confirmar, atendido, faltou, cancelar
+
+`{"status": "confirmed" | "completed" | "no_show" | "cancelled" | "scheduled"}`
+
+- `completed` (atendido) e `no_show` (faltou) só depois do horário de início (`409 too_early`).
+- `cancelled` libera o horário na hora.
+- Voltar um cancelado para `scheduled` ou `confirmed` só se o horário continuar livre
+  (`409 slot_taken`).
+
 ### Itens agendáveis
 
 `GET /t/{slug}/offerings` (`catalog.view`): nome e duração de tudo o que pode ser agendado, sem

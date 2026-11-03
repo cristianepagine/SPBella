@@ -65,7 +65,18 @@
       "end_before_start": "O último dia vem antes do primeiro.",
       "too_long": "O período pode ter no máximo um ano."
     },
-    "user_already_linked": "Essa conta já está ligada a outro profissional."
+    "user_already_linked": "Essa conta já está ligada a outro profissional.",
+    "slot_taken": "Esse horário já está ocupado (pode ter sido marcado agora há pouco). Escolha outro.",
+    "outside_working_hours": "Esse horário fica fora da jornada do profissional.",
+    "provider_time_off": "O profissional está de folga nesse dia.",
+    "customer_without_consent": "O cliente retirou a autorização para usarmos os dados no atendimento. Converse com ele antes de agendar.",
+    "provider_cannot_do": "Esse profissional não faz esse serviço.",
+    "unknown_provider": "Esse profissional não existe mais ou está desativado. Atualize a página.",
+    "unknown_offering": "Esse serviço não existe mais ou está desativado. Atualize a página.",
+    "unknown_customer": "Esse cliente não foi encontrado. Atualize a página.",
+    "invalid_time_step": "Use horários de 5 em 5 minutos (ex.: 9:00, 9:05, 9:10).",
+    "too_early": "Só dá para marcar atendido ou falta depois do horário.",
+    "not_active": "Esse agendamento já foi encerrado ou cancelado."
   },
   "tenant": {
     "loading": "Carregando…",
@@ -303,6 +314,30 @@
       "completed": "Atendido",
       "no_show": "Faltou",
       "cancelled": "Cancelado"
+    }
+  },
+  "booking": {
+    "new": "Novo agendamento",
+    "title": "Novo agendamento",
+    "customer": "Cliente",
+    "changeCustomer": "Trocar",
+    "service": "Serviço",
+    "serviceOption": "{{name}} ({{minutes}} min)",
+    "noServices": "Esse profissional ainda não tem serviços marcados. Ajuste em Profissionais.",
+    "date": "Dia",
+    "time": "Horário",
+    "when": "Quando",
+    "save": "Agendar",
+    "squeeze": "Agendar mesmo assim (encaixe)",
+    "saveMove": "Salvar novo horário",
+    "close": "Fechar",
+    "actions": {
+      "confirmed": "Confirmar",
+      "completed": "Atendido",
+      "no_show": "Faltou",
+      "cancelled": "Cancelar",
+      "scheduled": "Reativar",
+      "move": "Mover"
     }
   }
 }
