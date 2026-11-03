@@ -24,6 +24,7 @@ from sqlalchemy.pool import NullPool
 from app.core.accounts.models import User
 from app.core.infra.config import Settings
 from app.core.infra.db import Databases, resolve_dsn_ref
+from app.core.infra.logging import log
 from app.core.infra.migrations import upgrade_public, upgrade_tenant
 from app.core.infra.security import (
     generate_temporary_password,
@@ -47,6 +48,8 @@ COUNTRY_DEFAULTS = {
 MIGRATION_LOCK_KEY = 7_412_026_001  # chave do advisory lock de "tenants migrate"
 PLANS = ("base", "whatsapp_api")
 TENANT_EDITABLE_COLUMNS = ("name", "locale", "timezone")
+# Extensões do Postgres usadas pelas migrações de tenant (índices de busca, agenda).
+DB_EXTENSIONS = ("pg_trgm",)
 # Tabelas de tenant que só aceitam INSERT (o papel do tenant não pode alterar nem apagar).
 APPEND_ONLY_TABLES = ("audit_log",)
 
@@ -169,12 +172,32 @@ def _target_urls(settings: Settings, dsn_ref: str | None) -> tuple[str, str]:
 # --- comandos ----------------------------------------------------------------------------
 
 
+def _ensure_extensions(conn: Connection) -> None:
+    """Extensões usadas pelas migrações de tenant. Se o servidor não tiver alguma, seguimos sem
+    ela: as migrações criam os índices só quando a extensão existe."""
+    for extension in DB_EXTENSIONS:
+        available = _run(
+            conn, sql.SQL("SELECT 1 FROM pg_available_extensions WHERE name = %s"), (extension,)
+        )
+        if available:
+            _run(
+                conn,
+                sql.SQL("CREATE EXTENSION IF NOT EXISTS {} SCHEMA public").format(
+                    sql.Identifier(extension)
+                ),
+            )
+        else:
+            log.warning("db_extension_unavailable", extension=extension)
+
+
 def init_database(settings: Settings) -> None:
-    """Prepara o banco principal: papel da aplicação + migrações do public. Pode rodar sempre."""
+    """Prepara o banco principal: papel da aplicação, extensões e migrações do public.
+    Pode rodar sempre."""
     admin_url = _admin_url(settings)
     with _admin_engine(admin_url).connect() as conn:
         app_role = _ensure_app_role(conn, settings.database_url)
         _run(conn, sql.SQL("REVOKE CREATE ON SCHEMA public FROM PUBLIC"))
+        _ensure_extensions(conn)
     upgrade_public(admin_url)
     with _admin_engine(admin_url).connect() as conn:
         role = sql.Identifier(app_role)
@@ -277,6 +300,7 @@ def create_tenant(
             if _run(conn, sql.SQL("SELECT 1 FROM pg_namespace WHERE nspname = %s"), (schema,)):
                 raise ProvisioningError(f"o schema {schema} já existe nesse banco")
             app_role = _ensure_app_role(conn, target_app)
+            _ensure_extensions(conn)  # banco dedicado também precisa delas
             s, r = sql.Identifier(schema), sql.Identifier(role)
             if not _role_exists(conn, role):
                 _run(conn, sql.SQL("CREATE ROLE {} NOLOGIN NOINHERIT").format(r))

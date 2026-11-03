@@ -2,6 +2,12 @@
 
 Mudanças visíveis para quem consome a API. Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.10.0] - 2026-11-03
+
+### Adicionado
+- Busca de clientes: parâmetro `q` em `GET /t/{slug}/customers` (nome sem acento nem
+  maiúsculas, todas as palavras; ou parte do telefone).
+
 ## [0.9.0] - 2026-11-03
 
 ### Adicionado

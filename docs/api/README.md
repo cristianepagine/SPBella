@@ -542,10 +542,28 @@ curl -X POST http://localhost:8000/t/studio-bella/customers -H "Authorization: B
 - `422 validation_error` com `fields[0].code`: `invalid_phone`, `invalid_email` ou
   `consent_required`.
 
-#### `GET /t/{slug}/customers` — listar
+#### `GET /t/{slug}/customers` — listar e buscar
 
-Ordem alfabética, `limit` (até 100) e `offset`. Responde `{"items": [...], "total": 123}`.
-A busca por nome ou telefone entra na SAL-07.
+Ordem alfabética, `limit` (até 100) e `offset`. Responde `{"items": [...], "total": 123}`; com
+busca, `total` é o número de resultados.
+
+Busca com `q`:
+
+| O que a pessoa digita | Como busca | Exemplo |
+|---|---|---|
+| Só números e sinais (3+ dígitos) | Em qualquer parte do **telefone** | `98888-77`, `(11) 9888` acham `+5511988887777` |
+| Texto | No **nome**, sem acento e sem diferenciar maiúsculas; com várias palavras, o nome precisa ter todas | `joao` acha "João"; `ana sil` acha "Ana Paula Silva" |
+
+```bash
+curl -G http://localhost:8000/t/studio-bella/customers -H "Authorization: Bearer $TOKEN" \
+  --data-urlencode "q=joao"
+```
+
+`%` e `_` são tratados como letras comuns. Com 5 mil clientes, a busca responde em
+milissegundos (o teste exige menos de 1 segundo; índices trigram `pg_trgm` aceleram o "contém").
+
+Famílias costumam dividir telefone, então o sistema **não** impede dois clientes com o mesmo
+número. O app avisa no cadastro, buscando pelo telefone digitado.
 
 #### `GET /t/{slug}/customers/{customer_id}` — ficha
 

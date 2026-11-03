@@ -263,8 +263,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Listar clientes
-         * @description Em ordem alfabética, com paginação (`limit` e `offset`). A busca entra na SAL-07.
+         * Listar e buscar clientes
+         * @description Em ordem alfabética, com paginação (`limit` e `offset`).
+         *
+         *     **Busca (`q`):**
+         *     - Só números e sinais (ex.: `98888-77`, `(11) 9888`): busca no **telefone**, em qualquer parte do número (mínimo 3 dígitos).
+         *     - Texto: busca no **nome**, sem diferenciar maiúsculas nem acentos (`joao` acha `João`). Com várias palavras, o nome precisa conter todas (`ana sil` acha `Ana Paula Silva`).
+         *     - `total` é o total de resultados da busca.
          */
         get: operations["list_customers_t__slug__customers_get"];
         put?: never;
@@ -2075,6 +2080,8 @@ export interface operations {
     list_customers_t__slug__customers_get: {
         parameters: {
             query?: {
+                /** @description Nome (ou parte) ou telefone (ou parte). */
+                q?: string | null;
                 limit?: number;
                 offset?: number;
             };

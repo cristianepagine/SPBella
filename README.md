@@ -71,7 +71,7 @@ Tudo pela CLI (no Docker: `docker compose exec api python -m app.cli ...`):
 
 | Comando | O que faz |
 |---|---|
-| `db init` | Cria/atualiza o papel da aplicação e aplica as migrações do `public`. Pode rodar sempre. |
+| `db init` | Cria/atualiza o papel da aplicação, as extensões do Postgres (`pg_trgm`) e aplica as migrações do `public`. Pode rodar sempre. |
 | `tenants create --slug studio-ana --name "Studio Ana" --country BR --owner-email ana@x.com --owner-name Ana` | Cria schema, papel, tabelas, o usuário dono e os dados iniciais da vertical. Mostra a **senha provisória uma única vez**. Se algo falhar no meio, desfaz tudo. Leva poucos segundos (o teste exige menos de 1 minuto). |
 | `tenants create ... --plan whatsapp_api` | Plano do salão: `base` (padrão) ou `whatsapp_api` (adicional do WhatsApp automático, V2) |
 | `tenants create ... --dsn-ref TENANT_DSN_STUDIO_ANA` | O mesmo, mas em **banco dedicado** (conexões nas variáveis `TENANT_DSN_STUDIO_ANA` e `..._ADMIN`) |
@@ -149,5 +149,5 @@ Depois, atualize o [guia](docs/api/README.md) se mudou alguma convenção e regi
 
 ## Status
 
-Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 a SAL-06 concluídas.
-Próxima: SAL-07 (busca rápida de clientes por nome ou telefone). Ver [backlog](docs/backlog.md).
+Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 a SAL-07 concluídas.
+Próxima: LGPD-01 (exportar e excluir os dados de um cliente). Ver [backlog](docs/backlog.md).

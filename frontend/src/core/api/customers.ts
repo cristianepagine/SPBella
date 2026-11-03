@@ -12,15 +12,35 @@ export type AuditEntry = components["schemas"]["AuditEntryOut"];
 
 export const PAGE_SIZE = 20;
 
-export function useCustomers(slug: string, page: number) {
+export function useCustomers(slug: string, page: number, search = "") {
+  const q = search.trim();
   return useQuery({
-    queryKey: ["customers", slug, page],
+    queryKey: ["customers", slug, page, q],
     queryFn: () =>
       call(() =>
         api.GET("/t/{slug}/customers", {
-          params: { path: { slug }, query: { limit: PAGE_SIZE, offset: page * PAGE_SIZE } },
+          params: {
+            path: { slug },
+            query: { limit: PAGE_SIZE, offset: page * PAGE_SIZE, ...(q ? { q } : {}) },
+          },
         }),
       ),
+    placeholderData: (previous) => previous, // mantém a lista na tela enquanto busca
+  });
+}
+
+/** Clientes com este telefone (para avisar de cadastro repetido). Só busca com 8+ dígitos. */
+export function useCustomersWithPhone(slug: string, phone: string) {
+  const digits = phone.replace(/\D/g, "");
+  return useQuery({
+    queryKey: ["customers-phone", slug, digits],
+    queryFn: () =>
+      call(() =>
+        api.GET("/t/{slug}/customers", {
+          params: { path: { slug }, query: { q: digits, limit: 5 } },
+        }),
+      ),
+    enabled: digits.length >= 8,
   });
 }
 

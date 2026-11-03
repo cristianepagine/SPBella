@@ -3,16 +3,19 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { PAGE_SIZE, useCustomers } from "../../../api/customers";
+import { useDebounced } from "../../../hooks/useDebounced";
 import { useAuth } from "../../../auth/AuthProvider";
 import { Card, FormError } from "../../../components/form";
 import { salonPath } from "../../../paths";
 
-/** Lista de clientes, em ordem alfabética. A busca por nome ou telefone entra na SAL-07. */
+/** Clientes em ordem alfabética, com busca por nome (sem acento) ou por telefone. */
 export function CustomersPage() {
   const { t } = useTranslation();
   const { slug } = useAuth();
   const [page, setPage] = useState(0);
-  const customers = useCustomers(slug, page);
+  const [search, setSearch] = useState("");
+  const query = useDebounced(search);
+  const customers = useCustomers(slug, page, query);
   const total = customers.data?.total ?? 0;
 
   return (
@@ -24,10 +27,28 @@ export function CustomersPage() {
         {t("customers.new")}
       </Link>
 
+      <label className="mb-4 block">
+        <span className="mb-1 block font-medium text-slate-800">{t("customers.search")}</span>
+        <input
+          type="search"
+          inputMode="search"
+          autoComplete="off"
+          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3"
+          placeholder={t("customers.searchPlaceholder")}
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(0);
+          }}
+        />
+      </label>
+
       {customers.isPending && <p role="status">{t("auth.loading")}</p>}
       {customers.isError && <FormError error={customers.error} />}
       {customers.data && customers.data.items.length === 0 && (
-        <p className="text-slate-600">{t("customers.empty")}</p>
+        <p className="text-slate-600">
+          {query.trim() ? t("customers.noResults", { q: query.trim() }) : t("customers.empty")}
+        </p>
       )}
       {customers.data && customers.data.items.length > 0 && (
         <>

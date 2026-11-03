@@ -99,6 +99,11 @@ jobs:
             -H "Authorization: Bearer $RECEPCAO" -H 'Content-Type: application/json' \
             -d '{"name":"Cliente CI","phone":"(11) 98888-7777","consents":["service"]}' \
             | python3 -c "import sys, json; print(json.load(sys.stdin)['id'])")
+          # busca sem acento/maiúsculas e por parte do telefone (SAL-07)
+          curl -fsS -G http://localhost:8000/t/studio-bella/customers --data-urlencode "q=CLIENTE ci" \
+            -H "Authorization: Bearer $RECEPCAO" | grep -q '"total":1'
+          curl -fsS -G http://localhost:8000/t/studio-bella/customers --data-urlencode "q=98888-77" \
+            -H "Authorization: Bearer $RECEPCAO" | grep -q '"Cliente CI"'
           curl -fsS "http://localhost:8000/t/studio-bella/audit?entity_id=$CLIENTE" \
             -H "Authorization: Bearer $TOKEN" | grep -q '"customer.created"'
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/t/studio-bella/audit \

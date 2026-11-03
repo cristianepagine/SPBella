@@ -88,6 +88,11 @@ mudança (`app/core/audit/service.py`). Só inclusão, por duas barreiras: o pap
 recusa alterações até do administrador. Guarda nomes de campos, nunca valores. O horário usa
 `clock_timestamp()` (e não `now()`) para ordenar registros da mesma transação.
 
+**Busca de clientes (SAL-07):** `customers.search_name` guarda o nome sem acento e em
+minúsculas (normalizado em Python, sem depender da extensão `unaccent`). Índices GIN trigram
+(`pg_trgm`) no nome e no telefone aceleram o "contém". O `db init` cria a extensão; se o servidor
+não tiver, a migração segue sem os índices e a busca continua certa, só sem a aceleração.
+
 **Mudanças em relação à proposta inicial:**
 - A tabela `public.tenant_migrations` não foi criada. A versão de cada salão fica na
   `alembic_version` do próprio schema (`tenants list` mostra), e os erros de migração aparecem na saída de

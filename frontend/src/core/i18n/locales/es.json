@@ -175,7 +175,12 @@
       "phone": "Teléfono (WhatsApp)",
       "emailOptional": "Correo (opcional)",
       "locale": "Idioma de los mensajes"
-    }
+    },
+    "search": "Buscar cliente",
+    "searchPlaceholder": "Nombre o teléfono",
+    "noResults": "No se encontró ningún cliente para “{{q}}”.",
+    "samePhone": "Ya hay un cliente con este teléfono:",
+    "samePhoneHint": "Si es la misma persona, abrí la ficha en vez de registrarla de nuevo. Si es otra persona de la familia, podés seguir."
   },
   "consent": {
     "title": "Consentimiento (protección de datos)",

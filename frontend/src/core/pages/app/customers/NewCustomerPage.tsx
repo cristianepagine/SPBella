@@ -1,8 +1,8 @@
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
-import { type ConsentPurpose, useCreateCustomer } from "../../../api/customers";
+import { type ConsentPurpose, useCreateCustomer, useCustomersWithPhone } from "../../../api/customers";
 import { useAuth } from "../../../auth/AuthProvider";
 import {
   Card,
@@ -11,6 +11,7 @@ import {
   SubmitButton,
   TextField,
 } from "../../../components/form";
+import { useDebounced } from "../../../hooks/useDebounced";
 import { salonPath } from "../../../paths";
 import { LocaleSelect, PURPOSES } from "./shared";
 
@@ -25,6 +26,8 @@ export function NewCustomerPage() {
   const [email, setEmail] = useState("");
   const [locale, setLocale] = useState<"pt-BR" | "es" | null>(null);
   const [consents, setConsents] = useState<ConsentPurpose[]>([]);
+  const samePhone = useCustomersWithPhone(slug, useDebounced(phone, 400));
+  const duplicates = samePhone.data?.items ?? [];
 
   function toggle(purpose: ConsentPurpose, on: boolean) {
     setConsents((current) => (on ? [...current, purpose] : current.filter((p) => p !== purpose)));
@@ -59,6 +62,21 @@ export function NewCustomerPage() {
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
+        {duplicates.length > 0 && (
+          <div role="status" className="mb-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <p className="font-medium">{t("customers.samePhone")}</p>
+            <ul className="mt-1">
+              {duplicates.map((c) => (
+                <li key={c.id}>
+                  <Link to={salonPath.customer(slug, c.id)} className="underline">
+                    {c.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-1">{t("customers.samePhoneHint")}</p>
+          </div>
+        )}
         <TextField
           label={t("customers.fields.emailOptional")}
           type="email"

@@ -148,6 +148,70 @@ describe("clientes", () => {
   });
 });
 
+describe("busca", () => {
+  it("busca pelo que a pessoa digita, sem buscar a cada tecla", async () => {
+    const requests = mockApi(
+      loggedAs("reception", {
+        "GET /t/alpha/customers": (request: Request) => {
+          const q = new URL(request.url).searchParams.get("q");
+          return json(
+            q
+              ? { items: [customer({ name: "João Conceição" })], total: 1 }
+              : { items: [customer()], total: 1 },
+          );
+        },
+      }),
+    );
+    renderWithProviders(<App />, { route: "/alpha/app/customers" });
+
+    await userEvent.type(await screen.findByLabelText("Buscar cliente"), "joao");
+
+    expect(await screen.findByText("João Conceição")).toBeInTheDocument();
+    const searches = requests
+      .map((r) => new URL(r.url).searchParams.get("q"))
+      .filter((q) => q !== null);
+    expect(searches).toEqual(["joao"]); // uma busca só, depois de parar de digitar
+  });
+
+  it("diz quando não encontra ninguém", async () => {
+    mockApi(
+      loggedAs("reception", {
+        "GET /t/alpha/customers": (request: Request) =>
+          json(
+            new URL(request.url).searchParams.get("q")
+              ? { items: [], total: 0 }
+              : { items: [customer()], total: 1 },
+          ),
+      }),
+    );
+    renderWithProviders(<App />, { route: "/alpha/app/customers" });
+
+    await userEvent.type(await screen.findByLabelText("Buscar cliente"), "zzz");
+
+    expect(await screen.findByText("Nenhum cliente encontrado para “zzz”.")).toBeInTheDocument();
+  });
+
+  it("no cadastro, avisa que o telefone já existe e leva à ficha", async () => {
+    mockApi(
+      loggedAs("reception", {
+        "GET /t/alpha/customers": (request: Request) => {
+          const q = new URL(request.url).searchParams.get("q");
+          return json(q === "11988887777" ? { items: [customer()], total: 1 } : { items: [], total: 0 });
+        },
+      }),
+    );
+    renderWithProviders(<App />, { route: "/alpha/app/customers/new" });
+
+    await userEvent.type(await screen.findByLabelText(/^Telefone/), "(11) 98888-7777");
+
+    expect(await screen.findByText("Já existe cliente com este telefone:")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Maria Silva" })).toHaveAttribute(
+      "href",
+      `/alpha/app/customers/${ID}`,
+    );
+  });
+});
+
 describe("histórico (auditoria)", () => {
   it("o dono vê quem alterou o quê e quando, no fuso do salão", async () => {
     mockApi(

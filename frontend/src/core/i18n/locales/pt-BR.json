@@ -175,7 +175,12 @@
       "phone": "Telefone (WhatsApp)",
       "emailOptional": "E-mail (opcional)",
       "locale": "Idioma das mensagens"
-    }
+    },
+    "search": "Buscar cliente",
+    "searchPlaceholder": "Nome ou telefone",
+    "noResults": "Nenhum cliente encontrado para “{{q}}”.",
+    "samePhone": "Já existe cliente com este telefone:",
+    "samePhoneHint": "Se for a mesma pessoa, abra a ficha em vez de cadastrar de novo. Se for outra pessoa da família, pode continuar."
   },
   "consent": {
     "title": "Consentimento (LGPD)",

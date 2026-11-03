@@ -20,6 +20,8 @@ class Customer(TenantBase):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(120))
+    # Nome sem acento e em minúsculas, para a busca (ver customers/search.py). Mantido pela API.
+    search_name: Mapped[str] = mapped_column(String(120), index=True)
     # Sempre no formato internacional E.164 (+5511988887777), validado pelo phonenumbers.
     phone_e164: Mapped[str] = mapped_column(String(16), index=True)
     email: Mapped[str | None] = mapped_column(String(254))

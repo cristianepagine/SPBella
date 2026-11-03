@@ -17,6 +17,7 @@ from app.core.accounts.permissions import Permission, permission_doc
 from app.core.audit.service import record
 from app.core.customers.models import Consent, Customer
 from app.core.customers.phones import InvalidPhoneError, display_phone, normalize_phone
+from app.core.customers.search import digits, like_pattern, looks_like_phone, normalize_text
 from app.core.infra.errors import ApiError, FieldError, error_responses
 from app.core.infra.security import is_valid_email, normalize_email
 from app.core.infra.tenancy import DbSession, TenantContext, TenantDep
@@ -163,8 +164,17 @@ DOC = permission_doc(Permission.CUSTOMERS_MANAGE)
 
 @router.get(
     "",
-    summary="Listar clientes",
-    description="Em ordem alfabética, com paginação (`limit` e `offset`). A busca entra na SAL-07.",
+    summary="Listar e buscar clientes",
+    description=(
+        "Em ordem alfabética, com paginação (`limit` e `offset`).\n\n"
+        "**Busca (`q`):**\n"
+        "- Só números e sinais (ex.: `98888-77`, `(11) 9888`): busca no **telefone**, em "
+        "qualquer parte do número (mínimo 3 dígitos).\n"
+        "- Texto: busca no **nome**, sem diferenciar maiúsculas nem acentos (`joao` acha "
+        "`João`). Com várias palavras, o nome precisa conter todas (`ana sil` acha "
+        "`Ana Paula Silva`).\n"
+        "- `total` é o total de resultados da busca."
+    ),
     response_model=CustomerPage,
     responses=error_responses(401, 403, 404, 422),
     openapi_extra=DOC,
@@ -172,11 +182,25 @@ DOC = permission_doc(Permission.CUSTOMERS_MANAGE)
 def list_customers(
     db: DbSession,
     _user: CustomerManager,
+    q: Annotated[
+        str | None,
+        Query(max_length=100, description="Nome (ou parte) ou telefone (ou parte)."),
+    ] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> CustomerPage:
-    total = db.scalar(select(func.count()).select_from(Customer))
-    customers = db.scalars(select(Customer).order_by(Customer.name).limit(limit).offset(offset))
+    conditions = []
+    term = (q or "").strip()
+    if term and looks_like_phone(term):
+        conditions.append(Customer.phone_e164.like(like_pattern(digits(term)), escape="\\"))
+    elif term:
+        for word in normalize_text(term).split(" "):
+            conditions.append(Customer.search_name.like(like_pattern(word), escape="\\"))
+
+    total = db.scalar(select(func.count()).select_from(Customer).where(*conditions))
+    customers = db.scalars(
+        select(Customer).where(*conditions).order_by(Customer.name).limit(limit).offset(offset)
+    )
     return CustomerPage(items=[_summary(c) for c in customers], total=total)
 
 
@@ -202,6 +226,7 @@ def create_customer(
     customer = Customer(
         id=uuid.uuid4(),
         name=payload.name.strip(),
+        search_name=normalize_text(payload.name),
         phone_e164=_phone(payload.phone, tenant),
         email=_email(payload.email),
         locale=payload.locale,
@@ -305,6 +330,8 @@ def change_customer(
     changed = [k for k, v in new_values.items() if getattr(customer, k) != v]
     for key in changed:
         setattr(customer, key, new_values[key])
+    if "name" in changed:
+        customer.search_name = normalize_text(customer.name)
     if changed:
         customer.updated_at = datetime.now(UTC)
         names = ["phone" if k == "phone_e164" else k for k in changed]
