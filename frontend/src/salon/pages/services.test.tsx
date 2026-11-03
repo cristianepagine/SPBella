@@ -129,13 +129,13 @@ describe("serviços", () => {
     expect(await patch.json()).toEqual({ is_active: false });
   });
 
-  it("aparece no menu do dono, entre Clientes e Equipe; não aparece para a recepção", async () => {
+  it("aparece no menu do dono, depois de Clientes; não aparece para a recepção", async () => {
     mockApi(loggedAs("owner"));
     const { unmount } = renderWithProviders(<App />, { route: "/alpha/app" });
 
     const nav = await screen.findByRole("navigation", { name: "Menu" });
     expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual([
-      "Início", "Clientes", "Serviços", "Equipe", "Configurações",
+      "Início", "Clientes", "Serviços", "Profissionais", "Equipe", "Configurações",
     ]);  // prettier-ignore
     unmount();
     resetSessions();

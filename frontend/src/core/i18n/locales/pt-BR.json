@@ -56,8 +56,16 @@
       "invalid_phone": "Esse telefone não parece certo. Confira o DDD e o número.",
       "invalid_email": "Esse e-mail não parece certo.",
       "consent_required": "Para cadastrar, o cliente precisa concordar com o uso dos dados para o atendimento.",
-      "invalid_timezone": "Fuso horário desconhecido."
-    }
+      "invalid_timezone": "Fuso horário desconhecido.",
+      "start_after_end": "Um horário termina antes de começar. Confira as horas.",
+      "overlapping_hours": "Há horários que se sobrepõem no mesmo dia.",
+      "invalid_time_step": "Use horários de 5 em 5 minutos (ex.: 9:00, 9:05, 9:10).",
+      "unknown_offering": "Um dos serviços não existe mais. Atualize a página.",
+      "unknown_user": "Essa conta não existe ou está desativada.",
+      "end_before_start": "O último dia vem antes do primeiro.",
+      "too_long": "O período pode ter no máximo um ano."
+    },
+    "user_already_linked": "Essa conta já está ligada a outro profissional."
   },
   "tenant": {
     "loading": "Carregando…",
@@ -98,7 +106,8 @@
     "home": "Início",
     "team": "Equipe",
     "settings": "Configurações",
-    "customers": "Clientes"
+    "customers": "Clientes",
+    "providers": "Profissionais"
   },
   "roles": {
     "owner": "Dono(a)",
@@ -204,5 +213,60 @@
       "email": "e-mail",
       "locale": "idioma"
     }
+  },
+  "weekdays": {
+    "0": "Segunda",
+    "1": "Terça",
+    "2": "Quarta",
+    "3": "Quinta",
+    "4": "Sexta",
+    "5": "Sábado",
+    "6": "Domingo"
+  },
+  "colors": {
+    "rose": "Rosa",
+    "violet": "Roxo",
+    "sky": "Azul",
+    "emerald": "Verde",
+    "amber": "Amarelo",
+    "orange": "Laranja",
+    "teal": "Verde-azulado",
+    "fuchsia": "Pink",
+    "lime": "Verde-limão",
+    "slate": "Cinza"
+  },
+  "providers": {
+    "title": "Profissionais",
+    "new": "Novo profissional",
+    "name": "Nome",
+    "add": "Cadastrar e configurar",
+    "empty": "Ainda não há profissionais. Cadastre quem atende para montar a agenda.",
+    "summary": "Trabalha {{days}} dias por semana · faz {{services}} serviços",
+    "inactive": "Desativado: não aparece na agenda",
+    "color": "Cor na agenda",
+    "account": "Conta de acesso",
+    "accountHint": "Ligue à conta que a pessoa usa para entrar: assim ela vê a própria agenda.",
+    "noAccount": "Não entra no sistema",
+    "save": "Salvar",
+    "deactivate": "Desativar profissional",
+    "activate": "Reativar profissional",
+    "hoursTitle": "Jornada semanal",
+    "from": "Início de {{day}}",
+    "to": "Fim de {{day}}",
+    "addRange": "+ Adicionar horário (ex.: depois do almoço)",
+    "removeRange": "Remover",
+    "saveHours": "Salvar jornada",
+    "offeringsTitle": "Serviços que faz",
+    "timeOffTitle": "Folgas e férias",
+    "noTimeOff": "Nenhuma folga marcada.",
+    "period": "{{from}} a {{to}}",
+    "cancelTimeOff": "Cancelar",
+    "fromDate": "Primeiro dia",
+    "toDate": "Último dia",
+    "toDateHint": "Deixe vazio se for um dia só.",
+    "reason": "Motivo (opcional)",
+    "addTimeOff": "Marcar folga",
+    "fromN": "Início do {{n}}º horário de {{day}}",
+    "toN": "Fim do {{n}}º horário de {{day}}"
   }
 }

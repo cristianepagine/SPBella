@@ -763,6 +763,75 @@
         "title": "NewMember",
         "type": "object"
       },
+      "NewProvider": {
+        "properties": {
+          "color": {
+            "anyOf": [
+              {
+                "enum": [
+                  "rose",
+                  "violet",
+                  "sky",
+                  "emerald",
+                  "amber",
+                  "orange",
+                  "teal",
+                  "fuchsia",
+                  "lime",
+                  "slate"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sem cor: o sistema escolhe uma livre.",
+            "title": "Color"
+          },
+          "name": {
+            "examples": [
+              "Paula Souza"
+            ],
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "offering_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Offering Ids",
+            "type": "array"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "working_hours": {
+            "items": {
+              "$ref": "#/components/schemas/WorkingRange"
+            },
+            "title": "Working Hours",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "NewProvider",
+        "type": "object"
+      },
       "NewService": {
         "properties": {
           "duration_min": {
@@ -790,6 +859,93 @@
         "title": "NewService",
         "type": "object"
       },
+      "NewTimeOff": {
+        "properties": {
+          "end_date": {
+            "examples": [
+              "2026-12-26"
+            ],
+            "format": "date",
+            "title": "End Date",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "examples": [
+              "Férias"
+            ],
+            "title": "Reason"
+          },
+          "start_date": {
+            "examples": [
+              "2026-12-24"
+            ],
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_date",
+          "end_date"
+        ],
+        "title": "NewTimeOff",
+        "type": "object"
+      },
+      "OfferingOut": {
+        "properties": {
+          "duration_min": {
+            "title": "Duration Min",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "duration_min",
+          "is_active"
+        ],
+        "title": "OfferingOut",
+        "type": "object"
+      },
+      "OfferingsIn": {
+        "properties": {
+          "offering_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Offering Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "offering_ids"
+        ],
+        "title": "OfferingsIn",
+        "type": "object"
+      },
       "Permission": {
         "enum": [
           "team.manage",
@@ -807,6 +963,147 @@
         ],
         "title": "Permission",
         "type": "string"
+      },
+      "ProviderChanges": {
+        "properties": {
+          "color": {
+            "anyOf": [
+              {
+                "enum": [
+                  "rose",
+                  "violet",
+                  "sky",
+                  "emerald",
+                  "amber",
+                  "orange",
+                  "teal",
+                  "fuchsia",
+                  "lime",
+                  "slate"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "`null` desliga a conta.",
+            "title": "User Id"
+          }
+        },
+        "title": "ProviderChanges",
+        "type": "object"
+      },
+      "ProviderOut": {
+        "properties": {
+          "color": {
+            "description": "Cor na agenda.",
+            "enum": [
+              "rose",
+              "violet",
+              "sky",
+              "emerald",
+              "amber",
+              "orange",
+              "teal",
+              "fuchsia",
+              "lime",
+              "slate"
+            ],
+            "title": "Color",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "offering_ids": {
+            "description": "Itens (serviços) que realiza.",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Offering Ids",
+            "type": "array"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Conta de acesso ligada (se a pessoa entra).",
+            "title": "User Id"
+          },
+          "working_hours": {
+            "description": "Jornada semanal. Dia sem faixa = não trabalha. Duas faixas no mesmo dia = intervalo entre elas (ex.: almoço).",
+            "items": {
+              "$ref": "#/components/schemas/WorkingRange"
+            },
+            "title": "Working Hours",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "color",
+          "is_active",
+          "user_id",
+          "offering_ids",
+          "working_hours"
+        ],
+        "title": "ProviderOut",
+        "type": "object"
       },
       "ReadinessResponse": {
         "properties": {
@@ -1243,6 +1540,60 @@
         "title": "TenantSettings",
         "type": "object"
       },
+      "TimeOffOut": {
+        "properties": {
+          "end_date": {
+            "description": "Último dia de folga (data local, inclusive).",
+            "format": "date",
+            "title": "End Date",
+            "type": "string"
+          },
+          "ends_at": {
+            "description": "Fim em UTC (meia-noite local do dia seguinte ao último).",
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "start_date": {
+            "description": "Primeiro dia de folga (data local).",
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "starts_at": {
+            "description": "Início em UTC (meia-noite local do primeiro dia).",
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "start_date",
+          "end_date",
+          "reason",
+          "starts_at",
+          "ends_at"
+        ],
+        "title": "TimeOffOut",
+        "type": "object"
+      },
       "UserOut": {
         "properties": {
           "email": {
@@ -1353,6 +1704,58 @@
         ],
         "title": "ValidationError",
         "type": "object"
+      },
+      "WorkingHoursIn": {
+        "properties": {
+          "ranges": {
+            "items": {
+              "$ref": "#/components/schemas/WorkingRange"
+            },
+            "title": "Ranges",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ranges"
+        ],
+        "title": "WorkingHoursIn",
+        "type": "object"
+      },
+      "WorkingRange": {
+        "properties": {
+          "end": {
+            "description": "Hora local, `HH:MM`.",
+            "examples": [
+              "12:00"
+            ],
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "title": "End",
+            "type": "string"
+          },
+          "start": {
+            "description": "Hora local, `HH:MM`.",
+            "examples": [
+              "09:00"
+            ],
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "title": "Start",
+            "type": "string"
+          },
+          "weekday": {
+            "description": "0 = segunda, 1 = terça, ..., 5 = sábado, 6 = domingo.",
+            "maximum": 6.0,
+            "minimum": 0.0,
+            "title": "Weekday",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "weekday",
+          "start",
+          "end"
+        ],
+        "title": "WorkingRange",
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -1366,7 +1769,7 @@
   "info": {
     "description": "API do **SPBella** (Agenda Salão), sistema de agendamento para salões e barbearias.\n\nGuia de uso, convenções (erros, datas, valores, autenticação) e exemplos: `docs/api/README.md` no repositório.",
     "title": "SPBella API",
-    "version": "0.8.0"
+    "version": "0.9.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -2859,6 +3262,956 @@
         "x-required-permission": "customers.manage"
       }
     },
+    "/t/{slug}/offerings": {
+      "get": {
+        "description": "Nome e duração de tudo o que pode ser agendado (no salão, os serviços, sem o preço). Por padrão só os ativos.",
+        "operationId": "list_offerings_t__slug__offerings_get",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_inactive",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Include Inactive",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OfferingOut"
+                  },
+                  "title": "Response List Offerings T  Slug  Offerings Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Listar itens agendáveis",
+        "tags": [
+          "Agenda"
+        ],
+        "x-allowed-roles": [
+          "owner",
+          "reception",
+          "professional"
+        ],
+        "x-required-permission": "catalog.view"
+      }
+    },
+    "/t/{slug}/providers": {
+      "get": {
+        "description": "Em ordem alfabética, com jornada e itens que realizam. Por padrão só os ativos.",
+        "operationId": "list_providers_t__slug__providers_get",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_inactive",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Include Inactive",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProviderOut"
+                  },
+                  "title": "Response List Providers T  Slug  Providers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Listar profissionais",
+        "tags": [
+          "Agenda"
+        ],
+        "x-allowed-roles": [
+          "owner",
+          "reception",
+          "professional"
+        ],
+        "x-required-permission": "agenda.view_own"
+      },
+      "post": {
+        "description": "Com jornada semanal e itens que realiza (os dois podem vir depois).\n\n- `422` com `fields[0].code`: `start_after_end`, `overlapping_hours`, `invalid_time_step` (minutos em múltiplos de 5), `unknown_offering`, `unknown_user`.\n- `409 user_already_linked`: a conta já está ligada a outro profissional.",
+        "operationId": "create_provider_t__slug__providers_post",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewProvider"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cadastrar profissional",
+        "tags": [
+          "Agenda"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "providers.manage"
+      }
+    },
+    "/t/{slug}/providers/{provider_id}": {
+      "patch": {
+        "description": "Nome, cor, ativo e conta ligada. Só os campos enviados mudam.",
+        "operationId": "change_provider_t__slug__providers__provider_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Provider Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProviderChanges"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Alterar profissional",
+        "tags": [
+          "Agenda"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "providers.manage"
+      }
+    },
+    "/t/{slug}/providers/{provider_id}/offerings": {
+      "put": {
+        "description": "Substitui a lista inteira. `422 unknown_offering` se algum ID não existir.",
+        "operationId": "set_offerings_t__slug__providers__provider_id__offerings_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Provider Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfferingsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Definir o que o profissional realiza",
+        "tags": [
+          "Agenda"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "providers.manage"
+      }
+    },
+    "/t/{slug}/providers/{provider_id}/time-off": {
+      "get": {
+        "description": "Folgas e férias que ainda não terminaram, da mais próxima para a mais distante.",
+        "operationId": "list_time_off_t__slug__providers__provider_id__time_off_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Provider Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TimeOffOut"
+                  },
+                  "title": "Response List Time Off T  Slug  Providers  Provider Id  Time Off Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Listar folgas",
+        "tags": [
+          "Agenda"
+        ],
+        "x-allowed-roles": [
+          "owner",
+          "reception",
+          "professional"
+        ],
+        "x-required-permission": "agenda.view_own"
+      },
+      "post": {
+        "description": "Dias inteiros, do `start_date` ao `end_date` (inclusive), no fuso do estabelecimento. Nesses dias o profissional não aparece com horários livres. `422 end_before_start` se o fim vier antes do início; no máximo 366 dias.",
+        "operationId": "add_time_off_t__slug__providers__provider_id__time_off_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Provider Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewTimeOff"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimeOffOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Registrar folga ou férias",
+        "tags": [
+          "Agenda"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "providers.manage"
+      }
+    },
+    "/t/{slug}/providers/{provider_id}/time-off/{time_off_id}": {
+      "delete": {
+        "description": "Remove a folga; os dias voltam a seguir a jornada semanal.",
+        "operationId": "delete_time_off_t__slug__providers__provider_id__time_off__time_off_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Provider Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "time_off_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Time Off Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cancelar folga",
+        "tags": [
+          "Agenda"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "providers.manage"
+      }
+    },
+    "/t/{slug}/providers/{provider_id}/working-hours": {
+      "put": {
+        "description": "Substitui a semana inteira pelas faixas enviadas. 0 = segunda, 1 = terça, ..., 5 = sábado, 6 = domingo. Horas locais `HH:MM`, em múltiplos de 5 minutos. Faixas do mesmo dia não podem se sobrepor. Lista vazia = o profissional não tem horários.",
+        "operationId": "set_working_hours_t__slug__providers__provider_id__working_hours_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Provider Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkingHoursIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Definir a jornada semanal",
+        "tags": [
+          "Agenda"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "providers.manage"
+      }
+    },
     "/t/{slug}/services": {
       "get": {
         "description": "Em ordem alfabética. Por padrão, só os ativos; `include_inactive=true` traz todos (para a tela de cadastro).",
@@ -3781,6 +5134,10 @@
     {
       "description": "Cadastro de clientes com consentimento (LGPD). Cada consulta e alteração fica no log de auditoria.",
       "name": "Clientes"
+    },
+    {
+      "description": "Profissionais, jornadas, folgas e itens agendáveis.",
+      "name": "Agenda"
     },
     {
       "description": "Quem criou, viu ou alterou dados pessoais, e quando (só o dono).",

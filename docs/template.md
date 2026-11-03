@@ -26,7 +26,7 @@ Módulos do core no back-end:
 | `core/system/` | healthcheck | — |
 | `core/customers/` | clientes, telefones (E.164), consentimento por finalidade | SAL-04, SAL-07 |
 | `core/audit/` | log de auditoria só de inclusão; `record(...)` na mesma transação da mudança | SAL-04 |
-| `core/scheduling/` | item agendável (`Offering`: nome, duração, ativo); depois profissionais, jornadas, bloqueios, agendamentos, horários livres | SAL-05, 06, 08–10, 13 |
+| `core/scheduling/` | item agendável (`Offering`), profissionais (`Provider`) com jornada semanal, itens que realizam e folgas (`TimeOff`); depois agendamentos e horários livres | SAL-05, 06, 08–10, 13 |
 | `core/notifications/` | fila, `NotificationChannel`, e-mail, wa.me | SAL-14, 15 |
 | `core/reports/` | relatórios e Excel | SAL-16 |
 
@@ -54,8 +54,11 @@ Na vertical `salon`:
    No front, a vertical acrescenta itens ao menu da equipe (`NAV` em `src/App.tsx`, no formato
    `NavItem` de `src/core/layout/nav.ts`) e as rotas dela dentro de `StaffLayout`.
 
-3. **Migrações:** um único histórico do Alembic. Uma migração da vertical pode depender de
-   uma do core (`down_revision`), nunca o contrário.
+3. **Migrações:** um **ramo** do Alembic por módulo, no mesmo histórico: `core` (rótulo
+   `core@head`) e o da vertical (rótulo `salon@head`). A primeira migração da vertical não tem
+   `down_revision`; ela declara `branch_labels=("<vertical>",)` e `depends_on` nas migrações do
+   core de que precisa. **O core nunca depende da vertical** (um teste garante): assim a pasta
+   `core` pode ser copiada sozinha. O upgrade é sempre para `heads` (um por módulo).
 4. **Textos:** o core escreve neutro ("equipe", "estabelecimento"). A vertical troca o
    vocabulário sobrescrevendo as mesmas chaves ("salão") e acrescenta as suas.
 5. **Na dúvida, fica na vertical.** Algo só sobe para o core quando um segundo sistema

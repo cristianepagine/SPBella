@@ -1,14 +1,16 @@
-"""Agenda genérica (core). Profissionais, jornadas, bloqueios e agendamentos chegam no SAL-06+.
+"""Agenda genérica (core).
 
-`Offering` é o "item agendável": tem nome e duração. Preço e o resto do que é específico de um
-tipo de negócio ficam na vertical (no salão: app/salon/services/models.py).
+- `Offering`: o "item agendável" (nome e duração). Preço e o que mais for específico de um tipo
+  de negócio ficam na vertical (no salão: app/salon/services/models.py).
+- `Provider`: quem atende (no salão, o profissional), com jornada semanal, folgas e os itens
+  que realiza. Agendamentos chegam no SAL-09.
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, time
 
-from sqlalchemy import CheckConstraint, DateTime, String, func, text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, SmallInteger, String, Time, func, text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.infra.models import TenantBase
 
@@ -35,3 +37,87 @@ class Offering(TenantBase):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+# Cores da agenda (SAL-08). Fixas para combinarem com o tema e terem contraste.
+PROVIDER_COLORS = (
+    "rose", "violet", "sky", "emerald", "amber", "orange", "teal", "fuchsia", "lime", "slate",
+)  # fmt: skip
+
+
+class Provider(TenantBase):
+    __tablename__ = "providers"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String(120))
+    color: Mapped[str] = mapped_column(String(16))
+    is_active: Mapped[bool] = mapped_column(server_default=text("true"))
+    # Conta de acesso desta pessoa (se ela entra no sistema). Uma conta = um profissional.
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), unique=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    working_hours: Mapped[list["WorkingHours"]] = relationship(
+        cascade="all, delete-orphan",
+        order_by="(WorkingHours.weekday, WorkingHours.start_time)",
+        lazy="selectin",
+    )
+    offerings: Mapped[list[Offering]] = relationship(
+        secondary="provider_offerings", order_by=Offering.name, lazy="selectin"
+    )
+
+
+class ProviderOffering(TenantBase):
+    __tablename__ = "provider_offerings"
+
+    provider_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("providers.id", ondelete="CASCADE"), primary_key=True
+    )
+    offering_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("offerings.id", ondelete="CASCADE"), primary_key=True
+    )
+
+
+class WorkingHours(TenantBase):
+    """Uma faixa da jornada semanal, em HORA LOCAL do estabelecimento (não é um instante).
+
+    weekday: 0 = segunda ... 6 = domingo (ISO). Vários registros no mesmo dia = intervalo
+    entre eles (ex.: 09:00-12:00 e 13:00-19:00 = almoço das 12h às 13h).
+    """
+
+    __tablename__ = "working_hours"
+    __table_args__ = (
+        CheckConstraint("weekday BETWEEN 0 AND 6", name="weekday"),
+        CheckConstraint("start_time < end_time", name="start_before_end"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    provider_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("providers.id", ondelete="CASCADE"), index=True
+    )
+    weekday: Mapped[int] = mapped_column(SmallInteger)
+    start_time: Mapped[time] = mapped_column(Time)
+    end_time: Mapped[time] = mapped_column(Time)
+
+
+class TimeOff(TenantBase):
+    """Folga, férias ou bloqueio. Instantes em UTC.
+
+    provider_id nulo = vale para todo o estabelecimento (feriado); usado a partir do SAL-10.
+    """
+
+    __tablename__ = "time_off"
+    __table_args__ = (CheckConstraint("starts_at < ends_at", name="start_before_end"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    provider_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("providers.id", ondelete="CASCADE"), index=True
+    )
+    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    reason: Mapped[str | None] = mapped_column(String(120))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

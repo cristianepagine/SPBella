@@ -9,6 +9,8 @@ import { CustomerPage } from "./core/pages/app/customers/CustomerPage";
 import { CustomersPage } from "./core/pages/app/customers/CustomersPage";
 import { NewCustomerPage } from "./core/pages/app/customers/NewCustomerPage";
 import { StaffHomePage } from "./core/pages/app/HomePage";
+import { ProviderPage } from "./core/pages/app/providers/ProviderPage";
+import { ProvidersPage } from "./core/pages/app/providers/ProvidersPage";
 import { SettingsPage } from "./core/pages/app/SettingsPage";
 import { TeamPage } from "./core/pages/app/TeamPage";
 import { ChangePasswordPage } from "./core/pages/auth/ChangePasswordPage";
@@ -52,6 +54,10 @@ export function App() {
                   </Route>
                   <Route element={<RequirePermission permission="catalog.manage" />}>
                     <Route path="services" element={<ServicesPage />} />
+                  </Route>
+                  <Route element={<RequirePermission permission="providers.manage" />}>
+                    <Route path="providers" element={<ProvidersPage />} />
+                    <Route path="providers/:providerId" element={<ProviderPage />} />
                   </Route>
                   <Route element={<RequirePermission permission="team.manage" />}>
                     <Route path="team" element={<TeamPage />} />

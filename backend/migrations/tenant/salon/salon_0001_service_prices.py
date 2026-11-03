@@ -1,10 +1,11 @@
 """Salão: preço de cada serviço
 
 Revision ID: salon_0001_service_prices
-Revises: 0005_offerings
+Revises:
 Create Date: 2026-11-03
 
-Primeira migração da vertical salon. Depende da tabela offerings do core.
+Primeira migração da vertical salon: começa o ramo "salon", que DEPENDE do core (depends_on),
+nunca o contrário. Assim o core pode ser copiado para outro sistema sem esta pasta.
 """
 
 from collections.abc import Sequence
@@ -13,9 +14,9 @@ import sqlalchemy as sa
 from alembic import op
 
 revision: str = "salon_0001_service_prices"
-down_revision: str | None = "0005_offerings"
-branch_labels: str | Sequence[str] | None = None
-depends_on: str | Sequence[str] | None = None
+down_revision: str | None = None
+branch_labels: str | Sequence[str] | None = ("salon",)
+depends_on: str | Sequence[str] | None = ("0005_offerings",)  # tabela offerings do core
 
 
 def upgrade() -> None:

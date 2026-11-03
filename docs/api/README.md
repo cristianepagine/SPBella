@@ -165,7 +165,7 @@ fica em `backend/app/core/accounts/permissions.py` e é a fonte única de verdad
 | `audit.view` | Ver quem alterou dados de clientes (SAL-04) | ✅ | | |
 | `catalog.view` | Ver a lista de serviços (para agendar) | ✅ | ✅ | ✅ |
 | `catalog.manage` | Cadastrar serviços e preços | ✅ | | |
-| `providers.manage` | Profissionais e jornadas (SAL-06) | ✅ | | |
+| `providers.manage` | Profissionais, jornadas, serviços de cada um e folgas | ✅ | | |
 | `customers.manage` | Cadastrar e buscar clientes (SAL-07) | ✅ | ✅ | |
 | `agenda.view_all` | Agenda de todos os profissionais (SAL-08) | ✅ | ✅ | |
 | `agenda.view_own` | A própria agenda (SAL-08) | ✅ | ✅ | ✅ |
@@ -412,6 +412,57 @@ Para mostrar o app, nesta ordem:
 Números, moeda e datas seguem a convenção do **país** do estabelecimento, no idioma da pessoa
 (em um salão paraguaio, o guarani aparece como "Gs. 150.000"). Horários em 24 h, sempre no fuso
 do estabelecimento.
+
+### Profissionais
+
+Ver: `agenda.view_own` (todos da equipe). Cadastrar e alterar: `providers.manage` (dono).
+
+```json
+{
+  "id": "…", "name": "Paula Souza", "color": "sky", "is_active": true,
+  "user_id": "…",
+  "offering_ids": ["…"],
+  "working_hours": [
+    {"weekday": 1, "start": "09:00", "end": "12:00"},
+    {"weekday": 1, "start": "13:00", "end": "19:00"}
+  ]
+}
+```
+
+- **`weekday`**: 0 = segunda, 1 = terça, …, 6 = domingo (padrão ISO; atenção, o `getDay()` do
+  JavaScript começa no domingo).
+- **`start` / `end`**: hora **local** do estabelecimento, `HH:MM`, em múltiplos de 5 minutos. Duas
+  faixas no mesmo dia = intervalo entre elas (o almoço do exemplo). Dia sem faixa = não trabalha.
+  Turno que passa da meia-noite não é suportado.
+- **`color`**: uma de `rose`, `violet`, `sky`, `emerald`, `amber`, `orange`, `teal`, `fuchsia`,
+  `lime`, `slate`. Sem cor, o sistema escolhe uma ainda não usada.
+- **`user_id`**: a conta de acesso da pessoa (de qualquer perfil, inclusive o dono que também
+  atende). Uma conta só pode estar ligada a um profissional (`409 user_already_linked`).
+
+| Rota | O que faz |
+|---|---|
+| `POST /t/{slug}/providers` | Cadastra (`name`, e opcionalmente `color`, `user_id`, `offering_ids`, `working_hours`) |
+| `PATCH /t/{slug}/providers/{provider_id}` | Muda `name`, `color`, `is_active`, `user_id` (`null` desliga a conta) |
+| `PUT /t/{slug}/providers/{provider_id}/working-hours` | Substitui a semana inteira: `{"ranges": [...]}` |
+| `PUT /t/{slug}/providers/{provider_id}/offerings` | Substitui o que a pessoa faz: `{"offering_ids": [...]}` |
+
+#### Folgas e férias
+
+```bash
+curl -X POST http://localhost:8000/t/studio-bella/providers/$ID/time-off \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"start_date": "2026-12-24", "end_date": "2026-12-26", "reason": "Natal"}'
+```
+
+Dias inteiros, do primeiro ao último **inclusive**, no fuso do estabelecimento. A resposta traz
+também os instantes em UTC: `starts_at` = meia-noite local do primeiro dia; `ends_at` =
+meia-noite local do dia seguinte ao último. `GET` lista as folgas que ainda não terminaram;
+`DELETE /time-off/{time_off_id}` cancela uma folga.
+
+### Itens agendáveis
+
+`GET /t/{slug}/offerings` (`catalog.view`): nome e duração de tudo o que pode ser agendado, sem
+preço. É a versão genérica (do core) da lista de serviços; no salão, `/services` traz o preço.
 
 ### Serviços (vertical salão)
 

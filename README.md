@@ -86,10 +86,17 @@ Padrões por país: BR → `pt-BR`, `America/Sao_Paulo`, `BRL`; PY → `es`, `Am
 
 ```bash
 cd backend
-uv run alembic -n public revision --autogenerate -m "descricao"                         # tabelas de controle
+uv run alembic -n public revision --autogenerate -m "descricao"   # tabelas de controle
+
+# tabelas de tenant: um RAMO por módulo; diga em qual a migração entra
 uv run alembic -n tenant -x schema=t_studio_bella revision --autogenerate \
-    --version-path migrations/tenant/core -m "descricao"   # tabelas genéricas (ou .../salon)
+    --head core@head -m "descricao"     # genérico (template)
+uv run alembic -n tenant -x schema=t_studio_bella revision --autogenerate \
+    --head salon@head -m "descricao"    # só do salão
 ```
+
+Uma migração do salão que precise de uma tabela nova do core declara `depends_on` nela. O
+contrário (o core depender do salão) é proibido: um teste falha.
 
 Migrações de salão precisam funcionar com o código da versão anterior (primeiro adicionar, só depois
 remover), porque durante o `migrate --all` há salões em versões diferentes.
@@ -142,5 +149,5 @@ Depois, atualize o [guia](docs/api/README.md) se mudou alguma convenção e regi
 
 ## Status
 
-Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 a SAL-05 concluídas.
-Próxima: SAL-06 (profissionais, jornadas, folgas e serviços de cada um). Ver [backlog](docs/backlog.md).
+Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 a SAL-06 concluídas.
+Próxima: SAL-07 (busca rápida de clientes por nome ou telefone). Ver [backlog](docs/backlog.md).

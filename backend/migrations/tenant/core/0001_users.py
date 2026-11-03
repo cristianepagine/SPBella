@@ -12,7 +12,7 @@ from alembic import op
 
 revision: str = "0001_users"
 down_revision: str | None = None
-branch_labels: str | Sequence[str] | None = None
+branch_labels: str | Sequence[str] | None = ("core",)  # ramo do template
 depends_on: str | Sequence[str] | None = None
 
 

@@ -2,9 +2,11 @@
 
 Dois ambientes:
 - migrations/public  → tabelas de controle (public.tenants)
-- migrations/tenant  → tabelas de cada tenant; roda uma vez por schema. Um histórico ÚNICO,
-  com os arquivos em uma pasta por módulo: migrations/tenant/core (template) e
-  migrations/tenant/<vertical> (ex.: salon). Um sistema novo copia só a pasta core.
+- migrations/tenant  → tabelas de cada tenant; roda uma vez por schema. Uma pasta por módulo:
+  migrations/tenant/core (template, sequência própria) e migrations/tenant/<vertical>
+  (um RAMO do Alembic, com branch_labels=("<vertical>",), que declara depends_on nas migrações
+  do core de que precisa). O core nunca depende da vertical: um sistema novo copia só a pasta
+  core. Por isso há um "head" por módulo, e o upgrade é sempre para "heads".
 """
 
 import os
@@ -45,11 +47,14 @@ def upgrade_public(admin_url: str) -> None:
 
 
 def upgrade_tenant(admin_url: str, schema: str) -> None:
-    command.upgrade(alembic_config("tenant", admin_url, schema), "head")
+    command.upgrade(alembic_config("tenant", admin_url, schema), "heads")
+
+
+def tenant_heads() -> list[str]:
+    """Última migração de cada módulo (core e vertical), em ordem alfabética."""
+    return sorted(ScriptDirectory.from_config(alembic_config("tenant", "")).get_heads())
 
 
 def tenant_head() -> str:
-    script = ScriptDirectory.from_config(alembic_config("tenant", ""))
-    head = script.get_current_head()
-    assert head is not None
-    return head
+    """Versão de um tenant em dia, como `tenants list` mostra: "0006_x+salon_0001_y"."""
+    return "+".join(tenant_heads())

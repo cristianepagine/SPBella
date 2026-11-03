@@ -174,10 +174,13 @@ def test_list_shows_revision_of_each_salon(db_settings, tenants):
 
 
 def test_seed_demo_creates_two_salons_once(db_settings, tenants):
-    first = seed_demo(db_settings, VERTICAL)
+    # Outro teste pode já ter criado a demonstração antes; o que importa: depois de rodar,
+    # os dois salões existem, e rodar de novo não cria nada.
+    seed_demo(db_settings, VERTICAL)
     second = seed_demo(db_settings, VERTICAL)
 
-    assert {c.tenant.slug for c in first} == {"studio-bella", "salon-asuncion"}
+    slugs = {t["slug"] for t in list_tenants(db_settings)}
+    assert {"studio-bella", "salon-asuncion"} <= slugs
     assert second == []
     databases = Databases(db_settings)
     with tenant_session(databases, load_tenant(databases, "salon-asuncion")) as session:
@@ -273,9 +276,20 @@ def test_create_tenant_takes_less_than_a_minute(db_settings, tenants):
     assert elapsed < 60, f"levou {elapsed:.1f}s"
 
 
-def test_tenant_migrations_are_split_by_module_in_a_single_history():
+def test_tenant_migrations_have_one_branch_per_module():
     names = [d.name for d in tenant_version_dirs()]
 
     assert names == ["core", "salon"]
-    heads = ScriptDirectory.from_config(alembic_config("tenant", "")).get_heads()
-    assert heads == [tenant_head()]  # um único head, mesmo com duas pastas
+    script = ScriptDirectory.from_config(alembic_config("tenant", ""))
+    heads = script.get_heads()
+    assert len(heads) == 2  # um por módulo
+    core_head, salon_head = sorted(heads, key=lambda h: h.startswith("salon"))
+    # O core nunca depende da vertical (o template é copiado sem a pasta salon)...
+    core_chain = {r.revision for r in script.iterate_revisions(core_head, "base")}
+    assert not any(rev.startswith("salon") for rev in core_chain)
+    # ...e a vertical declara de que parte do core precisa.
+    salon_root = script.get_revision("salon_0001_service_prices")
+    deps = salon_root.dependencies
+    assert "0005_offerings" in ((deps,) if isinstance(deps, str) else deps)
+    assert "salon" in salon_root.branch_labels
+    assert "core" in script.get_revision("0001_users").branch_labels

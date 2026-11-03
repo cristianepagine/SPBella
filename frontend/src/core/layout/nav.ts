@@ -25,6 +25,13 @@ export const CORE_NAV: NavItem[] = [
     permission: "customers.manage",
     order: 20,
   },
+  {
+    id: "providers",
+    labelKey: "nav.providers",
+    to: salonPath.providers,
+    permission: "providers.manage",
+    order: 40,
+  },
   { id: "team", labelKey: "nav.team", to: salonPath.team, permission: "team.manage", order: 80 },
   {
     id: "settings",

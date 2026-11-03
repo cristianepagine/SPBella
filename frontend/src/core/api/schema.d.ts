@@ -329,6 +329,157 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/t/{slug}/offerings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar itens agendáveis
+         * @description Nome e duração de tudo o que pode ser agendado (no salão, os serviços, sem o preço). Por padrão só os ativos.
+         */
+        get: operations["list_offerings_t__slug__offerings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar profissionais
+         * @description Em ordem alfabética, com jornada e itens que realizam. Por padrão só os ativos.
+         */
+        get: operations["list_providers_t__slug__providers_get"];
+        put?: never;
+        /**
+         * Cadastrar profissional
+         * @description Com jornada semanal e itens que realiza (os dois podem vir depois).
+         *
+         *     - `422` com `fields[0].code`: `start_after_end`, `overlapping_hours`, `invalid_time_step` (minutos em múltiplos de 5), `unknown_offering`, `unknown_user`.
+         *     - `409 user_already_linked`: a conta já está ligada a outro profissional.
+         */
+        post: operations["create_provider_t__slug__providers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/providers/{provider_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Alterar profissional
+         * @description Nome, cor, ativo e conta ligada. Só os campos enviados mudam.
+         */
+        patch: operations["change_provider_t__slug__providers__provider_id__patch"];
+        trace?: never;
+    };
+    "/t/{slug}/providers/{provider_id}/offerings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Definir o que o profissional realiza
+         * @description Substitui a lista inteira. `422 unknown_offering` se algum ID não existir.
+         */
+        put: operations["set_offerings_t__slug__providers__provider_id__offerings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/providers/{provider_id}/time-off": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar folgas
+         * @description Folgas e férias que ainda não terminaram, da mais próxima para a mais distante.
+         */
+        get: operations["list_time_off_t__slug__providers__provider_id__time_off_get"];
+        put?: never;
+        /**
+         * Registrar folga ou férias
+         * @description Dias inteiros, do `start_date` ao `end_date` (inclusive), no fuso do estabelecimento. Nesses dias o profissional não aparece com horários livres. `422 end_before_start` se o fim vier antes do início; no máximo 366 dias.
+         */
+        post: operations["add_time_off_t__slug__providers__provider_id__time_off_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/providers/{provider_id}/time-off/{time_off_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Cancelar folga
+         * @description Remove a folga; os dias voltam a seguir a jornada semanal.
+         */
+        delete: operations["delete_time_off_t__slug__providers__provider_id__time_off__time_off_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/providers/{provider_id}/working-hours": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Definir a jornada semanal
+         * @description Substitui a semana inteira pelas faixas enviadas. 0 = segunda, 1 = terça, ..., 5 = sábado, 6 = domingo. Horas locais `HH:MM`, em múltiplos de 5 minutos. Faixas do mesmo dia não podem se sobrepor. Lista vazia = o profissional não tem horários.
+         */
+        put: operations["set_working_hours_t__slug__providers__provider_id__working_hours_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/t/{slug}/services": {
         parameters: {
             query?: never;
@@ -809,6 +960,25 @@ export interface components {
              */
             role: "owner" | "reception" | "professional";
         };
+        /** NewProvider */
+        NewProvider: {
+            /**
+             * Color
+             * @description Sem cor: o sistema escolhe uma livre.
+             */
+            color?: ("rose" | "violet" | "sky" | "emerald" | "amber" | "orange" | "teal" | "fuchsia" | "lime" | "slate") | null;
+            /**
+             * Name
+             * @example Paula Souza
+             */
+            name: string;
+            /** Offering Ids */
+            offering_ids?: string[];
+            /** User Id */
+            user_id?: string | null;
+            /** Working Hours */
+            working_hours?: components["schemas"]["WorkingRange"][];
+        };
         /** NewService */
         NewService: {
             /**
@@ -824,11 +994,97 @@ export interface components {
              */
             price_minor: number;
         };
+        /** NewTimeOff */
+        NewTimeOff: {
+            /**
+             * End Date
+             * Format: date
+             * @example 2026-12-26
+             */
+            end_date: string;
+            /**
+             * Reason
+             * @example Férias
+             */
+            reason?: string | null;
+            /**
+             * Start Date
+             * Format: date
+             * @example 2026-12-24
+             */
+            start_date: string;
+        };
+        /** OfferingOut */
+        OfferingOut: {
+            /** Duration Min */
+            duration_min: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Name */
+            name: string;
+        };
+        /** OfferingsIn */
+        OfferingsIn: {
+            /** Offering Ids */
+            offering_ids: string[];
+        };
         /**
          * Permission
          * @enum {string}
          */
         Permission: "team.manage" | "settings.manage" | "audit.view" | "catalog.view" | "catalog.manage" | "providers.manage" | "customers.manage" | "agenda.view_all" | "agenda.view_own" | "agenda.manage" | "time_off.manage" | "reports.view";
+        /** ProviderChanges */
+        ProviderChanges: {
+            /** Color */
+            color?: ("rose" | "violet" | "sky" | "emerald" | "amber" | "orange" | "teal" | "fuchsia" | "lime" | "slate") | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /**
+             * User Id
+             * @description `null` desliga a conta.
+             */
+            user_id?: string | null;
+        };
+        /** ProviderOut */
+        ProviderOut: {
+            /**
+             * Color
+             * @description Cor na agenda.
+             * @enum {string}
+             */
+            color: "rose" | "violet" | "sky" | "emerald" | "amber" | "orange" | "teal" | "fuchsia" | "lime" | "slate";
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /**
+             * Offering Ids
+             * @description Itens (serviços) que realiza.
+             */
+            offering_ids: string[];
+            /**
+             * User Id
+             * @description Conta de acesso ligada (se a pessoa entra).
+             */
+            user_id: string | null;
+            /**
+             * Working Hours
+             * @description Jornada semanal. Dia sem faixa = não trabalha. Duas faixas no mesmo dia = intervalo entre elas (ex.: almoço).
+             */
+            working_hours: components["schemas"]["WorkingRange"][];
+        };
         /** ReadinessResponse */
         ReadinessResponse: {
             /**
@@ -1042,6 +1298,40 @@ export interface components {
              */
             timezone_options: string[];
         };
+        /** TimeOffOut */
+        TimeOffOut: {
+            /**
+             * End Date
+             * Format: date
+             * @description Último dia de folga (data local, inclusive).
+             */
+            end_date: string;
+            /**
+             * Ends At
+             * Format: date-time
+             * @description Fim em UTC (meia-noite local do dia seguinte ao último).
+             */
+            ends_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Reason */
+            reason: string | null;
+            /**
+             * Start Date
+             * Format: date
+             * @description Primeiro dia de folga (data local).
+             */
+            start_date: string;
+            /**
+             * Starts At
+             * Format: date-time
+             * @description Início em UTC (meia-noite local do primeiro dia).
+             */
+            starts_at: string;
+        };
         /** UserOut */
         UserOut: {
             /** Email */
@@ -1089,6 +1379,31 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** WorkingHoursIn */
+        WorkingHoursIn: {
+            /** Ranges */
+            ranges: components["schemas"]["WorkingRange"][];
+        };
+        /** WorkingRange */
+        WorkingRange: {
+            /**
+             * End
+             * @description Hora local, `HH:MM`.
+             * @example 12:00
+             */
+            end: string;
+            /**
+             * Start
+             * @description Hora local, `HH:MM`.
+             * @example 09:00
+             */
+            start: string;
+            /**
+             * Weekday
+             * @description 0 = segunda, 1 = terça, ..., 5 = sábado, 6 = domingo.
+             */
+            weekday: number;
         };
     };
     responses: never;
@@ -2030,6 +2345,584 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_offerings_t__slug__offerings_get: {
+        parameters: {
+            query?: {
+                include_inactive?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfferingOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_providers_t__slug__providers_get: {
+        parameters: {
+            query?: {
+                include_inactive?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_provider_t__slug__providers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewProvider"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    change_provider_t__slug__providers__provider_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderChanges"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_offerings_t__slug__providers__provider_id__offerings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfferingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_time_off_t__slug__providers__provider_id__time_off_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TimeOffOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_time_off_t__slug__providers__provider_id__time_off_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewTimeOff"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TimeOffOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_time_off_t__slug__providers__provider_id__time_off__time_off_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+                time_off_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_working_hours_t__slug__providers__provider_id__working_hours_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkingHoursIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderOut"];
                 };
             };
             /** @description Unauthorized */

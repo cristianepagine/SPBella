@@ -8,6 +8,8 @@ export const salonPath = {
   customers: (slug: string) => `/${slug}/app/customers`,
   newCustomer: (slug: string) => `/${slug}/app/customers/new`,
   customer: (slug: string, id: string) => `/${slug}/app/customers/${id}`,
+  providers: (slug: string) => `/${slug}/app/providers`,
+  provider: (slug: string, id: string) => `/${slug}/app/providers/${id}`,
   changePassword: (slug: string) => `/${slug}/change-password`,
   forgotPassword: (slug: string) => `/${slug}/forgot-password`,
 };

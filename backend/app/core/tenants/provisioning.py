@@ -152,7 +152,8 @@ def _tenant_revision(conn: Connection, schema: str) -> str | None:
     if exists[0][0] is None:
         return None
     rows = _run(conn, sql.SQL("SELECT version_num FROM {}").format(table))
-    return rows[0][0] if rows else None
+    # Uma linha por módulo (core e vertical); mesmo formato de migrations.tenant_head().
+    return "+".join(sorted(r[0] for r in rows)) or None
 
 
 def _target_urls(settings: Settings, dsn_ref: str | None) -> tuple[str, str]:

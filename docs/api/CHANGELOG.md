@@ -2,6 +2,17 @@
 
 Mudanças visíveis para quem consome a API. Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.9.0] - 2026-11-03
+
+### Adicionado
+- Profissionais: `GET /t/{slug}/providers` (`agenda.view_own`), `POST`, `PATCH /{provider_id}`,
+  `PUT /{provider_id}/working-hours`, `PUT /{provider_id}/offerings` (`providers.manage`).
+- Folgas: `GET /t/{slug}/providers/{provider_id}/time-off`, `POST` e
+  `DELETE /{time_off_id}` (escrever: `providers.manage`).
+- Itens agendáveis genéricos: `GET /t/{slug}/offerings` (`catalog.view`).
+- Códigos: `409 user_already_linked`; em `422`: `start_after_end`, `overlapping_hours`,
+  `invalid_time_step`, `unknown_offering`, `unknown_user`, `end_before_start`, `too_long`.
+
 ## [0.8.0] - 2026-11-03
 
 ### Adicionado

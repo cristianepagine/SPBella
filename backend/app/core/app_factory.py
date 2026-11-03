@@ -18,6 +18,7 @@ from app.core.infra.mailer import build_mailer
 from app.core.infra.middleware import REQUEST_ID_HEADER, RequestContextMiddleware
 from app.core.infra.ratelimit import RateLimiter
 from app.core.infra.turnstile import build_turnstile
+from app.core.scheduling import offerings_api, providers_api
 from app.core.system import api as system_api
 from app.core.tenants import api as tenants_api
 from app.core.tenants import settings_api
@@ -46,6 +47,10 @@ CORE_OPENAPI_TAGS = [
         "name": "Clientes",
         "description": "Cadastro de clientes com consentimento (LGPD). Cada consulta e "
         "alteração fica no log de auditoria.",
+    },
+    {
+        "name": "Agenda",
+        "description": "Profissionais, jornadas, folgas e itens agendáveis.",
     },
     {
         "name": "Auditoria",
@@ -99,6 +104,8 @@ def build_app(settings: Settings, vertical: Vertical) -> FastAPI:
     app.include_router(settings_api.router)
     app.include_router(customers_api.router)
     app.include_router(audit_api.router)
+    app.include_router(offerings_api.router)
+    app.include_router(providers_api.router)
     for router in vertical.routers:
         app.include_router(router)
     return app
