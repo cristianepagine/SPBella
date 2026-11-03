@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from typing import Annotated
 
 from fastapi import Depends, Path, Request
-from sqlalchemy import select, text
+from sqlalchemy import select, text, update
 from sqlalchemy.orm import Session
 
 from app.core.infra.db import Databases
@@ -84,6 +84,19 @@ def load_tenant(databases: Databases, slug: str) -> TenantContext | None:
     with Session(databases.control) as session:
         tenant = session.scalar(select(Tenant).where(Tenant.slug == slug))
         return TenantContext.from_model(tenant) if tenant else None
+
+
+def update_tenant_profile(databases: Databases, tenant_id: uuid.UUID, changes: dict) -> None:
+    """Grava nome, idioma e/ou fuso do tenant em public.tenants.
+
+    Roda com o papel da aplicação, que só tem UPDATE nessas três colunas (ver
+    provisioning.TENANT_EDITABLE_COLUMNS). Sempre pelo ID do tenant da requisição.
+    """
+    allowed = {"name", "locale", "timezone"}
+    if not changes or not set(changes) <= allowed:
+        raise ValueError(f"campos não editáveis: {set(changes) - allowed}")
+    with Session(databases.control) as session, session.begin():
+        session.execute(update(Tenant).where(Tenant.id == tenant_id).values(**changes))
 
 
 @contextmanager

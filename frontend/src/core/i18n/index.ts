@@ -29,14 +29,34 @@ function apply(language: Language): void {
   void i18n.changeLanguage(language);
 }
 
-/** Troca feita pelo usuário: vale também para as próximas visitas. */
-export function changeLanguage(language: Language): void {
+function remember(language: Language): void {
   try {
     localStorage.setItem(STORAGE_KEY, language);
   } catch {
     // sem problema: a escolha vale só para esta visita
   }
+}
+
+type ChoiceListener = (language: Language) => void;
+const choiceListeners = new Set<ChoiceListener>();
+
+/** Avisa quando a PESSOA escolhe um idioma (o AuthProvider salva na conta dela). */
+export function onLanguageChosen(listener: ChoiceListener): () => void {
+  choiceListeners.add(listener);
+  return () => choiceListeners.delete(listener);
+}
+
+/** Troca feita pela pessoa no seletor: vale na hora, sem recarregar, e nas próximas visitas. */
+export function changeLanguage(language: Language): void {
+  remember(language);
   apply(language);
+  choiceListeners.forEach((listener) => listener(language));
+}
+
+/** Idioma salvo na conta da pessoa (vem do login): vale em qualquer aparelho. */
+export function applyUserLanguage(language: Language): void {
+  remember(language);
+  if (i18n.language !== language) apply(language);
 }
 
 /** Idioma padrão do salão: só é aplicado se o usuário nunca escolheu um. */

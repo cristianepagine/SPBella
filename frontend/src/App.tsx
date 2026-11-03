@@ -6,6 +6,7 @@ import { LanguageSwitcher } from "./core/components/LanguageSwitcher";
 import { CORE_NAV, type NavItem } from "./core/layout/nav";
 import { StaffLayout } from "./core/layout/StaffLayout";
 import { StaffHomePage } from "./core/pages/app/HomePage";
+import { SettingsPage } from "./core/pages/app/SettingsPage";
 import { TeamPage } from "./core/pages/app/TeamPage";
 import { ChangePasswordPage } from "./core/pages/auth/ChangePasswordPage";
 import { ForgotPasswordPage } from "./core/pages/auth/ForgotPasswordPage";
@@ -41,6 +42,9 @@ export function App() {
                   <Route index element={<StaffHomePage />} />
                   <Route element={<RequirePermission permission="team.manage" />}>
                     <Route path="team" element={<TeamPage />} />
+                  </Route>
+                  <Route element={<RequirePermission permission="settings.manage" />}>
+                    <Route path="settings" element={<SettingsPage />} />
                   </Route>
                   <Route path="*" element={<NotFoundPage />} />
                 </Route>

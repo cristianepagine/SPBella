@@ -14,6 +14,7 @@ class User(TenantBase):
     __table_args__ = (
         CheckConstraint("role IN ('owner', 'reception', 'professional')", name="role"),
         CheckConstraint("email = lower(email)", name="email_lowercase"),
+        CheckConstraint("locale IS NULL OR locale IN ('pt-BR', 'es')", name="locale"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -27,6 +28,8 @@ class User(TenantBase):
     is_active: Mapped[bool] = mapped_column(server_default=text("true"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Idioma escolhido pela pessoa; nulo = usa o idioma padrão do estabelecimento.
+    locale: Mapped[str | None] = mapped_column(String(5))
 
 
 class RefreshToken(TenantBase):

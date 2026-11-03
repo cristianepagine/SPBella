@@ -89,6 +89,11 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/t/studio-bella/team \
             -H "Authorization: Bearer $RECEPCAO")" = "403"
           curl -fsS http://localhost:8000/t/studio-bella/team -H "Authorization: Bearer $TOKEN" -o /dev/null
+          # dono muda o fuso nas configurações e a página pública reflete na hora
+          curl -fsS -X PATCH http://localhost:8000/t/studio-bella/settings \
+            -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+            -d '{"timezone":"America/Manaus"}' -o /dev/null
+          curl -fsS http://localhost:8000/t/studio-bella | grep -q '"timezone":"America/Manaus"'
           # o token de um salão não vale no outro
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/t/salon-asuncion/auth/me \
             -H "Authorization: Bearer $TOKEN")" = "401"

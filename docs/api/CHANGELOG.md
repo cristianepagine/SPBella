@@ -2,6 +2,15 @@
 
 Mudanças visíveis para quem consome a API. Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.6.0] - 2026-11-02
+
+### Adicionado
+- Configurações do estabelecimento (`settings.manage`): `GET /t/{slug}/settings` e
+  `PATCH /t/{slug}/settings` (nome, idioma padrão, fuso; moeda só leitura; `timezone_options`).
+- Idioma de cada pessoa: campo `user.locale` (login, refresh, `/me`) e `PATCH /t/{slug}/auth/me`.
+- O e-mail de "esqueci a senha" sai no idioma da pessoa, se ela escolheu um.
+- Código de campo `invalid_timezone` em `422 validation_error`.
+
 ## [0.5.0] - 2026-11-02
 
 ### Adicionado

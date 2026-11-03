@@ -260,6 +260,31 @@
         "title": "MemberWithPassword",
         "type": "object"
       },
+      "MyChanges": {
+        "properties": {
+          "locale": {
+            "anyOf": [
+              {
+                "enum": [
+                  "pt-BR",
+                  "es"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Idioma da pessoa. `null` volta a usar o idioma padrão do estabelecimento.",
+            "title": "Locale"
+          }
+        },
+        "required": [
+          "locale"
+        ],
+        "title": "MyChanges",
+        "type": "object"
+      },
       "NewMember": {
         "properties": {
           "email": {
@@ -400,6 +425,52 @@
         "title": "SessionOut",
         "type": "object"
       },
+      "SettingsChanges": {
+        "properties": {
+          "locale": {
+            "anyOf": [
+              {
+                "enum": [
+                  "pt-BR",
+                  "es"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locale"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          }
+        },
+        "title": "SettingsChanges",
+        "type": "object"
+      },
       "TeamMember": {
         "properties": {
           "created_at": {
@@ -526,6 +597,69 @@
         "title": "TenantPublicInfo",
         "type": "object"
       },
+      "TenantSettings": {
+        "properties": {
+          "country": {
+            "enum": [
+              "BR",
+              "PY"
+            ],
+            "title": "Country",
+            "type": "string"
+          },
+          "currency": {
+            "description": "Somente leitura. Definida na criação: mudar a moeda mudaria o valor de todos os preços já cadastrados.",
+            "enum": [
+              "BRL",
+              "PYG"
+            ],
+            "title": "Currency",
+            "type": "string"
+          },
+          "locale": {
+            "description": "Idioma padrão: o da página pública e o de quem ainda não escolheu um.",
+            "enum": [
+              "pt-BR",
+              "es"
+            ],
+            "title": "Locale",
+            "type": "string"
+          },
+          "name": {
+            "examples": [
+              "Studio Bella"
+            ],
+            "title": "Name",
+            "type": "string"
+          },
+          "timezone": {
+            "description": "Fuso IANA da agenda.",
+            "examples": [
+              "America/Sao_Paulo"
+            ],
+            "title": "Timezone",
+            "type": "string"
+          },
+          "timezone_options": {
+            "description": "Fusos sugeridos para o país.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Timezone Options",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "locale",
+          "timezone",
+          "currency",
+          "country",
+          "timezone_options"
+        ],
+        "title": "TenantSettings",
+        "type": "object"
+      },
       "UserOut": {
         "properties": {
           "email": {
@@ -536,6 +670,22 @@
             "format": "uuid",
             "title": "Id",
             "type": "string"
+          },
+          "locale": {
+            "anyOf": [
+              {
+                "enum": [
+                  "pt-BR",
+                  "es"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Idioma escolhido pela pessoa. `null` = usa o idioma padrão do estabelecimento (`GET /t/{slug}` → `locale`).",
+            "title": "Locale"
           },
           "must_change_password": {
             "description": "Se `true`, a pessoa só pode usar `/me`, `/change-password` e `/logout` até trocar a senha provisória. As demais rotas respondem 403 `password_change_required`.",
@@ -575,6 +725,7 @@
           "email",
           "role",
           "must_change_password",
+          "locale",
           "permissions"
         ],
         "title": "UserOut",
@@ -632,7 +783,7 @@
   "info": {
     "description": "API do **SPBella** (Agenda Salão), sistema de agendamento para salões e barbearias.\n\nGuia de uso, convenções (erros, datas, valores, autenticação) e exemplos: `docs/api/README.md` no repositório.",
     "title": "SPBella API",
-    "version": "0.5.0"
+    "version": "0.6.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -1205,6 +1356,87 @@
         "tags": [
           "Login"
         ]
+      },
+      "patch": {
+        "description": "Por enquanto, só o idioma (`locale`). Vale em qualquer aparelho em que a pessoa entrar, e também para os e-mails que ela recebe (ex.: \"esqueci a senha\"). Qualquer pessoa logada pode mudar a própria preferência, inclusive antes de trocar a senha provisória.",
+        "operationId": "update_me_t__slug__auth_me_patch",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MyChanges"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Mudar minhas preferências",
+        "tags": [
+          "Login"
+        ]
       }
     },
     "/t/{slug}/auth/refresh": {
@@ -1382,6 +1614,188 @@
         "tags": [
           "Login"
         ]
+      }
+    },
+    "/t/{slug}/settings": {
+      "get": {
+        "description": "Nome, idioma padrão, fuso e moeda do estabelecimento.",
+        "operationId": "get_settings_t__slug__settings_get",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantSettings"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Ver as configurações",
+        "tags": [
+          "Configurações"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "settings.manage"
+      },
+      "patch": {
+        "description": "Só os campos enviados mudam. Vale na hora para todo mundo (página pública, agenda, e-mails).\n\n- `422 validation_error` com `fields[0].code = invalid_timezone`: fuso desconhecido.\n- A moeda não muda por aqui (ver `currency`).",
+        "operationId": "change_settings_t__slug__settings_patch",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsChanges"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantSettings"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Mudar as configurações",
+        "tags": [
+          "Configurações"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "settings.manage"
       }
     },
     "/t/{slug}/team": {
@@ -1811,6 +2225,10 @@
     {
       "description": "Quem tem acesso ao sistema e com qual perfil (só o dono).",
       "name": "Equipe"
+    },
+    {
+      "description": "Nome, idioma padrão, fuso e moeda do estabelecimento (só o dono).",
+      "name": "Configurações"
     }
   ]
 }

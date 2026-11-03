@@ -176,7 +176,11 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Mudar minhas preferências
+         * @description Por enquanto, só o idioma (`locale`). Vale em qualquer aparelho em que a pessoa entrar, e também para os e-mails que ela recebe (ex.: "esqueci a senha"). Qualquer pessoa logada pode mudar a própria preferência, inclusive antes de trocar a senha provisória.
+         */
+        patch: operations["update_me_t__slug__auth_me_patch"];
         trace?: never;
     };
     "/t/{slug}/auth/refresh": {
@@ -227,6 +231,33 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver as configurações
+         * @description Nome, idioma padrão, fuso e moeda do estabelecimento.
+         */
+        get: operations["get_settings_t__slug__settings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Mudar as configurações
+         * @description Só os campos enviados mudam. Vale na hora para todo mundo (página pública, agenda, e-mails).
+         *
+         *     - `422 validation_error` com `fields[0].code = invalid_timezone`: fuso desconhecido.
+         *     - A moeda não muda por aqui (ver `currency`).
+         */
+        patch: operations["change_settings_t__slug__settings_patch"];
         trace?: never;
     };
     "/t/{slug}/team": {
@@ -403,6 +434,14 @@ export interface components {
              */
             temporary_password: string;
         };
+        /** MyChanges */
+        MyChanges: {
+            /**
+             * Locale
+             * @description Idioma da pessoa. `null` volta a usar o idioma padrão do estabelecimento.
+             */
+            locale: ("pt-BR" | "es") | null;
+        };
         /** NewMember */
         NewMember: {
             /**
@@ -471,6 +510,15 @@ export interface components {
             token_type: "bearer";
             user: components["schemas"]["UserOut"];
         };
+        /** SettingsChanges */
+        SettingsChanges: {
+            /** Locale */
+            locale?: ("pt-BR" | "es") | null;
+            /** Name */
+            name?: string | null;
+            /** Timezone */
+            timezone?: string | null;
+        };
         /** TeamMember */
         TeamMember: {
             /**
@@ -538,6 +586,42 @@ export interface components {
              */
             timezone: string;
         };
+        /** TenantSettings */
+        TenantSettings: {
+            /**
+             * Country
+             * @enum {string}
+             */
+            country: "BR" | "PY";
+            /**
+             * Currency
+             * @description Somente leitura. Definida na criação: mudar a moeda mudaria o valor de todos os preços já cadastrados.
+             * @enum {string}
+             */
+            currency: "BRL" | "PYG";
+            /**
+             * Locale
+             * @description Idioma padrão: o da página pública e o de quem ainda não escolheu um.
+             * @enum {string}
+             */
+            locale: "pt-BR" | "es";
+            /**
+             * Name
+             * @example Studio Bella
+             */
+            name: string;
+            /**
+             * Timezone
+             * @description Fuso IANA da agenda.
+             * @example America/Sao_Paulo
+             */
+            timezone: string;
+            /**
+             * Timezone Options
+             * @description Fusos sugeridos para o país.
+             */
+            timezone_options: string[];
+        };
         /** UserOut */
         UserOut: {
             /** Email */
@@ -547,6 +631,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Locale
+             * @description Idioma escolhido pela pessoa. `null` = usa o idioma padrão do estabelecimento (`GET /t/{slug}` → `locale`).
+             */
+            locale: ("pt-BR" | "es") | null;
             /**
              * Must Change Password
              * @description Se `true`, a pessoa só pode usar `/me`, `/change-password` e `/logout` até trocar a senha provisória. As demais rotas respondem 403 `password_change_required`.
@@ -1006,6 +1095,60 @@ export interface operations {
             };
         };
     };
+    update_me_t__slug__auth_me_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MyChanges"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     refresh_t__slug__auth_refresh_post: {
         parameters: {
             query?: never;
@@ -1120,6 +1263,128 @@ export interface operations {
             };
             /** @description Too Many Requests */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_settings_t__slug__settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TenantSettings"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_settings_t__slug__settings_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettingsChanges"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TenantSettings"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

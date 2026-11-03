@@ -128,7 +128,8 @@ Depois, atualize o [guia](docs/api/README.md) se mudou alguma convenção e regi
 
 ## Regras do projeto
 
-- **Textos para o usuário** ficam só em `frontend/src/core/i18n/locales/` (textos neutros) e `frontend/src/salon/locales/` (vocabulário do salão), sempre em `pt-BR.json` e `es.json`.
+- **Textos para o usuário** (o teste `frontend/src/i18n-coverage.test.ts` falha se houver texto
+  escrito direto numa tela ou chave sem tradução) ficam só em `frontend/src/core/i18n/locales/` (textos neutros) e `frontend/src/salon/locales/` (vocabulário do salão), sempre em `pt-BR.json` e `es.json`.
   A API devolve códigos (`error.code`), nunca frases para o usuário.
 - **Sem dados pessoais nos logs.** Registre IDs, não nomes, telefones ou e-mails.
 - **Nenhum segredo no repositório.** Só `.env.example`.
@@ -141,5 +142,5 @@ Depois, atualize o [guia](docs/api/README.md) se mudou alguma convenção e regi
 
 ## Status
 
-Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 e SAL-02 concluídas (os
-serviços de exemplo do SAL-01 chegam com SAL-05). Próxima: SAL-03 (configurações e idioma do salão). Ver [backlog](docs/backlog.md).
+Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 a SAL-03 concluídas (os
+serviços de exemplo do SAL-01 chegam com SAL-05). Próxima: SAL-04 (auditoria e consentimento). Ver [backlog](docs/backlog.md).

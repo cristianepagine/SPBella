@@ -8,5 +8,8 @@
   },
   "errors": {
     "tenant_not_found": "Não encontramos esse salão. Confira se o endereço está certo."
+  },
+  "settings": {
+    "name": "Nome do salão"
   }
 }

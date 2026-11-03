@@ -90,7 +90,8 @@
   "nav": {
     "label": "Menú",
     "home": "Inicio",
-    "team": "Equipo"
+    "team": "Equipo",
+    "settings": "Configuración"
   },
   "roles": {
     "owner": "Dueño(a)",
@@ -125,5 +126,21 @@
     "passwordFor": "Contraseña provisoria de {{name}}:",
     "passwordHint": "Pasale esta contraseña a la persona. Ingresa con el correo {{email}} y va a crear una contraseña propia. Esta contraseña no se muestra de nuevo.",
     "passwordDone": "Ya la anoté"
+  },
+  "settings": {
+    "title": "Configuración",
+    "name": "Nombre del local",
+    "locale": "Idioma predeterminado",
+    "localeHint": "Se usa en la página pública y para quien todavía no eligió un idioma.",
+    "timezone": "Zona horaria de la agenda",
+    "currency": "Moneda",
+    "currencyHint": "La moneda no se cambia por aquí, porque cambiaría el valor de todos los precios. Si lo necesitás, hablá con soporte.",
+    "preview": "Ejemplo: un servicio de {{price}} el {{now}}.",
+    "save": "Guardar",
+    "saved": "¡Listo! La configuración fue guardada."
+  },
+  "currency": {
+    "BRL": "Real (R$)",
+    "PYG": "Guaraní (Gs.)"
   }
 }

@@ -1,6 +1,7 @@
 import time
 
 import pytest
+from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, text
 from sqlalchemy.pool import NullPool
 
@@ -8,7 +9,7 @@ from app import cli
 from app.core.accounts.models import User
 from app.core.infra.config import Settings
 from app.core.infra.db import Databases
-from app.core.infra.migrations import tenant_head, tenant_version_dirs
+from app.core.infra.migrations import alembic_config, tenant_head, tenant_version_dirs
 from app.core.infra.security import verify_password
 from app.core.infra.tenancy import load_tenant, tenant_session
 from app.core.tenants import provisioning
@@ -276,4 +277,5 @@ def test_tenant_migrations_are_split_by_module_in_a_single_history():
     names = [d.name for d in tenant_version_dirs()]
 
     assert names == ["core", "salon"]
-    assert tenant_head() == "0002_auth_tokens"  # um único head, mesmo com duas pastas
+    heads = ScriptDirectory.from_config(alembic_config("tenant", "")).get_heads()
+    assert heads == [tenant_head()]  # um único head, mesmo com duas pastas

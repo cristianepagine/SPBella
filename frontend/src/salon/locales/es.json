@@ -8,5 +8,8 @@
   },
   "errors": {
     "tenant_not_found": "No encontramos este salón. Revisá que la dirección sea correcta."
+  },
+  "settings": {
+    "name": "Nombre del salón"
   }
 }

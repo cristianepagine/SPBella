@@ -76,6 +76,12 @@ A alternativa que fecha também esse caso é um papel **com login** por salão: 
 próprio pool de conexões, o que pede PgBouncer quando houver muitos salões. Está no backlog
 para quando o número de salões ou um contrato justificarem.
 
+**Configurações (SAL-03):** o dono edita nome, idioma e fuso, que ficam em `public.tenants`.
+O papel da aplicação recebeu `UPDATE` **só nessas três colunas** (`GRANT UPDATE (name, locale,
+timezone)`, aplicado pelo `db init`). Slug, status, plano, moeda e os nomes de schema e de papel
+continuam bloqueados pelo próprio banco, e um teste prova isso. A alteração passa por uma
+única função (`update_tenant_profile`), sempre com o ID do tenant da requisição.
+
 **Mudanças em relação à proposta inicial:**
 - A tabela `public.tenant_migrations` não foi criada. A versão de cada salão fica na
   `alembic_version` do próprio schema (`tenants list` mostra), e os erros de migração aparecem na saída de

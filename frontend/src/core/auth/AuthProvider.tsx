@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from "react";
 
 import { api, call } from "../api/client";
+import { applyUserLanguage, onLanguageChosen } from "../i18n";
 import { onSessionChange, refreshSession, type Session, type SessionUser, setSession } from "./session";
 
 type AuthState =
@@ -27,15 +28,30 @@ export function AuthProvider({ slug, children }: { slug: string; children: React
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const stop = onSessionChange(slug, (session) =>
-      setState(session ? { status: "authenticated", user: session.user } : { status: "anonymous" }),
-    );
+    const stop = onSessionChange(slug, (session) => {
+      if (session?.user.locale) applyUserLanguage(session.user.locale); // idioma da conta
+      setState(session ? { status: "authenticated", user: session.user } : { status: "anonymous" });
+    });
     // Ao abrir o app, tenta recuperar a sessão pelo cookie (sem pedir senha de novo).
     void refreshSession(slug).then((session) => {
       if (!session) setState({ status: "anonymous" });
     });
     return stop;
   }, [slug]);
+
+  // Quem está logado e troca o idioma no seletor: salva na conta (vale em outros aparelhos).
+  const loggedIn = state.status === "authenticated";
+  useEffect(() => {
+    if (!loggedIn) return;
+    return onLanguageChosen((locale) => {
+      void call(() =>
+        api.PATCH("/t/{slug}/auth/me", { params: { path: { slug } }, body: { locale } }),
+      ).then(
+        (user) => setState({ status: "authenticated", user }),
+        () => undefined, // sem internet: a troca vale neste aparelho; tenta de novo na próxima
+      );
+    });
+  }, [loggedIn, slug]);
 
   const startSession = useCallback((session: Session) => setSession(slug, session), [slug]);
 

@@ -46,6 +46,7 @@ COUNTRY_DEFAULTS = {
 }
 MIGRATION_LOCK_KEY = 7_412_026_001  # chave do advisory lock de "tenants migrate"
 PLANS = ("base", "whatsapp_api")
+TENANT_EDITABLE_COLUMNS = ("name", "locale", "timezone")
 
 DEMO_PASSWORD = "demo-spbella"  # noqa: S105 - só para os tenants de demonstração
 
@@ -168,6 +169,14 @@ def init_database(settings: Settings) -> None:
         role = sql.Identifier(app_role)
         _run(conn, sql.SQL("GRANT USAGE ON SCHEMA public TO {}").format(role))
         _run(conn, sql.SQL("GRANT SELECT ON public.tenants TO {}").format(role))
+        # Configurações que o dono edita pelo app (SAL-03). Só estas colunas: slug, status,
+        # plano, moeda e o resto continuam fora do alcance da API (o banco recusa).
+        _run(
+            conn,
+            sql.SQL("GRANT UPDATE ({}) ON public.tenants TO {}").format(
+                sql.SQL(", ").join(sql.Identifier(c) for c in TENANT_EDITABLE_COLUMNS), role
+            ),
+        )
 
 
 def create_tenant(

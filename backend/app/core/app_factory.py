@@ -18,6 +18,7 @@ from app.core.infra.ratelimit import RateLimiter
 from app.core.infra.turnstile import build_turnstile
 from app.core.system import api as system_api
 from app.core.tenants import api as tenants_api
+from app.core.tenants import settings_api
 from app.core.vertical import Vertical
 
 CORE_OPENAPI_TAGS = [
@@ -34,6 +35,10 @@ CORE_OPENAPI_TAGS = [
     {
         "name": "Equipe",
         "description": "Quem tem acesso ao sistema e com qual perfil (só o dono).",
+    },
+    {
+        "name": "Configurações",
+        "description": "Nome, idioma padrão, fuso e moeda do estabelecimento (só o dono).",
     },
 ]
 
@@ -80,6 +85,7 @@ def build_app(settings: Settings, vertical: Vertical) -> FastAPI:
     app.include_router(tenants_api.router)
     app.include_router(accounts_api.router)
     app.include_router(team_api.router)
+    app.include_router(settings_api.router)
     for router in vertical.routers:
         app.include_router(router)
     return app

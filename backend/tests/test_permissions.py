@@ -22,6 +22,7 @@ OPEN_ROUTES = {
     ("post", "/t/{slug}/auth/refresh"),
     ("post", "/t/{slug}/auth/logout"),
     ("get", "/t/{slug}/auth/me"),
+    ("patch", "/t/{slug}/auth/me"),
     ("post", "/t/{slug}/auth/change-password"),
     ("post", "/t/{slug}/auth/forgot-password"),
     ("post", "/t/{slug}/auth/reset-password"),

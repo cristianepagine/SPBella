@@ -71,6 +71,7 @@ def test_login_returns_token_and_httponly_cookie_scoped_to_the_salon(db_client, 
         "email": user.email,
         "role": "reception",
         "must_change_password": False,
+        "locale": None,
         "permissions": [
             "agenda.manage",
             "agenda.view_all",

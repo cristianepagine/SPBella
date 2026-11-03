@@ -68,6 +68,10 @@ class UserOut(BaseModel):
         description="Se `true`, a pessoa só pode usar `/me`, `/change-password` e `/logout` "
         "até trocar a senha provisória. As demais rotas respondem 403 `password_change_required`."
     )
+    locale: Literal["pt-BR", "es"] | None = Field(
+        description="Idioma escolhido pela pessoa. `null` = usa o idioma padrão do "
+        "estabelecimento (`GET /t/{slug}` → `locale`)."
+    )
     permissions: list[Permission] = Field(
         description="O que o perfil pode fazer. O app usa esta lista para montar o menu; "
         "o servidor confere a permissão em cada rota (ver tabela no guia da API).",
@@ -82,6 +86,7 @@ class UserOut(BaseModel):
             email=user.email,
             role=user.role,
             must_change_password=user.must_change_password,
+            locale=user.locale,
             permissions=sorted(permissions_for(user.role)),
         )
 
@@ -371,6 +376,29 @@ def me(user: UserPendingPasswordChange) -> UserOut:
     return UserOut.of(user)
 
 
+class MyChanges(BaseModel):
+    locale: Literal["pt-BR", "es"] | None = Field(
+        description="Idioma da pessoa. `null` volta a usar o idioma padrão do estabelecimento."
+    )
+
+
+@router.patch(
+    "/me",
+    summary="Mudar minhas preferências",
+    description=(
+        "Por enquanto, só o idioma (`locale`). Vale em qualquer aparelho em que a pessoa "
+        'entrar, e também para os e-mails que ela recebe (ex.: "esqueci a senha"). Qualquer '
+        "pessoa logada pode mudar a própria preferência, inclusive antes de trocar a senha "
+        "provisória."
+    ),
+    response_model=UserOut,
+    responses=error_responses(401, 404, 422),
+)
+def update_me(payload: MyChanges, user: UserPendingPasswordChange) -> UserOut:
+    user.locale = payload.locale
+    return UserOut.of(user)
+
+
 @router.post(
     "/change-password",
     summary="Trocar a senha",
@@ -449,6 +477,7 @@ def forgot_password(
             )
         )
         link = f"{settings.app_public_url}/{tenant.slug}/reset-password#token={raw}"
+        language = user.locale or tenant.locale  # o idioma da pessoa, se ela escolheu um
         values = {
             "name": user.name,
             "salon": tenant.name,
@@ -458,8 +487,8 @@ def forgot_password(
         request.app.state.mailer.send(
             Email(
                 to=user.email,
-                subject=translate(tenant.locale, "email.password_reset.subject", **values),
-                body=translate(tenant.locale, "email.password_reset.body", **values),
+                subject=translate(language, "email.password_reset.subject", **values),
+                body=translate(language, "email.password_reset.body", **values),
             )
         )
         log.info("password_reset_requested", tenant_id=str(tenant.id), user_id=str(user.id))

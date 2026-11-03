@@ -361,6 +361,57 @@ curl -X POST http://localhost:8000/t/studio-bella/auth/reset-password \
 
 Responde 204 e encerra todas as sessões da pessoa.
 
+### Configurações
+
+Só para quem tem `settings.manage` (hoje, o dono).
+
+#### `GET /t/{slug}/settings` — ver
+
+```json
+{
+  "name": "Studio Bella", "locale": "pt-BR", "timezone": "America/Sao_Paulo",
+  "currency": "BRL", "country": "BR",
+  "timezone_options": ["America/Sao_Paulo", "America/Bahia", "...", "America/Noronha"]
+}
+```
+
+`timezone_options` traz os fusos sugeridos para o país; a API aceita qualquer fuso IANA válido.
+
+#### `PATCH /t/{slug}/settings` — mudar
+
+Corpo com qualquer combinação de `name`, `locale` (`pt-BR` ou `es`) e `timezone`. Vale **na hora**
+para todo mundo: a página pública (`GET /t/{slug}`), a agenda e os e-mails.
+
+- **A moeda não muda por aqui.** Os preços são guardados na menor unidade da moeda, então trocar
+  BRL por PYG mudaria o valor de todos eles. Campos desconhecidos (`currency`, `slug`, `plan`...)
+  são ignorados. Além disso, o próprio banco só deixa a API alterar nome, idioma e fuso.
+- Fuso desconhecido: `422 validation_error` com `fields[0].code = invalid_timezone`.
+
+### Minha conta
+
+#### `PATCH /t/{slug}/auth/me` — mudar o meu idioma
+
+```bash
+curl -X PATCH http://localhost:8000/t/studio-bella/auth/me -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"locale": "es"}'
+```
+
+Responde com o `user` atualizado. `{"locale": null}` volta a usar o idioma padrão do
+estabelecimento. O idioma fica salvo na conta: vale em qualquer aparelho e nos e-mails que a
+pessoa recebe. Qualquer pessoa logada pode mudar o próprio idioma.
+
+### Idioma: qual vale?
+
+Para mostrar o app, nesta ordem:
+1. o idioma da conta (`user.locale`), se a pessoa escolheu um;
+2. o escolhido neste aparelho, antes de entrar;
+3. o idioma padrão do estabelecimento (`GET /t/{slug}` → `locale`);
+4. o idioma do navegador (`es-*` → espanhol; o resto → português).
+
+Números, moeda e datas seguem a convenção do **país** do estabelecimento, no idioma da pessoa
+(em um salão paraguaio, o guarani aparece como "Gs. 150.000"). Horários em 24 h, sempre no fuso
+do estabelecimento.
+
 ### Equipe
 
 Só para quem tem `team.manage` (hoje, o dono). Ainda não há envio de e-mail (SAL-14): a senha
