@@ -19,7 +19,14 @@ from sqlalchemy.orm import Session
 from app.core.customers.models import Customer
 from app.core.infra.errors import ApiError
 from app.core.infra.tenancy import TenantContext
-from app.core.scheduling.models import ACTIVE_STATUSES, Appointment, Offering, Provider, TimeOff
+from app.core.scheduling.models import (
+    ACTIVE_STATUSES,
+    Appointment,
+    Offering,
+    Provider,
+    ScheduleSettings,
+    TimeOff,
+)
 
 EXCLUSION_VIOLATION = "23P01"
 
@@ -100,6 +107,10 @@ def check_slot(
     if _overlaps(db, provider_id, starts_at, ends_at, ignore):
         raise slot_taken()
     if not allow_outside_hours:
+        settings = db.get(ScheduleSettings, 1)
+        buffer = timedelta(minutes=settings.buffer_min if settings else 0)
+        if buffer and _overlaps(db, provider_id, starts_at - buffer, ends_at + buffer, ignore):
+            raise ApiError(409, "too_close", "Sem o intervalo mínimo até outro atendimento")
         if not _fits_working_hours(provider, starts_at, ends_at, tenant.timezone):
             raise ApiError(409, "outside_working_hours", "Fora da jornada do profissional")
         if _in_time_off(db, provider_id, starts_at, ends_at):

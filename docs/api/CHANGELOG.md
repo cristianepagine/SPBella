@@ -2,6 +2,18 @@
 
 Mudanças visíveis para quem consome a API. Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.13.0] - 2026-11-03
+
+### Adicionado
+- Bloqueios (`time_off.manage`): `POST /t/{slug}/blocks` (dias inteiros ou horas; de um
+  profissional ou do estabelecimento) e `DELETE /t/{slug}/blocks/{block_id}`. A resposta traz
+  `conflicts` com os agendamentos já marcados no período.
+- Horários livres: `GET /t/{slug}/availability?offering_id=&date=[&provider_id=]` (`agenda.manage`).
+- Configurações: `buffer_min` (intervalo mínimo entre atendimentos) e `slot_step_min` (passo dos
+  horários livres) em `GET/PATCH /t/{slug}/settings`.
+- Código `409 too_close` ao marcar sem o intervalo mínimo (dá para encaixar com
+  `allow_outside_hours`).
+
 ## [0.12.0] - 2026-11-03
 
 ### Adicionado

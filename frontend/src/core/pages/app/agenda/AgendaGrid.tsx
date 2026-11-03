@@ -4,6 +4,7 @@ import type { Agenda, AgendaAppointment } from "../../../api/agenda";
 import { dayLabel, hhmmToMinutes, isoWeekday, localDate, minutesOfDay } from "../../../i18n/zoned";
 import { PROVIDER_COLOR_CLASS } from "../../../layout/colors";
 import { AppointmentCard, providerOf } from "./AppointmentCard";
+import { blocksOn } from "./blocks";
 
 const PX_PER_MINUTE = 1; // 1 hora = 60 px
 const DAY_END = 24 * 60;
@@ -67,6 +68,12 @@ export function AgendaGrid({
           const working = (provider?.working_hours ?? []).filter(
             (r) => r.weekday === isoWeekday(column.date),
           );
+          // Bloqueios da coluna: do estabelecimento sempre; do profissional na coluna dele
+          // (ou na semana, quando só um profissional está na tela).
+          const single = agenda.providers.length === 1 ? agenda.providers[0].id : null;
+          const blocks = blocksOn(agenda, column.date).filter(
+            (b) => b.provider_id === null || b.provider_id === (column.providerId ?? single),
+          );
           const items = agenda.appointments.filter(
             (a) =>
               localDate(a.starts_at, tz) === column.date &&
@@ -89,6 +96,26 @@ export function AgendaGrid({
                     }}
                   />
                 ))}
+                {blocks.map((b) => {
+                  const begin =
+                    localDate(b.starts_at, tz) < column.date ? 0 : minutesOfDay(b.starts_at, tz);
+                  const end =
+                    localDate(b.ends_at, tz) > column.date || minutesOfDay(b.ends_at, tz) === 0
+                      ? DAY_END
+                      : minutesOfDay(b.ends_at, tz);
+                  const from = Math.max(begin, top);
+                  const to = Math.min(end, bottom);
+                  if (to <= from) return null;
+                  return (
+                    <div
+                      key={b.id}
+                      className="absolute inset-x-0 flex items-start justify-center bg-slate-200/80 px-1 pt-1 text-center text-xs text-slate-600"
+                      style={{ top: (from - top) * PX_PER_MINUTE, height: (to - from) * PX_PER_MINUTE }}
+                    >
+                      {b.reason ?? t("blocks.blocked")}
+                    </div>
+                  );
+                })}
                 {items.map((item) => {
                   const begin = minutesOfDay(item.starts_at, tz);
                   const sameDay = localDate(item.ends_at, tz) === column.date;

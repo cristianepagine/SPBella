@@ -99,6 +99,13 @@ extensão `btree_gist` é obrigatória: a migração falha sem ela. Só um Postg
 extensões pode seguir, com `ALLOW_MISSING_PG_EXTENSIONS=1`, recusado em produção pelo validador de
 configuração. No CI a variável fica desligada, então ali a trava sempre existe e é testada.
 
+**Horários livres (SAL-10/11):** `app/core/scheduling/availability.py` calcula jornada − bloqueios
+− agendamentos ativos, com a duração do serviço, o intervalo mínimo (`schedule_settings.buffer_min`)
+e o passo (`slot_step_min`). Cada faixa da jornada (hora local) vira instantes UTC pelo fuso do
+estabelecimento, então dias de horário de verão funcionam. A equipe usa em `/availability`; a
+página pública (SAL-11) vai usar o mesmo cálculo. A marcação pela equipe também respeita o
+intervalo mínimo (`409 too_close`, encaixável).
+
 **Mudanças em relação à proposta inicial:**
 - A tabela `public.tenant_migrations` não foi criada. A versão de cada salão fica na
   `alembic_version` do próprio schema (`tenants list` mostra), e os erros de migração aparecem na saída de

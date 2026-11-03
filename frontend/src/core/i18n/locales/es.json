@@ -63,7 +63,9 @@
       "unknown_offering": "Uno de los servicios ya no existe. Actualizá la página.",
       "unknown_user": "Esa cuenta no existe o está desactivada.",
       "end_before_start": "El último día es anterior al primero.",
-      "too_long": "El período puede tener como máximo un año."
+      "too_long": "El período puede tener como máximo un año.",
+      "start_and_end_required": "Indicá el horario de inicio y de fin.",
+      "hours_block_is_one_day": "El bloqueo por horas vale para un solo día."
     },
     "user_already_linked": "Esa cuenta ya está vinculada a otro profesional.",
     "slot_taken": "Ese horario ya está ocupado (puede que lo hayan tomado recién). Elegí otro.",
@@ -76,7 +78,8 @@
     "unknown_customer": "No se encontró ese cliente. Actualizá la página.",
     "invalid_time_step": "Usá horarios de 5 en 5 minutos (ej.: 9:00, 9:05, 9:10).",
     "too_early": "Solo se puede marcar atendido o ausencia después del horario.",
-    "not_active": "Ese turno ya terminó o fue cancelado."
+    "not_active": "Ese turno ya terminó o fue cancelado.",
+    "too_close": "Ese horario queda pegado a otra atención, sin el intervalo mínimo."
   },
   "tenant": {
     "loading": "Cargando…",
@@ -165,7 +168,13 @@
     "currencyHint": "La moneda no se cambia por aquí, porque cambiaría el valor de todos los precios. Si lo necesitás, hablá con soporte.",
     "preview": "Ejemplo: un servicio de {{price}} el {{now}}.",
     "save": "Guardar",
-    "saved": "¡Listo! La configuración fue guardada."
+    "saved": "¡Listo! La configuración fue guardada.",
+    "buffer": "Intervalo entre atenciones",
+    "bufferHint": "Tiempo libre entre un cliente y el siguiente del mismo profesional (para ordenar y limpiar).",
+    "noBuffer": "Sin intervalo",
+    "step": "Horarios ofrecidos",
+    "stepHint": "Cada cuántos minutos aparecen los horarios libres para agendar.",
+    "everyMinutes": "Cada {{count}} minutos"
   },
   "currency": {
     "BRL": "Real (R$)",
@@ -338,6 +347,26 @@
       "cancelled": "Cancelar",
       "scheduled": "Reactivar",
       "move": "Mover"
-    }
+    },
+    "freeTimes": "Horarios libres",
+    "noFreeTimes": "Ningún horario libre ese día."
+  },
+  "blocks": {
+    "new": "Bloquear horario",
+    "title": "Bloquear horario",
+    "lunchHint": "El almuerzo de todos los días se ajusta en el horario del profesional (dos horarios en el día). Aquí es para algo puntual: feriado, vacaciones, consulta, reunión.",
+    "who": "Quién",
+    "everyone": "Todo el local",
+    "kind": "Tipo",
+    "days": "Días enteros",
+    "hours": "Algunas horas de un día",
+    "from": "Desde",
+    "to": "Hasta",
+    "save": "Bloquear",
+    "remove": "Desbloquear",
+    "blocked": "Bloqueado",
+    "conflicts_one": "Bloqueado. Atención: ya había {{count}} cliente agendado en ese período:",
+    "conflicts_other": "Bloqueado. Atención: ya había {{count}} clientes agendados en ese período:",
+    "conflictsHint": "No se canceló nada. Abrí cada turno en la agenda para reprogramar o cancelar."
   }
 }

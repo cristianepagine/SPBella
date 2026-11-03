@@ -16,6 +16,7 @@ import { useCurrentTenant } from "../../TenantLayout";
 import { AgendaGrid } from "./AgendaGrid";
 import { AgendaList } from "./AgendaList";
 import { AppointmentPanel } from "./AppointmentPanel";
+import { BlockForm } from "./BlockForm";
 import { BookingForm } from "./BookingForm";
 import { STATUS_CLASS } from "./AppointmentCard";
 
@@ -33,6 +34,7 @@ export function AgendaPage() {
   const [providerId, setProviderId] = useState("");
   const [selected, setSelected] = useState<AgendaAppointment | null>(null);
   const [booking, setBooking] = useState(false);
+  const [blocking, setBlocking] = useState(false);
   const can = useCan();
 
   const start = view === "week" ? mondayOf(day) : day;
@@ -50,15 +52,26 @@ export function AgendaPage() {
       <div className="rounded-2xl bg-white p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between gap-2">
           <h1 className="text-2xl font-bold text-brand-900">{t("agenda.title")}</h1>
-          {can("agenda.manage") && !booking && (
-            <button
-              type="button"
-              onClick={() => setBooking(true)}
-              className="rounded-xl bg-brand-700 px-4 py-2 font-medium text-white"
-            >
-              {t("booking.new")}
-            </button>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {can("time_off.manage") && !blocking && (
+              <button
+                type="button"
+                onClick={() => setBlocking(true)}
+                className="rounded-xl border border-slate-300 px-4 py-2 font-medium"
+              >
+                {t("blocks.new")}
+              </button>
+            )}
+            {can("agenda.manage") && !booking && (
+              <button
+                type="button"
+                onClick={() => setBooking(true)}
+                className="rounded-xl bg-brand-700 px-4 py-2 font-medium text-white"
+              >
+                {t("booking.new")}
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <NavButton label={t("agenda.previous")} onClick={() => setDay(addDays(day, -days))}>
@@ -95,6 +108,9 @@ export function AgendaPage() {
       </div>
 
       {booking && <BookingForm day={day} onDone={() => setBooking(false)} />}
+      {blocking && agenda.data && (
+        <BlockForm agenda={agenda.data} day={day} locale={locale} onDone={() => setBlocking(false)} />
+      )}
       {selected && agenda.data && (
         <AppointmentPanel
           item={selected}

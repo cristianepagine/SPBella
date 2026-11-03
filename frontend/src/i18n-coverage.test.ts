@@ -19,7 +19,12 @@ const sources = import.meta.glob<string>(["./**/*.tsx", "./**/*.ts", "!./**/*.te
 
 type Tree = { [key: string]: string | Tree };
 
+/** A chave existe, ou existe nas formas de plural do i18next (key_one / key_other). */
 function has(tree: Tree, key: string): boolean {
+  return hasExact(tree, key) || (hasExact(tree, `${key}_one`) && hasExact(tree, `${key}_other`));
+}
+
+function hasExact(tree: Tree, key: string): boolean {
   let node: string | Tree | undefined = tree;
   for (const part of key.split(".")) {
     if (typeof node !== "object") return false;

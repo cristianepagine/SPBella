@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { AppointmentStatus } from "./agenda";
 import { api, call } from "./client";
@@ -6,7 +6,11 @@ import type { components } from "./schema";
 
 function useRefreshAgenda(slug: string) {
   const queryClient = useQueryClient();
-  return () => queryClient.invalidateQueries({ queryKey: ["agenda", slug] });
+  return () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["agenda", slug] }),
+      queryClient.invalidateQueries({ queryKey: ["availability", slug] }),
+    ]);
 }
 
 export type NewAppointment = components["schemas"]["NewAppointment"];
@@ -52,6 +56,51 @@ export function useChangeAppointmentStatus(slug: string) {
           params: { path: { slug, appointment_id: id } },
           body: { status },
         }),
+      ),
+    onSuccess: refresh,
+  });
+}
+
+export type Availability = components["schemas"]["AvailabilityOut"];
+
+export function useAvailability(slug: string, offeringId?: string, day?: string, providerId?: string) {
+  return useQuery({
+    queryKey: ["availability", slug, offeringId, day, providerId ?? null],
+    queryFn: () =>
+      call(() =>
+        api.GET("/t/{slug}/availability", {
+          params: {
+            path: { slug },
+            query: {
+              offering_id: offeringId!,
+              date: day!,
+              ...(providerId ? { provider_id: providerId } : {}),
+            },
+          },
+        }),
+      ),
+    enabled: Boolean(offeringId && day),
+  });
+}
+
+export type NewBlock = components["schemas"]["NewBlock"];
+export type CreatedBlock = components["schemas"]["BlockOut"];
+
+export function useCreateBlock(slug: string) {
+  const refresh = useRefreshAgenda(slug);
+  return useMutation({
+    mutationFn: (body: NewBlock) =>
+      call(() => api.POST("/t/{slug}/blocks", { params: { path: { slug } }, body })),
+    onSuccess: refresh,
+  });
+}
+
+export function useDeleteBlock(slug: string) {
+  const refresh = useRefreshAgenda(slug);
+  return useMutation({
+    mutationFn: (id: string) =>
+      call(() =>
+        api.DELETE("/t/{slug}/blocks/{block_id}", { params: { path: { slug, block_id: id } } }),
       ),
     onSuccess: refresh,
   });

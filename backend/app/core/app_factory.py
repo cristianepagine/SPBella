@@ -18,7 +18,14 @@ from app.core.infra.mailer import build_mailer
 from app.core.infra.middleware import REQUEST_ID_HEADER, RequestContextMiddleware
 from app.core.infra.ratelimit import RateLimiter
 from app.core.infra.turnstile import build_turnstile
-from app.core.scheduling import agenda_api, appointments_api, offerings_api, providers_api
+from app.core.scheduling import (
+    agenda_api,
+    appointments_api,
+    availability_api,
+    blocks_api,
+    offerings_api,
+    providers_api,
+)
 from app.core.system import api as system_api
 from app.core.tenants import api as tenants_api
 from app.core.tenants import settings_api
@@ -108,6 +115,8 @@ def build_app(settings: Settings, vertical: Vertical) -> FastAPI:
     app.include_router(providers_api.router)
     app.include_router(agenda_api.router)
     app.include_router(appointments_api.router)
+    app.include_router(blocks_api.router)
+    app.include_router(availability_api.router)
     for router in vertical.routers:
         app.include_router(router)
     return app

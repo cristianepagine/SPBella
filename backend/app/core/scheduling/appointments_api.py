@@ -27,9 +27,9 @@ Status = Literal["scheduled", "confirmed", "completed", "no_show", "cancelled"]
 CONFLICTS_DOC = (
     "- `409 slot_taken`: o profissional já tem alguém nesse horário (inclusive quando duas "
     "pessoas tentam o mesmo horário ao mesmo tempo: só uma consegue).\n"
-    "- `409 outside_working_hours` / `409 provider_time_off`: fora da jornada ou em folga. "
-    "Mande `allow_outside_hours: true` para encaixar mesmo assim (nunca vale por cima de outro "
-    "cliente).\n"
+    "- `409 outside_working_hours` / `409 provider_time_off` / `409 too_close` (sem o "
+    "intervalo mínimo até outro atendimento): mande `allow_outside_hours: true` para encaixar "
+    "mesmo assim (nunca vale por cima de outro cliente).\n"
     "- `409 customer_without_consent`: o cliente retirou a autorização de uso dos dados para "
     "atendimento.\n"
     "- `422 provider_cannot_do`, `unknown_provider`, `unknown_offering`, `unknown_customer`, "

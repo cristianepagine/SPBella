@@ -160,3 +160,20 @@ class Appointment(TenantBase):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class ScheduleSettings(TenantBase):
+    """Regras da agenda do estabelecimento (uma linha só, id = 1)."""
+
+    __tablename__ = "schedule_settings"
+    __table_args__ = (
+        CheckConstraint("id = 1", name="single_row"),
+        CheckConstraint("buffer_min BETWEEN 0 AND 120 AND buffer_min % 5 = 0", name="buffer"),
+        CheckConstraint("slot_step_min IN (5, 10, 15, 20, 30, 60)", name="slot_step"),
+    )
+
+    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True, default=1)
+    # Intervalo mínimo entre um atendimento e o próximo do mesmo profissional (arrumar, limpar).
+    buffer_min: Mapped[int] = mapped_column(SmallInteger, server_default=text("0"))
+    # De quantos em quantos minutos os horários livres são oferecidos (9:00, 9:15, 9:30...).
+    slot_step_min: Mapped[int] = mapped_column(SmallInteger, server_default=text("15"))

@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { Language } from "../i18n";
 import { api, call } from "./client";
 import type { components } from "./schema";
 
@@ -16,7 +15,7 @@ export function useSettings(slug: string) {
 export function useSaveSettings(slug: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: { name?: string; locale?: Language; timezone?: string }) =>
+    mutationFn: (body: components["schemas"]["SettingsChanges"]) =>
       call(() => api.PATCH("/t/{slug}/settings", { params: { path: { slug } }, body })),
     onSuccess: (saved) => {
       queryClient.setQueryData(["settings", slug], saved);

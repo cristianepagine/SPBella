@@ -102,7 +102,7 @@ export interface paths {
          * @description Agenda um cliente com um profissional.
          *
          *     - `409 slot_taken`: o profissional já tem alguém nesse horário (inclusive quando duas pessoas tentam o mesmo horário ao mesmo tempo: só uma consegue).
-         *     - `409 outside_working_hours` / `409 provider_time_off`: fora da jornada ou em folga. Mande `allow_outside_hours: true` para encaixar mesmo assim (nunca vale por cima de outro cliente).
+         *     - `409 outside_working_hours` / `409 provider_time_off` / `409 too_close` (sem o intervalo mínimo até outro atendimento): mande `allow_outside_hours: true` para encaixar mesmo assim (nunca vale por cima de outro cliente).
          *     - `409 customer_without_consent`: o cliente retirou a autorização de uso dos dados para atendimento.
          *     - `422 provider_cannot_do`, `unknown_provider`, `unknown_offering`, `unknown_customer`, `invalid_time_step` (minutos de 5 em 5).
          */
@@ -131,7 +131,7 @@ export interface paths {
          * @description Muda o horário, o profissional e/ou o serviço (o fim é recalculado). Só agendamentos ativos (`scheduled`, `confirmed`) podem ser movidos (`409 not_active`).
          *
          *     - `409 slot_taken`: o profissional já tem alguém nesse horário (inclusive quando duas pessoas tentam o mesmo horário ao mesmo tempo: só uma consegue).
-         *     - `409 outside_working_hours` / `409 provider_time_off`: fora da jornada ou em folga. Mande `allow_outside_hours: true` para encaixar mesmo assim (nunca vale por cima de outro cliente).
+         *     - `409 outside_working_hours` / `409 provider_time_off` / `409 too_close` (sem o intervalo mínimo até outro atendimento): mande `allow_outside_hours: true` para encaixar mesmo assim (nunca vale por cima de outro cliente).
          *     - `409 customer_without_consent`: o cliente retirou a autorização de uso dos dados para atendimento.
          *     - `422 provider_cannot_do`, `unknown_provider`, `unknown_offering`, `unknown_customer`, `invalid_time_step` (minutos de 5 em 5).
          */
@@ -346,6 +346,72 @@ export interface paths {
          */
         post: operations["reset_password_t__slug__auth_reset_password_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Horários livres
+         * @description Horários em que dá para marcar o serviço no dia (data local): jornada − bloqueios − agendamentos ativos, respeitando a duração do serviço e o intervalo mínimo entre atendimentos (Configurações). O serviço precisa caber inteiro numa faixa da jornada (não atravessa o almoço). Sem `provider_id`, junta todos os profissionais que fazem o serviço ("sem preferência").
+         */
+        get: operations["get_availability_t__slug__availability_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/blocks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Bloquear horário
+         * @description Dois jeitos:
+         *     - **Dias inteiros:** `start_date` e, se for mais de um dia, `end_date`.
+         *     - **Intervalo de horas num dia:** `start_date`, `start_time` e `end_time`.
+         *
+         *     `provider_id` vazio bloqueia o estabelecimento inteiro (feriado). A resposta traz em `conflicts` os agendamentos que já estavam marcados no período.
+         *
+         *     `422` com `fields[0].code`: `start_after_end`, `start_and_end_required`, `hours_block_is_one_day`, `invalid_time_step`, `end_before_start`, `too_long`, `unknown_provider`.
+         */
+        post: operations["create_block_t__slug__blocks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/blocks/{block_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remover bloqueio
+         * @description O período volta a seguir a jornada normal.
+         */
+        delete: operations["delete_block_t__slug__blocks__block_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -648,6 +714,8 @@ export interface paths {
          * Mudar as configurações
          * @description Só os campos enviados mudam. Vale na hora para todo mundo (página pública, agenda, e-mails).
          *
+         *     - `buffer_min`: intervalo mínimo entre atendimentos (0 a 120, de 5 em 5).
+         *     - `slot_step_min`: passo dos horários livres (5, 10, 15, 20, 30 ou 60).
          *     - `422 validation_error` com `fields[0].code = invalid_timezone`: fuso desconhecido.
          *     - A moeda não muda por aqui (ver `currency`).
          */
@@ -955,12 +1023,78 @@ export interface components {
              */
             occurred_at: string;
         };
+        /** AvailabilityOut */
+        AvailabilityOut: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Duration Min */
+            duration_min: number;
+            /**
+             * Offering Id
+             * Format: uuid
+             */
+            offering_id: string;
+            /** Slots */
+            slots: components["schemas"]["FreeSlot"][];
+            /** Timezone */
+            timezone: string;
+        };
+        /** BlockOut */
+        BlockOut: {
+            /**
+             * Conflicts
+             * @description Agendamentos ativos que já estavam marcados no período bloqueado. Nada é cancelado sozinho: a equipe decide se remarca ou cancela.
+             */
+            conflicts: components["schemas"]["Conflict"][];
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Provider Id */
+            provider_id: string | null;
+            /** Reason */
+            reason: string | null;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+        };
         /** ChangePasswordIn */
         ChangePasswordIn: {
             /** Current Password */
             current_password: string;
             /** New Password */
             new_password: string;
+        };
+        /** Conflict */
+        Conflict: {
+            /**
+             * Appointment Id
+             * Format: uuid
+             */
+            appointment_id: string;
+            /** Customer Name */
+            customer_name: string;
+            /**
+             * Provider Id
+             * Format: uuid
+             */
+            provider_id: string;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
         };
         /** ConsentChange */
         ConsentChange: {
@@ -1116,6 +1250,20 @@ export interface components {
             /** Turnstile Token */
             turnstile_token?: string | null;
         };
+        /** FreeSlot */
+        FreeSlot: {
+            /**
+             * Provider Ids
+             * @description Quem está livre nesse horário.
+             */
+            provider_ids: string[];
+            /**
+             * Starts At
+             * Format: date-time
+             * @description Início em UTC.
+             */
+            starts_at: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1230,6 +1378,41 @@ export interface components {
              * @example 2026-11-03T13:00:00Z
              */
             starts_at: string;
+        };
+        /** NewBlock */
+        NewBlock: {
+            /**
+             * End Date
+             * @description Último dia, inclusive (só para dias inteiros).
+             */
+            end_date?: string | null;
+            /**
+             * End Time
+             * @description Fim `HH:MM` (só para horas).
+             */
+            end_time?: string | null;
+            /**
+             * Provider Id
+             * @description Profissional bloqueado; `null` = o estabelecimento inteiro.
+             */
+            provider_id?: string | null;
+            /**
+             * Reason
+             * @example Feriado
+             */
+            reason?: string | null;
+            /**
+             * Start Date
+             * Format: date
+             * @description Primeiro dia (data local).
+             * @example 2026-12-25
+             */
+            start_date: string;
+            /**
+             * Start Time
+             * @description Início `HH:MM` (só para horas).
+             */
+            start_time?: string | null;
         };
         /** NewCustomer */
         NewCustomer: {
@@ -1505,10 +1688,14 @@ export interface components {
         };
         /** SettingsChanges */
         SettingsChanges: {
+            /** Buffer Min */
+            buffer_min?: number | null;
             /** Locale */
             locale?: ("pt-BR" | "es") | null;
             /** Name */
             name?: string | null;
+            /** Slot Step Min */
+            slot_step_min?: (5 | 10 | 15 | 20 | 30 | 60) | null;
             /** Timezone */
             timezone?: string | null;
         };
@@ -1591,6 +1778,11 @@ export interface components {
         /** TenantSettings */
         TenantSettings: {
             /**
+             * Buffer Min
+             * @description Intervalo mínimo entre um atendimento e o próximo do mesmo profissional, em minutos (0 a 120, de 5 em 5).
+             */
+            buffer_min: number;
+            /**
              * Country
              * @enum {string}
              */
@@ -1612,6 +1804,12 @@ export interface components {
              * @example Studio Bella
              */
             name: string;
+            /**
+             * Slot Step Min
+             * @description De quantos em quantos minutos os horários livres são oferecidos.
+             * @enum {integer}
+             */
+            slot_step_min: 5 | 10 | 15 | 20 | 30 | 60;
             /**
              * Timezone
              * @description Fuso IANA da agenda.
@@ -2676,6 +2874,191 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_availability_t__slug__availability_get: {
+        parameters: {
+            query: {
+                offering_id: string;
+                /** @description Data local (AAAA-MM-DD). */
+                date: string;
+                provider_id?: string | null;
+            };
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_block_t__slug__blocks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewBlock"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlockOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_block_t__slug__blocks__block_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                block_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

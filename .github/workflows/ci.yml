@@ -139,6 +139,18 @@ jobs:
             -H 'Content-Type: application/json' -d "$BODY" -o /dev/null
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8000/t/studio-bella/appointments \
             -H "Authorization: Bearer $RECEPCAO" -H 'Content-Type: application/json' -d "$BODY")" = "409"
+          # dono bloqueia o salão inteiro num dia: os horários livres somem; desbloqueia e voltam
+          SERVICO=$(echo "$BODY" | python3 -c "import sys, json; print(json.load(sys.stdin)['offering_id'])")
+          livres() { curl -fsS "http://localhost:8000/t/studio-bella/availability?offering_id=$SERVICO&date=$1"             -H "Authorization: Bearer $RECEPCAO" | python3 -c "import sys, json; print(len(json.load(sys.stdin)['slots']))"; }
+          # procura um dia com horários livres (o teste não pode passar "no vazio")
+          for n in $(seq 40 47); do DIA=$(date -u -d "+$n days" +%F); ANTES=$(livres "$DIA"); [ "$ANTES" -gt 0 ] && break; done
+          test "$ANTES" -gt 0
+          BLOQUEIO=$(curl -fsS -X POST http://localhost:8000/t/studio-bella/blocks -H "Authorization: Bearer $TOKEN" \
+            -H 'Content-Type: application/json' -d "{\"start_date\":\"$DIA\",\"reason\":\"Feriado\"}" \
+            | python3 -c "import sys, json; print(json.load(sys.stdin)['id'])")
+          test "$(livres "$DIA")" = "0"
+          curl -fsS -X DELETE "http://localhost:8000/t/studio-bella/blocks/$BLOQUEIO" -H "Authorization: Bearer $TOKEN"
+          test "$(livres "$DIA")" = "$ANTES"
           # o token de um salão não vale no outro
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/t/salon-asuncion/auth/me \
             -H "Authorization: Bearer $TOKEN")" = "401"

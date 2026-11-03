@@ -3,18 +3,18 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { ApiError } from "../../../api/client";
-import { useCreateAppointment } from "../../../api/appointments";
+import { useAvailability, useCreateAppointment } from "../../../api/appointments";
 import { type CustomerSummary, useCustomers } from "../../../api/customers";
 import { useOfferings, useProviders } from "../../../api/providers";
 import { useAuth } from "../../../auth/AuthProvider";
 import { Card, FormError, SelectField, SubmitButton, TextField } from "../../../components/form";
 import { useDebounced } from "../../../hooks/useDebounced";
-import { zonedToUtc } from "../../../i18n/zoned";
+import { timeLabel, zonedToUtc } from "../../../i18n/zoned";
 import { salonPath } from "../../../paths";
 import { useCurrentTenant } from "../../TenantLayout";
 
 /** Conflitos que a recepção pode passar por cima, confirmando um encaixe. */
-const SQUEEZABLE = new Set(["outside_working_hours", "provider_time_off"]);
+const SQUEEZABLE = new Set(["outside_working_hours", "provider_time_off", "too_close"]);
 
 /** Marcar horário: cliente, profissional, serviço (do que ele faz), dia e hora. */
 export function BookingForm({ day, onDone }: { day: string; onDone: () => void }) {
@@ -36,6 +36,7 @@ export function BookingForm({ day, onDone }: { day: string; onDone: () => void }
   const choices = (offerings.data ?? []).filter((o) => provider?.offering_ids.includes(o.id));
   const offering = choices.find((o) => o.id === offeringId) ?? choices[0];
   const errorCode = create.error instanceof ApiError ? create.error.code : null;
+  const free = useAvailability(slug, offering?.id, date, provider?.id);
 
   async function submit(event: FormEvent | null, allowOutsideHours = false) {
     event?.preventDefault();
@@ -103,6 +104,34 @@ export function BookingForm({ day, onDone }: { day: string; onDone: () => void }
             onChange={(e) => setTime(e.target.value)}
           />
         </div>
+
+        {free.data && (
+          <fieldset className="mb-4">
+            <legend className="mb-1 font-medium text-slate-800">{t("booking.freeTimes")}</legend>
+            {free.data.slots.length === 0 ? (
+              <p className="text-sm text-slate-600">{t("booking.noFreeTimes")}</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {free.data.slots.map((s) => {
+                  const label = timeLabel(s.starts_at, tenant.timezone, "pt-BR");
+                  return (
+                    <button
+                      key={s.starts_at}
+                      type="button"
+                      aria-pressed={label === time}
+                      onClick={() => setTime(label)}
+                      className={`rounded-lg border px-3 py-2 text-sm ${
+                        label === time ? "border-brand-700 bg-brand-700 text-white" : "border-slate-300"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </fieldset>
+        )}
 
         <FormError error={create.error} />
         {errorCode && SQUEEZABLE.has(errorCode) && (

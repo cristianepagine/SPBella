@@ -152,5 +152,5 @@ Depois, atualize o [guia](docs/api/README.md) se mudou alguma convenção e regi
 
 ## Status
 
-Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 a SAL-09 concluídas.
-Próxima: SAL-10 (bloqueios: almoço, férias, feriado). A LGPD-01 vem depois das SAL. Ver [backlog](docs/backlog.md).
+Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 a SAL-10 concluídas.
+Próxima: SAL-11 (página pública de agendamento). A LGPD-01 vem depois das SAL. Ver [backlog](docs/backlog.md).

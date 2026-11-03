@@ -27,15 +27,19 @@ function SettingsForm({ current }: { current: TenantSettings }) {
   const [name, setName] = useState(current.name);
   const [locale, setLocale] = useState<Language>(current.locale);
   const [timezone, setTimezone] = useState(current.timezone);
+  const [buffer, setBuffer] = useState(current.buffer_min);
+  const [step, setStep] = useState(current.slot_step_min);
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => setSaved(false), [name, locale, timezone]);
+  useEffect(() => setSaved(false), [name, locale, timezone, buffer, step]);
 
   const display = formatLocale(i18n.language, current.country);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    const ok = await save.mutateAsync({ name, locale, timezone }).then(
+    const ok = await save
+      .mutateAsync({ name, locale, timezone, buffer_min: buffer, slot_step_min: step })
+      .then(
       () => true,
       () => false,
     );
@@ -69,6 +73,27 @@ function SettingsForm({ current }: { current: TenantSettings }) {
           options={current.timezone_options.map((zone) => ({
             value: zone,
             label: timeZoneLabel(zone, display),
+          }))}
+        />
+
+        <SelectField
+          label={t("settings.buffer")}
+          hint={t("settings.bufferHint")}
+          value={String(buffer)}
+          onChange={(v) => setBuffer(Number(v))}
+          options={[0, 5, 10, 15, 20, 30, 45, 60].map((m) => ({
+            value: String(m),
+            label: m === 0 ? t("settings.noBuffer") : t("services.minutes", { count: m }),
+          }))}
+        />
+        <SelectField
+          label={t("settings.step")}
+          hint={t("settings.stepHint")}
+          value={String(step)}
+          onChange={(v) => setStep(Number(v) as typeof step)}
+          options={[5, 10, 15, 20, 30, 60].map((m) => ({
+            value: String(m),
+            label: t("settings.everyMinutes", { count: m }),
           }))}
         />
 

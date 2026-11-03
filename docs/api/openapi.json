@@ -413,6 +413,104 @@
         "title": "AuditEntryOut",
         "type": "object"
       },
+      "AvailabilityOut": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "duration_min": {
+            "title": "Duration Min",
+            "type": "integer"
+          },
+          "offering_id": {
+            "format": "uuid",
+            "title": "Offering Id",
+            "type": "string"
+          },
+          "slots": {
+            "items": {
+              "$ref": "#/components/schemas/FreeSlot"
+            },
+            "title": "Slots",
+            "type": "array"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "timezone",
+          "offering_id",
+          "duration_min",
+          "slots"
+        ],
+        "title": "AvailabilityOut",
+        "type": "object"
+      },
+      "BlockOut": {
+        "properties": {
+          "conflicts": {
+            "description": "Agendamentos ativos que já estavam marcados no período bloqueado. Nada é cancelado sozinho: a equipe decide se remarca ou cancela.",
+            "items": {
+              "$ref": "#/components/schemas/Conflict"
+            },
+            "title": "Conflicts",
+            "type": "array"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "provider_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Id"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "provider_id",
+          "starts_at",
+          "ends_at",
+          "reason",
+          "conflicts"
+        ],
+        "title": "BlockOut",
+        "type": "object"
+      },
       "ChangePasswordIn": {
         "properties": {
           "current_password": {
@@ -431,6 +529,37 @@
           "new_password"
         ],
         "title": "ChangePasswordIn",
+        "type": "object"
+      },
+      "Conflict": {
+        "properties": {
+          "appointment_id": {
+            "format": "uuid",
+            "title": "Appointment Id",
+            "type": "string"
+          },
+          "customer_name": {
+            "title": "Customer Name",
+            "type": "string"
+          },
+          "provider_id": {
+            "format": "uuid",
+            "title": "Provider Id",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "appointment_id",
+          "provider_id",
+          "customer_name",
+          "starts_at"
+        ],
+        "title": "Conflict",
         "type": "object"
       },
       "ConsentChange": {
@@ -799,6 +928,31 @@
         "title": "ForgotPasswordIn",
         "type": "object"
       },
+      "FreeSlot": {
+        "properties": {
+          "provider_ids": {
+            "description": "Quem está livre nesse horário.",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Provider Ids",
+            "type": "array"
+          },
+          "starts_at": {
+            "description": "Início em UTC.",
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "starts_at",
+          "provider_ids"
+        ],
+        "title": "FreeSlot",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1052,6 +1206,91 @@
           "starts_at"
         ],
         "title": "NewAppointment",
+        "type": "object"
+      },
+      "NewBlock": {
+        "properties": {
+          "end_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Último dia, inclusive (só para dias inteiros).",
+            "title": "End Date"
+          },
+          "end_time": {
+            "anyOf": [
+              {
+                "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Fim `HH:MM` (só para horas).",
+            "title": "End Time"
+          },
+          "provider_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Profissional bloqueado; `null` = o estabelecimento inteiro.",
+            "title": "Provider Id"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "examples": [
+              "Feriado"
+            ],
+            "title": "Reason"
+          },
+          "start_date": {
+            "description": "Primeiro dia (data local).",
+            "examples": [
+              "2026-12-25"
+            ],
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "start_time": {
+            "anyOf": [
+              {
+                "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Início `HH:MM` (só para horas).",
+            "title": "Start Time"
+          }
+        },
+        "required": [
+          "start_date"
+        ],
+        "title": "NewBlock",
         "type": "object"
       },
       "NewCustomer": {
@@ -1712,6 +1951,20 @@
       },
       "SettingsChanges": {
         "properties": {
+          "buffer_min": {
+            "anyOf": [
+              {
+                "maximum": 120.0,
+                "minimum": 0.0,
+                "multipleOf": 5.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buffer Min"
+          },
           "locale": {
             "anyOf": [
               {
@@ -1739,6 +1992,25 @@
               }
             ],
             "title": "Name"
+          },
+          "slot_step_min": {
+            "anyOf": [
+              {
+                "enum": [
+                  5,
+                  10,
+                  15,
+                  20,
+                  30,
+                  60
+                ],
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slot Step Min"
           },
           "timezone": {
             "anyOf": [
@@ -1905,6 +2177,11 @@
       },
       "TenantSettings": {
         "properties": {
+          "buffer_min": {
+            "description": "Intervalo mínimo entre um atendimento e o próximo do mesmo profissional, em minutos (0 a 120, de 5 em 5).",
+            "title": "Buffer Min",
+            "type": "integer"
+          },
           "country": {
             "enum": [
               "BR",
@@ -1938,6 +2215,19 @@
             "title": "Name",
             "type": "string"
           },
+          "slot_step_min": {
+            "description": "De quantos em quantos minutos os horários livres são oferecidos.",
+            "enum": [
+              5,
+              10,
+              15,
+              20,
+              30,
+              60
+            ],
+            "title": "Slot Step Min",
+            "type": "integer"
+          },
           "timezone": {
             "description": "Fuso IANA da agenda.",
             "examples": [
@@ -1961,7 +2251,9 @@
           "timezone",
           "currency",
           "country",
-          "timezone_options"
+          "timezone_options",
+          "buffer_min",
+          "slot_step_min"
         ],
         "title": "TenantSettings",
         "type": "object"
@@ -2195,7 +2487,7 @@
   "info": {
     "description": "API do **SPBella** (Agenda Salão), sistema de agendamento para salões e barbearias.\n\nGuia de uso, convenções (erros, datas, valores, autenticação) e exemplos: `docs/api/README.md` no repositório.",
     "title": "SPBella API",
-    "version": "0.12.0"
+    "version": "0.13.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -2443,7 +2735,7 @@
     },
     "/t/{slug}/appointments": {
       "post": {
-        "description": "Agenda um cliente com um profissional.\n\n- `409 slot_taken`: o profissional já tem alguém nesse horário (inclusive quando duas pessoas tentam o mesmo horário ao mesmo tempo: só uma consegue).\n- `409 outside_working_hours` / `409 provider_time_off`: fora da jornada ou em folga. Mande `allow_outside_hours: true` para encaixar mesmo assim (nunca vale por cima de outro cliente).\n- `409 customer_without_consent`: o cliente retirou a autorização de uso dos dados para atendimento.\n- `422 provider_cannot_do`, `unknown_provider`, `unknown_offering`, `unknown_customer`, `invalid_time_step` (minutos de 5 em 5).",
+        "description": "Agenda um cliente com um profissional.\n\n- `409 slot_taken`: o profissional já tem alguém nesse horário (inclusive quando duas pessoas tentam o mesmo horário ao mesmo tempo: só uma consegue).\n- `409 outside_working_hours` / `409 provider_time_off` / `409 too_close` (sem o intervalo mínimo até outro atendimento): mande `allow_outside_hours: true` para encaixar mesmo assim (nunca vale por cima de outro cliente).\n- `409 customer_without_consent`: o cliente retirou a autorização de uso dos dados para atendimento.\n- `422 provider_cannot_do`, `unknown_provider`, `unknown_offering`, `unknown_customer`, `invalid_time_step` (minutos de 5 em 5).",
         "operationId": "create_appointment_t__slug__appointments_post",
         "parameters": [
           {
@@ -2551,7 +2843,7 @@
     },
     "/t/{slug}/appointments/{appointment_id}": {
       "patch": {
-        "description": "Muda o horário, o profissional e/ou o serviço (o fim é recalculado). Só agendamentos ativos (`scheduled`, `confirmed`) podem ser movidos (`409 not_active`).\n\n- `409 slot_taken`: o profissional já tem alguém nesse horário (inclusive quando duas pessoas tentam o mesmo horário ao mesmo tempo: só uma consegue).\n- `409 outside_working_hours` / `409 provider_time_off`: fora da jornada ou em folga. Mande `allow_outside_hours: true` para encaixar mesmo assim (nunca vale por cima de outro cliente).\n- `409 customer_without_consent`: o cliente retirou a autorização de uso dos dados para atendimento.\n- `422 provider_cannot_do`, `unknown_provider`, `unknown_offering`, `unknown_customer`, `invalid_time_step` (minutos de 5 em 5).",
+        "description": "Muda o horário, o profissional e/ou o serviço (o fim é recalculado). Só agendamentos ativos (`scheduled`, `confirmed`) podem ser movidos (`409 not_active`).\n\n- `409 slot_taken`: o profissional já tem alguém nesse horário (inclusive quando duas pessoas tentam o mesmo horário ao mesmo tempo: só uma consegue).\n- `409 outside_working_hours` / `409 provider_time_off` / `409 too_close` (sem o intervalo mínimo até outro atendimento): mande `allow_outside_hours: true` para encaixar mesmo assim (nunca vale por cima de outro cliente).\n- `409 customer_without_consent`: o cliente retirou a autorização de uso dos dados para atendimento.\n- `422 provider_cannot_do`, `unknown_provider`, `unknown_offering`, `unknown_customer`, `invalid_time_step` (minutos de 5 em 5).",
         "operationId": "move_appointment_t__slug__appointments__appointment_id__patch",
         "parameters": [
           {
@@ -3641,6 +3933,320 @@
         "tags": [
           "Login"
         ]
+      }
+    },
+    "/t/{slug}/availability": {
+      "get": {
+        "description": "Horários em que dá para marcar o serviço no dia (data local): jornada − bloqueios − agendamentos ativos, respeitando a duração do serviço e o intervalo mínimo entre atendimentos (Configurações). O serviço precisa caber inteiro numa faixa da jornada (não atravessa o almoço). Sem `provider_id`, junta todos os profissionais que fazem o serviço (\"sem preferência\").",
+        "operationId": "get_availability_t__slug__availability_get",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offering_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Offering Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Data local (AAAA-MM-DD).",
+            "in": "query",
+            "name": "date",
+            "required": true,
+            "schema": {
+              "description": "Data local (AAAA-MM-DD).",
+              "format": "date",
+              "title": "Date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "provider_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailabilityOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Horários livres",
+        "tags": [
+          "Agenda"
+        ],
+        "x-allowed-roles": [
+          "owner",
+          "reception"
+        ],
+        "x-required-permission": "agenda.manage"
+      }
+    },
+    "/t/{slug}/blocks": {
+      "post": {
+        "description": "Dois jeitos:\n- **Dias inteiros:** `start_date` e, se for mais de um dia, `end_date`.\n- **Intervalo de horas num dia:** `start_date`, `start_time` e `end_time`.\n\n`provider_id` vazio bloqueia o estabelecimento inteiro (feriado). A resposta traz em `conflicts` os agendamentos que já estavam marcados no período.\n\n`422` com `fields[0].code`: `start_after_end`, `start_and_end_required`, `hours_block_is_one_day`, `invalid_time_step`, `end_before_start`, `too_long`, `unknown_provider`.",
+        "operationId": "create_block_t__slug__blocks_post",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewBlock"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlockOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Bloquear horário",
+        "tags": [
+          "Agenda"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "time_off.manage"
+      }
+    },
+    "/t/{slug}/blocks/{block_id}": {
+      "delete": {
+        "description": "O período volta a seguir a jornada normal.",
+        "operationId": "delete_block_t__slug__blocks__block_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "block_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Block Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Remover bloqueio",
+        "tags": [
+          "Agenda"
+        ],
+        "x-allowed-roles": [
+          "owner"
+        ],
+        "x-required-permission": "time_off.manage"
       }
     },
     "/t/{slug}/customers": {
@@ -5523,7 +6129,7 @@
         "x-required-permission": "settings.manage"
       },
       "patch": {
-        "description": "Só os campos enviados mudam. Vale na hora para todo mundo (página pública, agenda, e-mails).\n\n- `422 validation_error` com `fields[0].code = invalid_timezone`: fuso desconhecido.\n- A moeda não muda por aqui (ver `currency`).",
+        "description": "Só os campos enviados mudam. Vale na hora para todo mundo (página pública, agenda, e-mails).\n\n- `buffer_min`: intervalo mínimo entre atendimentos (0 a 120, de 5 em 5).\n- `slot_step_min`: passo dos horários livres (5, 10, 15, 20, 30 ou 60).\n- `422 validation_error` com `fields[0].code = invalid_timezone`: fuso desconhecido.\n- A moeda não muda por aqui (ver `currency`).",
         "operationId": "change_settings_t__slug__settings_patch",
         "parameters": [
           {

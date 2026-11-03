@@ -23,6 +23,8 @@ const settings = (overrides = {}) => ({
   currency: "BRL",
   country: "BR",
   timezone_options: ["America/Sao_Paulo", "America/Manaus"],
+  buffer_min: 0,
+  slot_step_min: 15,
   ...overrides,
 });
 
@@ -56,7 +58,27 @@ describe("configurações do salão", () => {
       name: "Studio Alpha Centro",
       locale: "es",
       timezone: "America/Manaus",
+      buffer_min: 0,
+      slot_step_min: 15,
     });
+  });
+
+  it("define o intervalo entre atendimentos e o passo dos horários", async () => {
+    const requests = mockApi(
+      asOwner({
+        "GET /t/alpha/settings": json(settings()),
+        "PATCH /t/alpha/settings": async (request: Request) =>
+          json(settings(await request.json())),
+      }),
+    );
+    renderWithProviders(<App />, { route: "/alpha/app/settings" });
+
+    await userEvent.selectOptions(await screen.findByLabelText("Intervalo entre atendimentos"), "15");
+    await userEvent.selectOptions(screen.getByLabelText("Horários oferecidos"), "30");
+    await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+    const patch = requests.find((r) => r.method === "PATCH")!;
+    expect(await patch.json()).toMatchObject({ buffer_min: 15, slot_step_min: 30 });
   });
 
   it("mostra a moeda sem deixar mudar, com exemplo de preço no formato do país", async () => {

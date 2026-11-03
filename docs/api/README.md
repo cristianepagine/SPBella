@@ -380,8 +380,10 @@ Só para quem tem `settings.manage` (hoje, o dono).
 
 #### `PATCH /t/{slug}/settings` — mudar
 
-Corpo com qualquer combinação de `name`, `locale` (`pt-BR` ou `es`) e `timezone`. Vale **na hora**
-para todo mundo: a página pública (`GET /t/{slug}`), a agenda e os e-mails.
+Corpo com qualquer combinação de `name`, `locale` (`pt-BR` ou `es`), `timezone`, `buffer_min`
+(intervalo mínimo entre atendimentos: 0 a 120, de 5 em 5) e `slot_step_min` (passo dos horários
+livres: 5, 10, 15, 20, 30 ou 60). Vale **na hora** para todo mundo: a página pública
+(`GET /t/{slug}`), a agenda e os e-mails.
 
 - **A moeda não muda por aqui.** Os preços são guardados na menor unidade da moeda, então trocar
   BRL por PYG mudaria o valor de todos eles. Campos desconhecidos (`currency`, `slug`, `plan`...)
@@ -517,7 +519,7 @@ O fim é calculado pela duração do serviço. Horários de 5 em 5 minutos.
 |---|---|
 | `201` | Marcado (`status: "scheduled"`, `source: "staff"`) |
 | `409 slot_taken` | O profissional já tem alguém nesse horário. Vale também quando duas pessoas tentam o mesmo horário ao mesmo tempo: só uma consegue |
-| `409 outside_working_hours` / `409 provider_time_off` | Fora da jornada ou em folga. Reenvie com `"allow_outside_hours": true` para um **encaixe** (nunca vale por cima de outro cliente) |
+| `409 outside_working_hours` / `409 provider_time_off` / `409 too_close` | Fora da jornada, em folga/bloqueio, ou sem o intervalo mínimo até outro atendimento. Reenvie com `"allow_outside_hours": true` para um **encaixe** (nunca vale por cima de outro cliente) |
 | `409 customer_without_consent` | O cliente retirou a autorização de uso dos dados para atendimento |
 | `422 provider_cannot_do` | O profissional não faz esse serviço |
 | `422 unknown_provider` / `unknown_offering` / `unknown_customer` | Não existe ou está desativado |
@@ -542,6 +544,55 @@ Qualquer combinação de `starts_at`, `provider_id` e `offering_id` (o fim é re
 - `cancelled` libera o horário na hora.
 - Voltar um cancelado para `scheduled` ou `confirmed` só se o horário continuar livre
   (`409 slot_taken`).
+
+### Bloqueios
+
+Só o dono (`time_off.manage`). O almoço de todo dia se faz na jornada do profissional (duas faixas
+no dia); bloqueio é para o que é pontual.
+
+#### `POST /t/{slug}/blocks`
+
+| Bloqueio | Corpo |
+|---|---|
+| Feriado (estabelecimento inteiro) | `{"start_date": "2026-12-25", "reason": "Natal"}` |
+| Férias de um profissional | `{"provider_id": "…", "start_date": "2027-01-10", "end_date": "2027-01-20"}` |
+| Algumas horas | `{"provider_id": "…", "start_date": "2026-11-05", "start_time": "14:00", "end_time": "16:00", "reason": "Médico"}` |
+
+- `provider_id` vazio = o estabelecimento inteiro.
+- Datas e horas são **locais**. Dias inteiros vão de meia-noite a meia-noite; o `end_date` é
+  inclusive.
+- A resposta (`201`) traz `conflicts`: os agendamentos ativos que já estavam no período. **Nada é
+  cancelado sozinho**: a equipe decide se remarca ou cancela.
+- Bloqueado não aparece em `/availability` (nem na página pública) e recusa marcações com
+  `409 provider_time_off`.
+- `422` com `fields[0].code`: `start_and_end_required`, `start_after_end`, `invalid_time_step`,
+  `hours_block_is_one_day`, `end_before_start`, `too_long`, `unknown_provider`.
+
+`DELETE /t/{slug}/blocks/{block_id}` remove o bloqueio (os bloqueios aparecem em
+`GET /agenda` → `time_off`, com o `id`).
+
+### Horários livres
+
+#### `GET /t/{slug}/availability?offering_id=…&date=AAAA-MM-DD[&provider_id=…]`
+
+Quem tem `agenda.manage`. **Horários livres = jornada − bloqueios − agendamentos ativos**,
+respeitando:
+
+- a **duração** do serviço, que precisa caber inteira numa faixa da jornada (não atravessa o
+  almoço nem a meia-noite);
+- o **intervalo mínimo** entre atendimentos (`buffer_min`, nas Configurações), antes e depois de
+  cada agendamento ativo;
+- o **passo** dos horários (`slot_step_min`: 9:00, 9:15, 9:30…).
+
+Sem `provider_id`, junta todos os profissionais que fazem o serviço ("sem preferência"):
+
+```json
+{"date": "2026-11-03", "timezone": "America/Sao_Paulo", "offering_id": "…", "duration_min": 60,
+ "slots": [{"starts_at": "2026-11-03T12:00:00Z", "provider_ids": ["…", "…"]}]}
+```
+
+O cálculo segue o fuso do estabelecimento, inclusive em dias de mudança de horário de verão (a
+jornada local continua a mesma; os instantes UTC mudam).
 
 ### Itens agendáveis
 
