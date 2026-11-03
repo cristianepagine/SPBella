@@ -107,7 +107,8 @@
     "team": "Equipe",
     "settings": "Configurações",
     "customers": "Clientes",
-    "providers": "Profissionais"
+    "providers": "Profissionais",
+    "agenda": "Agenda"
   },
   "roles": {
     "owner": "Dono(a)",
@@ -116,9 +117,9 @@
   },
   "home": {
     "intro": {
-      "owner": "Aqui você administra tudo: equipe, configurações e, em breve, serviços, agenda e relatórios.",
-      "reception": "Aqui você vai cuidar da agenda e dos clientes. A agenda chega em breve.",
-      "professional": "Aqui vai aparecer a sua agenda. Ela chega em breve."
+      "owner": "Aqui você administra tudo: agenda, clientes, serviços, profissionais, equipe e configurações.",
+      "reception": "Aqui você cuida da agenda e dos clientes.",
+      "professional": "Aqui você vê a sua agenda."
     }
   },
   "forbidden": {
@@ -273,5 +274,35 @@
     "addTimeOff": "Marcar folga",
     "fromN": "Início do {{n}}º horário de {{day}}",
     "toN": "Fim do {{n}}º horário de {{day}}"
+  },
+  "agenda": {
+    "title": "Agenda",
+    "today": "Hoje",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "view": "Visualização",
+    "day": "Dia",
+    "week": "Semana",
+    "weekOf": "{{from}} a {{to}}",
+    "provider": "Profissional",
+    "allProviders": "Todos",
+    "legend": "Legenda",
+    "listView": "Agenda em lista",
+    "gridView": "Agenda em colunas",
+    "empty": "Nenhum horário marcado.",
+    "timeOff": "Folga: {{name}}",
+    "closed": "Estabelecimento fechado",
+    "online": "marcado pela página",
+    "timeRange": "{{from}}–{{to}}",
+    "hour": "{{hour}}:00",
+    "notLinked": "Sua conta ainda não está ligada a um profissional. Peça ao dono para ligar em Profissionais.",
+    "noProviders": "Ainda não há profissionais ativos. Cadastre em Profissionais.",
+    "status": {
+      "scheduled": "Agendado",
+      "confirmed": "Confirmado",
+      "completed": "Atendido",
+      "no_show": "Faltou",
+      "cancelled": "Cancelado"
+    }
   }
 }

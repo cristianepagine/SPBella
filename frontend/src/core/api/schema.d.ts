@@ -64,6 +64,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/t/{slug}/agenda": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver a agenda
+         * @description Do dia `start` (data local) por `days` dias (1 = o dia; 7 = a semana). Traz os profissionais com a jornada, os agendamentos (inclusive cancelados e faltas, para a tela mostrar com outra cor) e as folgas que caem no período.
+         *
+         *     `scheduled` (agendado), `confirmed` (confirmado), `completed` (atendido), `no_show` (faltou), `cancelled` (cancelado). Só `scheduled` e `confirmed` ocupam o horário.
+         *
+         *     `provider_id` filtra um profissional (para quem vê todos).
+         */
+        get: operations["get_agenda_t__slug__agenda_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/t/{slug}/audit": {
         parameters: {
             query?: never;
@@ -643,6 +667,134 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /** AgendaAppointment */
+        AgendaAppointment: {
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Customer Name */
+            customer_name: string;
+            /**
+             * Customer Phone Display
+             * @description Só para quem vê a agenda de todos; o profissional vê só o nome.
+             */
+            customer_phone_display: string | null;
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Offering Id
+             * Format: uuid
+             */
+            offering_id: string;
+            /** Offering Name */
+            offering_name: string;
+            /**
+             * Provider Id
+             * Format: uuid
+             */
+            provider_id: string;
+            /**
+             * Source
+             * @description `public` = marcado pela página.
+             * @enum {string}
+             */
+            source: "staff" | "public";
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            /**
+             * Status
+             * @description `scheduled` (agendado), `confirmed` (confirmado), `completed` (atendido), `no_show` (faltou), `cancelled` (cancelado). Só `scheduled` e `confirmed` ocupam o horário.
+             * @enum {string}
+             */
+            status: "scheduled" | "confirmed" | "completed" | "no_show" | "cancelled";
+        };
+        /** AgendaOut */
+        AgendaOut: {
+            /** Appointments */
+            appointments: components["schemas"]["AgendaAppointment"][];
+            /** Days */
+            days: number;
+            /**
+             * Own Provider Missing
+             * @description `true` quando o escopo é `own` e a conta não está ligada a nenhum profissional (o dono precisa ligar em Profissionais).
+             */
+            own_provider_missing: boolean;
+            /** Providers */
+            providers: components["schemas"]["AgendaProvider"][];
+            /**
+             * Scope
+             * @description `all` = todos os profissionais; `own` = só o da conta de quem pediu.
+             * @enum {string}
+             */
+            scope: "all" | "own";
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Time Off */
+            time_off: components["schemas"]["AgendaTimeOff"][];
+            /**
+             * Timezone
+             * @description Fuso para mostrar os horários (os instantes vêm em UTC).
+             */
+            timezone: string;
+        };
+        /** AgendaProvider */
+        AgendaProvider: {
+            /**
+             * Color
+             * @enum {string}
+             */
+            color: "rose" | "violet" | "sky" | "emerald" | "amber" | "orange" | "teal" | "fuchsia" | "lime" | "slate";
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Working Hours */
+            working_hours: components["schemas"]["WorkingRange"][];
+        };
+        /** AgendaTimeOff */
+        AgendaTimeOff: {
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Provider Id
+             * @description `null` = vale para o estabelecimento.
+             */
+            provider_id: string | null;
+            /** Reason */
+            reason: string | null;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
         };
         /** AuditEntryOut */
         AuditEntryOut: {
@@ -1505,6 +1657,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_agenda_t__slug__agenda_get: {
+        parameters: {
+            query: {
+                /** @description Primeiro dia, data local (AAAA-MM-DD). */
+                start: string;
+                days?: number;
+                provider_id?: string | null;
+            };
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgendaOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

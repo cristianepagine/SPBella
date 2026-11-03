@@ -48,8 +48,9 @@ COUNTRY_DEFAULTS = {
 MIGRATION_LOCK_KEY = 7_412_026_001  # chave do advisory lock de "tenants migrate"
 PLANS = ("base", "whatsapp_api")
 TENANT_EDITABLE_COLUMNS = ("name", "locale", "timezone")
-# Extensões do Postgres usadas pelas migrações de tenant (índices de busca, agenda).
-DB_EXTENSIONS = ("pg_trgm",)
+# Extensões do Postgres usadas pelas migrações de tenant: pg_trgm (busca de clientes) e
+# btree_gist (trava contra dupla reserva na agenda).
+DB_EXTENSIONS = ("pg_trgm", "btree_gist")
 # Tabelas de tenant que só aceitam INSERT (o papel do tenant não pode alterar nem apagar).
 APPEND_ONLY_TABLES = ("audit_log",)
 
@@ -172,9 +173,9 @@ def _target_urls(settings: Settings, dsn_ref: str | None) -> tuple[str, str]:
 # --- comandos ----------------------------------------------------------------------------
 
 
-def _ensure_extensions(conn: Connection) -> None:
-    """Extensões usadas pelas migrações de tenant. Se o servidor não tiver alguma, seguimos sem
-    ela: as migrações criam os índices só quando a extensão existe."""
+def _ensure_extensions(conn: Connection, settings: Settings) -> None:
+    """Cria as extensões usadas pelas migrações de tenant. Faltando alguma, para tudo, a menos
+    que ALLOW_MISSING_PG_EXTENSIONS esteja ligado (só em Postgres de teste)."""
     for extension in DB_EXTENSIONS:
         available = _run(
             conn, sql.SQL("SELECT 1 FROM pg_available_extensions WHERE name = %s"), (extension,)
@@ -186,8 +187,13 @@ def _ensure_extensions(conn: Connection) -> None:
                     sql.Identifier(extension)
                 ),
             )
-        else:
+        elif settings.allow_missing_pg_extensions:
             log.warning("db_extension_unavailable", extension=extension)
+        else:
+            raise ProvisioningError(
+                f"a extensão {extension} não está disponível neste Postgres "
+                "(use a imagem oficial do Postgres, que já traz as extensões)"
+            )
 
 
 def init_database(settings: Settings) -> None:
@@ -197,7 +203,7 @@ def init_database(settings: Settings) -> None:
     with _admin_engine(admin_url).connect() as conn:
         app_role = _ensure_app_role(conn, settings.database_url)
         _run(conn, sql.SQL("REVOKE CREATE ON SCHEMA public FROM PUBLIC"))
-        _ensure_extensions(conn)
+        _ensure_extensions(conn, settings)
     upgrade_public(admin_url)
     with _admin_engine(admin_url).connect() as conn:
         role = sql.Identifier(app_role)
@@ -300,7 +306,7 @@ def create_tenant(
             if _run(conn, sql.SQL("SELECT 1 FROM pg_namespace WHERE nspname = %s"), (schema,)):
                 raise ProvisioningError(f"o schema {schema} já existe nesse banco")
             app_role = _ensure_app_role(conn, target_app)
-            _ensure_extensions(conn)  # banco dedicado também precisa delas
+            _ensure_extensions(conn, settings)  # banco dedicado também precisa delas
             s, r = sql.Identifier(schema), sql.Identifier(role)
             if not _role_exists(conn, role):
                 _run(conn, sql.SQL("CREATE ROLE {} NOLOGIN NOINHERIT").format(r))

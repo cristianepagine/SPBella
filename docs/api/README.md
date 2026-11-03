@@ -459,6 +459,47 @@ também os instantes em UTC: `starts_at` = meia-noite local do primeiro dia; `en
 meia-noite local do dia seguinte ao último. `GET` lista as folgas que ainda não terminaram;
 `DELETE /time-off/{time_off_id}` cancela uma folga.
 
+### Agenda
+
+#### `GET /t/{slug}/agenda` — o dia ou a semana
+
+| Parâmetro | |
+|---|---|
+| `start` | Primeiro dia, **data local** do estabelecimento (`2026-11-03`) |
+| `days` | De 1 a 7 (1 = o dia; 7 = a semana) |
+| `provider_id` | Opcional: só um profissional (para quem vê todos) |
+
+```json
+{
+  "start_date": "2026-11-03", "days": 1, "timezone": "America/Sao_Paulo",
+  "scope": "all", "own_provider_missing": false,
+  "providers": [{"id": "…", "name": "Paula", "color": "sky",
+                 "working_hours": [{"weekday": 1, "start": "09:00", "end": "18:00"}]}],
+  "appointments": [{
+    "id": "…", "provider_id": "…", "offering_id": "…", "offering_name": "Corte feminino",
+    "customer_id": "…", "customer_name": "Maria Oliveira",
+    "customer_phone_display": "+55 11 98111-0001",
+    "starts_at": "2026-11-03T13:00:00Z", "ends_at": "2026-11-03T14:00:00Z",
+    "status": "confirmed", "source": "public"
+  }],
+  "time_off": [{"id": "…", "provider_id": "…", "starts_at": "…", "ends_at": "…", "reason": "Férias"}]
+}
+```
+
+- O período é calculado no fuso do estabelecimento: um horário às 23:30 de São Paulo
+  (02:30 UTC do dia seguinte) aparece no dia em que acontece para o salão. Um agendamento que
+  passa da meia-noite aparece nos dois dias.
+- **Quem vê o quê:** quem tem `agenda.view_all` (dono, recepção) vê todos os profissionais e o
+  telefone do cliente (`scope: "all"`). O profissional (`agenda.view_own`) vê **só** o
+  profissional ligado à própria conta, e o cliente **sem telefone** (`scope: "own"`); se a conta
+  não estiver ligada, a resposta vem vazia com `own_provider_missing: true`.
+- **Status:** `scheduled` (agendado), `confirmed` (confirmado), `completed` (atendido),
+  `no_show` (faltou), `cancelled` (cancelado). Todos vêm na agenda; só os dois primeiros
+  ocupam o horário.
+- **Dupla reserva é impossível:** o banco tem uma constraint de exclusão
+  (`btree_gist` + `tstzrange`, intervalo `[início, fim)`) por profissional, só entre agendamentos
+  ativos. Um agendamento pode começar exatamente quando o anterior termina.
+
 ### Itens agendáveis
 
 `GET /t/{slug}/offerings` (`catalog.view`): nome e duração de tudo o que pode ser agendado, sem

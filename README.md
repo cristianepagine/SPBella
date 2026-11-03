@@ -109,6 +109,9 @@ cd backend
 # testes com Postgres (isolamento entre salões etc.): aponte para um SUPERUSUÁRIO de um servidor
 # sem dados reais. Os testes criam e apagam os bancos spbella_test*. Com o compose rodando:
 export TEST_ADMIN_DATABASE_URL=postgresql+psycopg://spbella:troque-esta-senha@localhost:5432/postgres
+# só se o seu Postgres de teste NÃO tiver pg_trgm/btree_gist (ex.: Postgres portátil no Windows);
+# a imagem oficial do Docker já tem. No CI isto fica desligado: a falta de extensão é erro.
+# export ALLOW_MISSING_PG_EXTENSIONS=1
 uv run pytest                     # sem a variável, os testes com banco são pulados (no CI, falham)
 uv run ruff check . && uv run ruff format --check .
 
@@ -149,5 +152,5 @@ Depois, atualize o [guia](docs/api/README.md) se mudou alguma convenção e regi
 
 ## Status
 
-Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 a SAL-07 concluídas.
-Próxima: LGPD-01 (exportar e excluir os dados de um cliente). Ver [backlog](docs/backlog.md).
+Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 a SAL-08 concluídas.
+Próxima: SAL-09 (criar, mover, cancelar e marcar falta). A LGPD-01 vem depois das SAL. Ver [backlog](docs/backlog.md).

@@ -55,7 +55,7 @@ describe("cada perfil vê o seu menu e o seu início", () => {
 
     const nav = await screen.findByRole("navigation", { name: "Menu" });
     expect(within(nav).queryByRole("link", { name: "Equipe" })).toBeNull();
-    expect(screen.getByText(/cuidar da agenda e dos clientes/)).toBeInTheDocument();
+    expect(screen.getByText(/cuida da agenda e dos clientes/)).toBeInTheDocument();
   });
 
   it("profissional vê só a própria agenda", async () => {
@@ -63,9 +63,9 @@ describe("cada perfil vê o seu menu e o seu início", () => {
 
     renderWithProviders(<App />, { route: "/alpha/app" });
 
-    expect(await screen.findByText(/Aqui vai aparecer a sua agenda/)).toBeInTheDocument();
+    expect(await screen.findByText(/Aqui você vê a sua agenda/)).toBeInTheDocument();
     const nav = screen.getByRole("navigation", { name: "Menu" });
-    expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual(["Início"]);
+    expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual(["Início", "Agenda"]);
   });
 
   it("quem abre uma área proibida pelo endereço vê o aviso", async () => {

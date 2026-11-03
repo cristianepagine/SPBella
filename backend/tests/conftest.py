@@ -47,6 +47,7 @@ def production_settings(**overrides) -> Settings:
         "turnstile_secret_key": "segredo-turnstile",
         "mail_backend": "disabled",
         "api_docs_enabled": False,
+        "allow_missing_pg_extensions": False,  # mesmo se o ambiente de teste ligar
     }
     return Settings(**{**values, **overrides})
 
@@ -108,6 +109,9 @@ def db_settings() -> Iterator[Settings]:
         db_pool_size=2,
         cookie_secure=False,  # o cliente de teste usa http://testserver
         mail_backend="memory",
+        # Só um Postgres de teste sem extensões liga isto (ALLOW_MISSING_PG_EXTENSIONS=1);
+        # o CI não liga, então lá a falta de uma extensão derruba os testes.
+        allow_missing_pg_extensions=os.getenv("ALLOW_MISSING_PG_EXTENSIONS") == "1",
     )
     init_database(settings)
     yield settings

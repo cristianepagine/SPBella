@@ -19,6 +19,13 @@ export type NavItem = {
 export const CORE_NAV: NavItem[] = [
   { id: "home", labelKey: "nav.home", to: salonPath.app, end: true, order: 0 },
   {
+    id: "agenda",
+    labelKey: "nav.agenda",
+    to: salonPath.agenda,
+    permission: "agenda.view_own",
+    order: 10,
+  },
+  {
     id: "customers",
     labelKey: "nav.customers",
     to: salonPath.customers,

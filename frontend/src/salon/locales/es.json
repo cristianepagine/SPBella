@@ -36,5 +36,8 @@
     "activate": "Reactivar",
     "inactive": "Desactivado: no aparece para agendar",
     "minutes": "{{count}} min"
+  },
+  "agenda": {
+    "closed": "Salón cerrado"
   }
 }

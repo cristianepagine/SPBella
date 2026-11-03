@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=("../.env", ".env"), extra="ignore")
 
     app_env: Literal["development", "test", "production"] = "development"
-    app_version: str = "0.10.0"
+    app_version: str = "0.11.0"
 
     # Papel da APLICAÇÃO: sem acesso direto às tabelas dos salões; só entra em um salão
     # com SET LOCAL ROLE (ver app/core/infra/tenancy.py).
@@ -65,6 +65,11 @@ class Settings(BaseSettings):
     trust_cloudflare_ip_header: bool = False
     rate_limit_enabled: bool = True
 
+    # Extensões do Postgres (pg_trgm, btree_gist) são OBRIGATÓRIAS: sem btree_gist não existe a
+    # trava de banco contra dupla reserva. Só um Postgres de teste sem as extensões (ex.: o
+    # portátil usado no Windows) pode ligar isto. Proibido em produção.
+    allow_missing_pg_extensions: bool = False
+
     # console: imprime o e-mail no terminal (só desenvolvimento) | memory: testes |
     # disabled: não envia (o envio real por e-mail entra na história 9).
     mail_backend: Literal["console", "memory", "disabled"] = "console"
@@ -90,6 +95,8 @@ class Settings(BaseSettings):
             problems.append("MAIL_BACKEND diferente de console (o console imprime dados pessoais)")
         if not self.cookie_secure:
             problems.append("COOKIE_SECURE=true")
+        if self.allow_missing_pg_extensions:
+            problems.append("ALLOW_MISSING_PG_EXTENSIONS=false")
         if problems:
             raise ValueError("configuração de produção incompleta: " + "; ".join(problems))
         return self

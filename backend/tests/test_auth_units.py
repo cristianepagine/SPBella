@@ -63,6 +63,7 @@ def test_turnstile_without_token_fails_without_calling_cloudflare():
         ({"turnstile_secret_key": None}, "TURNSTILE_SECRET_KEY"),
         ({"mail_backend": "console"}, "MAIL_BACKEND"),
         ({"cookie_secure": False}, "COOKIE_SECURE"),
+        ({"allow_missing_pg_extensions": True}, "ALLOW_MISSING_PG_EXTENSIONS"),
     ],
 )
 def test_production_refuses_unsafe_configuration(override, missing):

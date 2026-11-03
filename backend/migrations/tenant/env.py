@@ -13,7 +13,7 @@ from sqlalchemy.pool import NullPool
 import app.core.accounts.models  # noqa: F401 - registra as tabelas do core no metadata
 import app.core.audit.models  # noqa: F401
 import app.core.customers.models  # noqa: F401
-import app.core.scheduling.models  # noqa: F401
+import app.core.scheduling.models  # noqa: F401 (inclui Appointment)
 import app.registry  # noqa: F401 - e as da vertical
 from app.core.infra.config import get_settings
 from app.core.infra.models import TenantBase

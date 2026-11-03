@@ -50,7 +50,9 @@ def _search(client, token, q, **params):
 
 @pytest.fixture
 def known(db_client, token):
-    tag = uuid.uuid4().hex[:6]  # isola os nomes deste teste
+    # isola os nomes deste teste; a letra na frente evita um código só de números (que a busca
+    # trataria, corretamente, como telefone)
+    tag = "z" + uuid.uuid4().hex[:6]
     return {
         "joao": _add(db_client, token, f"João Conceição {tag}", "(11) 91234-0001"),
         "ana": _add(db_client, token, f"Ana Paula Silva {tag}", "(21) 99876-5432"),
@@ -201,7 +203,9 @@ def test_trigram_index_is_used_when_available(db_settings, five_thousand):
             text("SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm'")
         ).first()
         if not has_trgm:
-            pytest.skip("pg_trgm não existe neste Postgres (o CI tem)")
+            if not db_settings.allow_missing_pg_extensions:
+                pytest.fail("pg_trgm deveria existir (o CI e a produção exigem)")
+            pytest.skip("pg_trgm não existe neste Postgres de teste")
         session.execute(text("SET LOCAL enable_seqscan = off"))
         plan = "\n".join(
             session.execute(

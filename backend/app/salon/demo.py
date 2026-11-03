@@ -1,19 +1,24 @@
 """Salões de demonstração (`tenants seed-demo`), para mostrar no primeiro contato com o cliente.
 
 Cada salão tem um acesso de cada perfil (dono, recepção e profissional), todos com a senha de
-demonstração, e três profissionais na agenda com jornadas e serviços diferentes.
+demonstração, três profissionais com jornadas e serviços diferentes, seis clientes e uma agenda
+de ontem até daqui a 4 dias com todos os status.
 """
 
 import uuid
-from datetime import time
+from datetime import UTC, datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.accounts.models import User
+from app.core.customers.models import Consent, Customer
+from app.core.customers.phones import normalize_phone
+from app.core.customers.search import normalize_text
 from app.core.infra.security import hash_password
 from app.core.infra.tenancy import TenantContext
-from app.core.scheduling.models import Offering, Provider, WorkingHours
+from app.core.scheduling.models import Appointment, Offering, Provider, WorkingHours
 from app.core.tenants.provisioning import DEMO_PASSWORD
 from app.core.vertical import DemoTenant
 from app.salon.seed import SAMPLE_SERVICES
@@ -110,6 +115,79 @@ def seed_demo_salon(session: Session, tenant: TenantContext) -> None:
             offerings=[by_name[sample_names[i]] for i in service_indexes],
         )
         session.add(provider)
+    session.flush()
+    _demo_appointments(session, tenant)
+
+
+DEMO_CUSTOMERS = {
+    "pt-BR": [
+        ("Maria Oliveira", "(11) 98111-0001"),
+        ("Joana Ribeiro", "(11) 98111-0002"),
+        ("Carlos Mendes", "(11) 98111-0003"),
+        ("Fernanda Lima", "(11) 98111-0004"),
+        ("Roberto Alves", "(11) 98111-0005"),
+        ("Patrícia Gomes", "(11) 98111-0006"),
+    ],
+    "es": [
+        ("María Benítez", "0981 110001"),
+        ("Lorena Giménez", "0981 110002"),
+        ("Carlos Duarte", "0981 110003"),
+        ("Fernanda Ortiz", "0981 110004"),
+        ("Roberto Acosta", "0981 110005"),
+        ("Patricia Núñez", "0981 110006"),
+    ],
+}
+
+
+def _demo_appointments(session: Session, tenant: TenantContext) -> None:
+    """Agenda de ontem até daqui a 4 dias, com todos os status, para mostrar as cores."""
+    zone = ZoneInfo(tenant.timezone)
+    customers = []
+    for name, phone in DEMO_CUSTOMERS[tenant.locale]:
+        customer = Customer(
+            id=uuid.uuid4(),
+            name=name,
+            search_name=normalize_text(name),
+            phone_e164=normalize_phone(phone, tenant.country),
+        )
+        customer.consents = [
+            Consent(purpose=p, policy_version="demo", source="staff")
+            for p in ("service", "reminders")
+        ]
+        session.add(customer)
+        customers.append(customer)
+
+    today = datetime.now(zone).date()
+    providers = list(session.scalars(select(Provider).order_by(Provider.name)))
+    future = ["confirmed", "scheduled", "scheduled", "cancelled", "confirmed"]
+    n = 0
+    for offset in range(-1, 5):
+        day = today + timedelta(days=offset)
+        for provider in providers:
+            for hours in (h for h in provider.working_hours if h.weekday == day.weekday()):
+                cursor = datetime.combine(day, hours.start_time, tzinfo=zone)
+                limit = datetime.combine(day, hours.end_time, tzinfo=zone)
+                for _ in range(2):
+                    offering = provider.offerings[n % len(provider.offerings)]
+                    end = cursor + timedelta(minutes=offering.duration_min)
+                    if end > limit:
+                        break
+                    status = (
+                        ("no_show" if n % 4 == 0 else "completed") if offset < 0 else future[n % 5]
+                    )
+                    session.add(
+                        Appointment(
+                            provider_id=provider.id,
+                            offering_id=offering.id,
+                            customer_id=customers[n % len(customers)].id,
+                            starts_at=cursor.astimezone(UTC),
+                            ends_at=end.astimezone(UTC),
+                            status=status,
+                            source="public" if n % 3 == 0 else "staff",
+                        )
+                    )
+                    n += 1
+                    cursor = end + timedelta(minutes=30)
 
 
 def _t(value: str) -> time:

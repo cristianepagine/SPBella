@@ -93,6 +93,12 @@ minúsculas (normalizado em Python, sem depender da extensão `unaccent`). Índi
 (`pg_trgm`) no nome e no telefone aceleram o "contém". O `db init` cria a extensão; se o servidor
 não tiver, a migração segue sem os índices e a busca continua certa, só sem a aceleração.
 
+**Dupla reserva (SAL-08/09):** `appointments` tem `EXCLUDE USING gist (provider_id WITH =,
+tstzrange(starts_at, ends_at, '[)') WITH &&) WHERE status IN ('scheduled', 'confirmed')`. A
+extensão `btree_gist` é obrigatória: a migração falha sem ela. Só um Postgres de teste sem
+extensões pode seguir, com `ALLOW_MISSING_PG_EXTENSIONS=1`, recusado em produção pelo validador de
+configuração. No CI a variável fica desligada, então ali a trava sempre existe e é testada.
+
 **Mudanças em relação à proposta inicial:**
 - A tabela `public.tenant_migrations` não foi criada. A versão de cada salão fica na
   `alembic_version` do próprio schema (`tenants list` mostra), e os erros de migração aparecem na saída de

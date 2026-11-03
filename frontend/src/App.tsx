@@ -8,6 +8,7 @@ import { StaffLayout } from "./core/layout/StaffLayout";
 import { CustomerPage } from "./core/pages/app/customers/CustomerPage";
 import { CustomersPage } from "./core/pages/app/customers/CustomersPage";
 import { NewCustomerPage } from "./core/pages/app/customers/NewCustomerPage";
+import { AgendaPage } from "./core/pages/app/agenda/AgendaPage";
 import { StaffHomePage } from "./core/pages/app/HomePage";
 import { ProviderPage } from "./core/pages/app/providers/ProviderPage";
 import { ProvidersPage } from "./core/pages/app/providers/ProvidersPage";
@@ -47,6 +48,9 @@ export function App() {
               <Route element={<RequireFullAccess />}>
                 <Route path="app" element={<StaffLayout nav={NAV} />}>
                   <Route index element={<StaffHomePage />} />
+                  <Route element={<RequirePermission permission="agenda.view_own" />}>
+                    <Route path="agenda" element={<AgendaPage />} />
+                  </Route>
                   <Route element={<RequirePermission permission="customers.manage" />}>
                     <Route path="customers" element={<CustomersPage />} />
                     <Route path="customers/new" element={<NewCustomerPage />} />

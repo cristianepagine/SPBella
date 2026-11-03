@@ -121,3 +121,42 @@ class TimeOff(TenantBase):
     ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     reason: Mapped[str | None] = mapped_column(String(120))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+# Status que ocupam o horário (os outros liberam o horário para outro agendamento).
+ACTIVE_STATUSES = ("scheduled", "confirmed")
+APPOINTMENT_STATUSES = ("scheduled", "confirmed", "completed", "no_show", "cancelled")
+APPOINTMENT_SOURCES = ("staff", "public")
+
+
+class Appointment(TenantBase):
+    """Agendamento. Instantes em UTC.
+
+    Dupla reserva é impossível: além da validação na aplicação, o banco tem uma constraint de
+    exclusão (btree_gist + tstzrange) por profissional, só entre agendamentos ativos.
+    O intervalo é [início, fim): um termina às 10h e o outro pode começar às 10h.
+    """
+
+    __tablename__ = "appointments"
+    __table_args__ = (
+        CheckConstraint("starts_at < ends_at", name="start_before_end"),
+        CheckConstraint(
+            "status IN ('scheduled', 'confirmed', 'completed', 'no_show', 'cancelled')",
+            name="status",
+        ),
+        CheckConstraint("source IN ('staff', 'public')", name="source"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    provider_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("providers.id"), index=True)
+    offering_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("offerings.id"))
+    customer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("customers.id"), index=True)
+    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(String(16), server_default="scheduled")
+    source: Mapped[str] = mapped_column(String(16), server_default="staff")
+    created_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

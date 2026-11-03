@@ -3,6 +3,7 @@ export const salonPath = {
   home: (slug: string) => `/${slug}`,
   login: (slug: string) => `/${slug}/login`,
   app: (slug: string) => `/${slug}/app`,
+  agenda: (slug: string) => `/${slug}/app/agenda`,
   team: (slug: string) => `/${slug}/app/team`,
   settings: (slug: string) => `/${slug}/app/settings`,
   customers: (slug: string) => `/${slug}/app/customers`,

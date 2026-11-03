@@ -2,6 +2,14 @@
 
 Mudanças visíveis para quem consome a API. Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.11.0] - 2026-11-03
+
+### Adicionado
+- Agenda: `GET /t/{slug}/agenda?start=AAAA-MM-DD&days=1..7[&provider_id=]`
+  (`agenda.view_own`; quem tem `agenda.view_all` vê todos).
+- Agendamentos no banco, com constraint de exclusão contra dupla reserva por profissional.
+  Criar e alterar pela API entra na SAL-09.
+
 ## [0.10.0] - 2026-11-03
 
 ### Adicionado
