@@ -1,6 +1,7 @@
 /** Endereços das páginas de um tenant (salão). Sempre absolutos (evita surpresas com rotas aninhadas). */
 export const salonPath = {
   home: (slug: string) => `/${slug}`,
+  privacy: (slug: string) => `/${slug}/privacy`,
   login: (slug: string) => `/${slug}/login`,
   app: (slug: string) => `/${slug}/app`,
   agenda: (slug: string) => `/${slug}/app/agenda`,

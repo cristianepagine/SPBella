@@ -1,5 +1,5 @@
-"""Horários livres para a equipe (sugestões no "Novo agendamento"). A página pública (SAL-11)
-usa o mesmo cálculo (app/core/scheduling/availability.py)."""
+"""Horários livres para a equipe (sugestões no "Novo agendamento"). A página pública usa o mesmo
+cálculo em app/core/scheduling/public_api.py."""
 
 import uuid
 from datetime import date, datetime

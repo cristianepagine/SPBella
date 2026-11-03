@@ -74,7 +74,7 @@ describe("página do salão", () => {
 
     renderWithProviders(<App />, { route: "/alpha" });
 
-    expect(await screen.findByText(/Muy pronto vas a poder reservar/)).toBeInTheDocument();
+    expect(await screen.findByText(/Reservá tu turno en pocos toques/)).toBeInTheDocument();
   });
 
   it("respeita o idioma escolhido pelo usuário", async () => {
@@ -84,7 +84,7 @@ describe("página do salão", () => {
     renderWithProviders(<App />, { route: "/alpha" });
 
     expect(await screen.findByRole("heading", { name: "Salón Asunción" })).toBeInTheDocument();
-    expect(screen.getByText(/Em breve você vai poder marcar/)).toBeInTheDocument();
+    expect(screen.getByText(/Agende seu horário em poucos toques/)).toBeInTheDocument();
   });
 
   it("explica quando o salão não existe", async () => {

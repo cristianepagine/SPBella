@@ -170,6 +170,8 @@ class ScheduleSettings(TenantBase):
         CheckConstraint("id = 1", name="single_row"),
         CheckConstraint("buffer_min BETWEEN 0 AND 120 AND buffer_min % 5 = 0", name="buffer"),
         CheckConstraint("slot_step_min IN (5, 10, 15, 20, 30, 60)", name="slot_step"),
+        CheckConstraint("min_notice_min BETWEEN 0 AND 10080", name="min_notice"),
+        CheckConstraint("max_days_ahead BETWEEN 1 AND 365", name="max_days_ahead"),
     )
 
     id: Mapped[int] = mapped_column(SmallInteger, primary_key=True, default=1)
@@ -177,3 +179,6 @@ class ScheduleSettings(TenantBase):
     buffer_min: Mapped[int] = mapped_column(SmallInteger, server_default=text("0"))
     # De quantos em quantos minutos os horários livres são oferecidos (9:00, 9:15, 9:30...).
     slot_step_min: Mapped[int] = mapped_column(SmallInteger, server_default=text("15"))
+    # Página pública: antecedência mínima para marcar (minutos) e até quantos dias à frente.
+    min_notice_min: Mapped[int] = mapped_column(server_default=text("60"))
+    max_days_ahead: Mapped[int] = mapped_column(SmallInteger, server_default=text("60"))

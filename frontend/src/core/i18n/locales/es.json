@@ -79,11 +79,11 @@
     "invalid_time_step": "Usá horarios de 5 en 5 minutos (ej.: 9:00, 9:05, 9:10).",
     "too_early": "Solo se puede marcar atendido o ausencia después del horario.",
     "not_active": "Ese turno ya terminó o fue cancelado.",
-    "too_close": "Ese horario queda pegado a otra atención, sin el intervalo mínimo."
+    "too_close": "Ese horario queda pegado a otra atención, sin el intervalo mínimo.",
+    "slot_unavailable": "Ese horario se acaba de ocupar. Elegí otro, por favor."
   },
   "tenant": {
-    "loading": "Cargando…",
-    "comingSoon": "Muy pronto vas a poder reservar tu turno por aquí."
+    "loading": "Cargando…"
   },
   "auth": {
     "loading": "Cargando…",
@@ -174,7 +174,20 @@
     "noBuffer": "Sin intervalo",
     "step": "Horarios ofrecidos",
     "stepHint": "Cada cuántos minutos aparecen los horarios libres para agendar.",
-    "everyMinutes": "Cada {{count}} minutos"
+    "everyMinutes": "Cada {{count}} minutos",
+    "notice": "Anticipación mínima (página pública)",
+    "noticeHint": "Con cuánto tiempo de anticipación el cliente puede agendar por la página. El equipo puede hacer un hueco a cualquier hora.",
+    "noNotice": "Sin anticipación",
+    "noticeMinutes_one": "{{count}} minuto antes",
+    "noticeMinutes_other": "{{count}} minutos antes",
+    "noticeHours_one": "{{count}} hora antes",
+    "noticeHours_other": "{{count}} horas antes",
+    "noticeDays_one": "{{count}} día antes",
+    "noticeDays_other": "{{count}} días antes",
+    "daysAhead": "Hasta cuándo se puede agendar (página pública)",
+    "daysAheadHint": "Cuántos días hacia adelante la página pública muestra horarios.",
+    "upToDays_one": "Hasta {{count}} día adelante",
+    "upToDays_other": "Hasta {{count}} días adelante"
   },
   "currency": {
     "BRL": "Real (R$)",
@@ -368,5 +381,49 @@
     "conflicts_one": "Bloqueado. Atención: ya había {{count}} cliente agendado en ese período:",
     "conflicts_other": "Bloqueado. Atención: ya había {{count}} clientes agendados en ese período:",
     "conflictsHint": "No se canceló nada. Abrí cada turno en la agenda para reprogramar o cancelar."
+  },
+  "privacy": {
+    "title": "Privacidad",
+    "back": "Volver a la reserva",
+    "whoTitle": "Quién cuida tus datos",
+    "who": "{{salon}} es responsable de los datos que informás en esta página. El sistema lo opera Spartacus Soluções, que solo trata los datos en nombre del local.",
+    "whatTitle": "Qué datos",
+    "what": "Nombre, celular y, si querés, correo. También guardamos los turnos que reservás y las autorizaciones que diste.",
+    "whyTitle": "Para qué",
+    "why": "Para reservar y realizar la atención. Recordatorios y novedades solo si lo autorizás, y podés desistir cuando quieras.",
+    "shareTitle": "Con quién",
+    "share": "Nadie más que {{salon}} y la operadora del sistema. No vendemos datos.",
+    "keepTitle": "Por cuánto tiempo",
+    "keep": "Mientras seas cliente de {{salon}} o hasta que pidas la eliminación, salvo lo que la ley obliga a guardar.",
+    "rightsTitle": "Tus derechos",
+    "rights": "Podés pedir ver, corregir, exportar o borrar tus datos y retirar autorizaciones. Pedilo directamente a {{salon}}."
+  },
+  "publicBooking": {
+    "chooseService": "1. Elegí el servicio",
+    "chooseProvider": "2. ¿Con quién?",
+    "anyProvider": "Sin preferencia",
+    "chooseDay": "3. Elegí el día",
+    "chooseTime": "4. Elegí el horario",
+    "yourDetails": "5. Tus datos",
+    "today": "Hoy",
+    "previousDays": "‹ Días anteriores",
+    "nextDays": "Próximos días ›",
+    "noServices": "Este local todavía no abrió horarios para reservar por internet.",
+    "noTimes": "No hay horarios libres este día. Probá otro día.",
+    "duration": "{{count}} min",
+    "summary": "{{service}} · {{day}} a las {{time}} · {{provider}}",
+    "name": "Tu nombre",
+    "phone": "Celular (WhatsApp)",
+    "phoneHint": "Con código de área. Por aquí el local se comunica con vos.",
+    "email": "Correo (opcional)",
+    "consentService": "Autorizo a {{salon}} a usar mi nombre y teléfono para esta atención.",
+    "consentReminders": "Quiero recibir la confirmación y el recordatorio del turno.",
+    "consentMarketing": "Quiero recibir novedades y promociones.",
+    "privacyLink": "Cómo cuidamos tus datos",
+    "policyVersion": "versión {{version}}",
+    "confirm": "Confirmar reserva",
+    "doneTitle": "¡Turno reservado!",
+    "doneText": "{{service}} con {{provider}}, {{day}} a las {{time}}. ¡Te esperamos!",
+    "again": "Reservar otro turno"
   }
 }

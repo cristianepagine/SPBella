@@ -1,7 +1,8 @@
 """Horários livres = jornada − bloqueios − agendamentos ativos, respeitando a duração do serviço e
 o intervalo mínimo entre atendimentos.
 
-Usado pela equipe (sugestões no "Novo agendamento") e, no SAL-11, pela página pública.
+Usado pela equipe (sugestões no "Novo agendamento") e pela página pública (SAL-11, com a
+antecedência mínima em `not_before`).
 
 - A jornada é em hora local; cada faixa vira instantes UTC com o fuso do estabelecimento, então
   dias com horário de verão funcionam (a faixa tem a duração real daquele dia).
@@ -36,7 +37,9 @@ class Slot:
 
 
 def schedule_settings(db: Session) -> ScheduleSettings:
-    return db.get(ScheduleSettings, 1) or ScheduleSettings(id=1, buffer_min=0, slot_step_min=15)
+    return db.get(ScheduleSettings, 1) or ScheduleSettings(
+        id=1, buffer_min=0, slot_step_min=15, min_notice_min=60, max_days_ahead=60
+    )
 
 
 def free_slots(

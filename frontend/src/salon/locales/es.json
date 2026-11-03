@@ -39,5 +39,9 @@
   },
   "agenda": {
     "closed": "Salón cerrado"
+  },
+  "salon": {
+    "publicTitle": "{{salon}} · Reservá tu turno",
+    "publicIntro": "Reservá tu turno en pocos toques."
   }
 }

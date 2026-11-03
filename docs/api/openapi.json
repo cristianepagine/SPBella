@@ -511,6 +511,84 @@
         "title": "BlockOut",
         "type": "object"
       },
+      "BookingConfirmation": {
+        "properties": {
+          "appointment_id": {
+            "format": "uuid",
+            "title": "Appointment Id",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "offering_name": {
+            "title": "Offering Name",
+            "type": "string"
+          },
+          "provider_name": {
+            "title": "Provider Name",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "appointment_id",
+          "offering_name",
+          "provider_name",
+          "starts_at",
+          "ends_at"
+        ],
+        "title": "BookingConfirmation",
+        "type": "object"
+      },
+      "Catalog": {
+        "properties": {
+          "max_days_ahead": {
+            "description": "Até quantos dias à frente dá para marcar.",
+            "title": "Max Days Ahead",
+            "type": "integer"
+          },
+          "min_notice_min": {
+            "description": "Antecedência mínima para marcar, em minutos.",
+            "title": "Min Notice Min",
+            "type": "integer"
+          },
+          "offerings": {
+            "description": "Ativos e feitos por pelo menos um profissional ativo.",
+            "items": {
+              "$ref": "#/components/schemas/PublicOffering"
+            },
+            "title": "Offerings",
+            "type": "array"
+          },
+          "privacy_policy_version": {
+            "title": "Privacy Policy Version",
+            "type": "string"
+          },
+          "providers": {
+            "items": {
+              "$ref": "#/components/schemas/PublicProvider"
+            },
+            "title": "Providers",
+            "type": "array"
+          }
+        },
+        "required": [
+          "offerings",
+          "providers",
+          "min_notice_min",
+          "max_days_ahead",
+          "privacy_policy_version"
+        ],
+        "title": "Catalog",
+        "type": "object"
+      },
       "ChangePasswordIn": {
         "properties": {
           "current_password": {
@@ -1749,6 +1827,191 @@
         "title": "ProviderOut",
         "type": "object"
       },
+      "PublicBooking": {
+        "properties": {
+          "consents": {
+            "description": "Precisa incluir `service` (usar os dados para o atendimento). `reminders` e `marketing` são opcionais.",
+            "items": {
+              "enum": [
+                "service",
+                "reminders",
+                "marketing"
+              ],
+              "type": "string"
+            },
+            "title": "Consents",
+            "type": "array"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "maxLength": 254,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "locale": {
+            "anyOf": [
+              {
+                "enum": [
+                  "pt-BR",
+                  "es"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Idioma em que o cliente usou a página.",
+            "title": "Locale"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "offering_id": {
+            "format": "uuid",
+            "title": "Offering Id",
+            "type": "string"
+          },
+          "phone": {
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Phone",
+            "type": "string"
+          },
+          "provider_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Vazio = \"sem preferência\": o sistema escolhe quem está livre.",
+            "title": "Provider Id"
+          },
+          "starts_at": {
+            "description": "Um dos horários de `/booking/availability`.",
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "turnstile_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnstile Token"
+          }
+        },
+        "required": [
+          "offering_id",
+          "starts_at",
+          "name",
+          "phone",
+          "consents"
+        ],
+        "title": "PublicBooking",
+        "type": "object"
+      },
+      "PublicOffering": {
+        "properties": {
+          "duration_min": {
+            "title": "Duration Min",
+            "type": "integer"
+          },
+          "extras": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Dados da vertical. No salão: `price_minor` (menor unidade da moeda).",
+            "examples": [
+              {
+                "price_minor": 8000
+              }
+            ],
+            "title": "Extras",
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "examples": [
+              "Corte feminino"
+            ],
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "duration_min"
+        ],
+        "title": "PublicOffering",
+        "type": "object"
+      },
+      "PublicProvider": {
+        "properties": {
+          "color": {
+            "title": "Color",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "description": "Como aparece na página.",
+            "examples": [
+              "Paula"
+            ],
+            "title": "Name",
+            "type": "string"
+          },
+          "offering_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Offering Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "color",
+          "offering_ids"
+        ],
+        "title": "PublicProvider",
+        "type": "object"
+      },
       "ReadinessResponse": {
         "properties": {
           "database": {
@@ -1980,6 +2243,33 @@
             ],
             "title": "Locale"
           },
+          "max_days_ahead": {
+            "anyOf": [
+              {
+                "maximum": 365.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Days Ahead"
+          },
+          "min_notice_min": {
+            "anyOf": [
+              {
+                "maximum": 10080.0,
+                "minimum": 0.0,
+                "multipleOf": 15.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Notice Min"
+          },
           "name": {
             "anyOf": [
               {
@@ -2208,6 +2498,16 @@
             "title": "Locale",
             "type": "string"
           },
+          "max_days_ahead": {
+            "description": "Página pública: até quantos dias à frente dá para marcar (1 a 365).",
+            "title": "Max Days Ahead",
+            "type": "integer"
+          },
+          "min_notice_min": {
+            "description": "Página pública: antecedência mínima para marcar, em minutos (0 a 10080).",
+            "title": "Min Notice Min",
+            "type": "integer"
+          },
           "name": {
             "examples": [
               "Studio Bella"
@@ -2253,7 +2553,9 @@
           "country",
           "timezone_options",
           "buffer_min",
-          "slot_step_min"
+          "slot_step_min",
+          "min_notice_min",
+          "max_days_ahead"
         ],
         "title": "TenantSettings",
         "type": "object"
@@ -2487,7 +2789,7 @@
   "info": {
     "description": "API do **SPBella** (Agenda Salão), sistema de agendamento para salões e barbearias.\n\nGuia de uso, convenções (erros, datas, valores, autenticação) e exemplos: `docs/api/README.md` no repositório.",
     "title": "SPBella API",
-    "version": "0.13.0"
+    "version": "0.14.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -4247,6 +4549,269 @@
           "owner"
         ],
         "x-required-permission": "time_off.manage"
+      }
+    },
+    "/t/{slug}/booking": {
+      "post": {
+        "description": "Marca o horário sem criar conta. Se o telefone já é de um cliente, o agendamento vai para ele (nome e e-mail cadastrados não mudam); senão, cadastra. Registra os consentimentos com a versão da política de privacidade (origem `public_booking`) e fica no log de auditoria.\n\n- Exige `turnstile_token` (`400 turnstile_failed`). Limites: 10 por IP e 5 por telefone a cada hora (`429`).\n- Sem `provider_id` (\"sem preferência\"): vai para o profissional livre com menos atendimentos no dia.\n- `409 slot_unavailable`: o horário não está (mais) livre — outra pessoa marcou, passou da antecedência mínima ou está além do limite de dias. Mostre os horários de novo.\n- `422` com `fields[0].code`: `invalid_phone`, `invalid_email`, `consent_required`, `string_too_short`; ou `422 unknown_offering`.",
+        "operationId": "create_public_booking_t__slug__booking_post",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicBooking"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingConfirmation"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Marcar pela página pública",
+        "tags": [
+          "Agendamento online"
+        ]
+      }
+    },
+    "/t/{slug}/booking/availability": {
+      "get": {
+        "description": "O mesmo cálculo da equipe (jornada − bloqueios − agendamentos, duração e intervalo mínimo), já sem os horários antes da antecedência mínima e sem os dias além do limite (dia fora da janela: lista vazia). Limite: 120 consultas por IP a cada 10 min.",
+        "operationId": "get_public_availability_t__slug__booking_availability_get",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offering_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Offering Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Data local (AAAA-MM-DD).",
+            "in": "query",
+            "name": "date",
+            "required": true,
+            "schema": {
+              "description": "Data local (AAAA-MM-DD).",
+              "format": "date",
+              "title": "Date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "provider_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailabilityOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Horários livres (página pública)",
+        "tags": [
+          "Agendamento online"
+        ]
+      }
+    },
+    "/t/{slug}/booking/catalog": {
+      "get": {
+        "description": "O que o cliente pode escolher, sem dados pessoais: serviços ativos (com o preço, no salão), profissionais ativos (só o nome de exibição e a cor) e as regras de antecedência.",
+        "operationId": "get_catalog_t__slug__booking_catalog_get",
+        "parameters": [
+          {
+            "description": "Identificador do salão na URL.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "description": "Identificador do salão na URL.",
+              "examples": [
+                "studio-bella"
+              ],
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Catalog"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Serviços e profissionais da página",
+        "tags": [
+          "Agendamento online"
+        ]
       }
     },
     "/t/{slug}/customers": {
@@ -6129,7 +6694,7 @@
         "x-required-permission": "settings.manage"
       },
       "patch": {
-        "description": "Só os campos enviados mudam. Vale na hora para todo mundo (página pública, agenda, e-mails).\n\n- `buffer_min`: intervalo mínimo entre atendimentos (0 a 120, de 5 em 5).\n- `slot_step_min`: passo dos horários livres (5, 10, 15, 20, 30 ou 60).\n- `422 validation_error` com `fields[0].code = invalid_timezone`: fuso desconhecido.\n- A moeda não muda por aqui (ver `currency`).",
+        "description": "Só os campos enviados mudam. Vale na hora para todo mundo (página pública, agenda, e-mails).\n\n- `buffer_min`: intervalo mínimo entre atendimentos (0 a 120, de 5 em 5).\n- `slot_step_min`: passo dos horários livres (5, 10, 15, 20, 30 ou 60).\n- `min_notice_min`: antecedência mínima na página pública (0 a 10080, de 15 em 15).\n- `max_days_ahead`: até quantos dias à frente a página pública aceita (1 a 365).\n- `422 validation_error` com `fields[0].code = invalid_timezone`: fuso desconhecido.\n- A moeda não muda por aqui (ver `currency`).",
         "operationId": "change_settings_t__slug__settings_patch",
         "parameters": [
           {
@@ -6663,6 +7228,10 @@
     {
       "description": "Profissionais, jornadas, folgas e itens agendáveis.",
       "name": "Agenda"
+    },
+    {
+      "description": "Página pública do estabelecimento: o cliente final marca sem criar conta. Sem login; protegida por Turnstile e limite de tentativas.",
+      "name": "Agendamento online"
     },
     {
       "description": "Quem criou, viu ou alterou dados pessoais, e quando (só o dono).",

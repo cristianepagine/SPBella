@@ -79,11 +79,11 @@
     "invalid_time_step": "Use horários de 5 em 5 minutos (ex.: 9:00, 9:05, 9:10).",
     "too_early": "Só dá para marcar atendido ou falta depois do horário.",
     "not_active": "Esse agendamento já foi encerrado ou cancelado.",
-    "too_close": "Esse horário fica colado em outro atendimento, sem o intervalo mínimo."
+    "too_close": "Esse horário fica colado em outro atendimento, sem o intervalo mínimo.",
+    "slot_unavailable": "Esse horário acabou de ser ocupado. Escolha outro, por favor."
   },
   "tenant": {
-    "loading": "Carregando…",
-    "comingSoon": "Em breve você vai poder marcar seu horário por aqui."
+    "loading": "Carregando…"
   },
   "auth": {
     "loading": "Carregando…",
@@ -174,7 +174,20 @@
     "noBuffer": "Sem intervalo",
     "step": "Horários oferecidos",
     "stepHint": "De quantos em quantos minutos os horários livres aparecem para marcar.",
-    "everyMinutes": "De {{count}} em {{count}} minutos"
+    "everyMinutes": "De {{count}} em {{count}} minutos",
+    "notice": "Antecedência mínima (página pública)",
+    "noticeHint": "Quanto tempo antes o cliente consegue marcar pela página. A equipe pode encaixar a qualquer hora.",
+    "noNotice": "Sem antecedência",
+    "noticeMinutes_one": "{{count}} minuto antes",
+    "noticeMinutes_other": "{{count}} minutos antes",
+    "noticeHours_one": "{{count}} hora antes",
+    "noticeHours_other": "{{count}} horas antes",
+    "noticeDays_one": "{{count}} dia antes",
+    "noticeDays_other": "{{count}} dias antes",
+    "daysAhead": "Até quando dá para marcar (página pública)",
+    "daysAheadHint": "Quantos dias à frente a página pública mostra horários.",
+    "upToDays_one": "Até {{count}} dia à frente",
+    "upToDays_other": "Até {{count}} dias à frente"
   },
   "currency": {
     "BRL": "Real (R$)",
@@ -368,5 +381,49 @@
     "conflicts_one": "Bloqueado. Atenção: já havia {{count}} cliente marcado nesse período:",
     "conflicts_other": "Bloqueado. Atenção: já havia {{count}} clientes marcados nesse período:",
     "conflictsHint": "Nada foi cancelado. Abra cada horário na agenda para remarcar ou cancelar."
+  },
+  "privacy": {
+    "title": "Privacidade",
+    "back": "Voltar para o agendamento",
+    "whoTitle": "Quem cuida dos seus dados",
+    "who": "{{salon}} é responsável pelos dados que você informa nesta página. O sistema é operado pela Spartacus Soluções, que só trata os dados em nome do estabelecimento.",
+    "whatTitle": "Quais dados",
+    "what": "Nome, celular e, se você quiser, e-mail. Também guardamos os horários que você marca e as autorizações que você deu.",
+    "whyTitle": "Para quê",
+    "why": "Para marcar e realizar o atendimento. Lembretes e novidades só se você autorizar, e você pode desistir quando quiser.",
+    "shareTitle": "Com quem",
+    "share": "Ninguém além de {{salon}} e da operadora do sistema. Não vendemos dados.",
+    "keepTitle": "Por quanto tempo",
+    "keep": "Enquanto você for cliente de {{salon}} ou até você pedir a exclusão, salvo o que a lei obriga a guardar.",
+    "rightsTitle": "Seus direitos",
+    "rights": "Você pode pedir para ver, corrigir, exportar ou apagar seus dados e retirar autorizações. Peça diretamente a {{salon}}."
+  },
+  "publicBooking": {
+    "chooseService": "1. Escolha o serviço",
+    "chooseProvider": "2. Com quem?",
+    "anyProvider": "Sem preferência",
+    "chooseDay": "3. Escolha o dia",
+    "chooseTime": "4. Escolha o horário",
+    "yourDetails": "5. Seus dados",
+    "today": "Hoje",
+    "previousDays": "‹ Dias anteriores",
+    "nextDays": "Próximos dias ›",
+    "noServices": "Este estabelecimento ainda não abriu horários para marcar pela internet.",
+    "noTimes": "Nenhum horário livre neste dia. Tente outro dia.",
+    "duration": "{{count}} min",
+    "summary": "{{service}} · {{day}} às {{time}} · {{provider}}",
+    "name": "Seu nome",
+    "phone": "Celular (WhatsApp)",
+    "phoneHint": "Com DDD. É por aqui que o salão fala com você.",
+    "email": "E-mail (opcional)",
+    "consentService": "Autorizo {{salon}} a usar meu nome e telefone para este atendimento.",
+    "consentReminders": "Quero receber confirmação e lembrete do horário.",
+    "consentMarketing": "Quero receber novidades e promoções.",
+    "privacyLink": "Como cuidamos dos seus dados",
+    "policyVersion": "versão {{version}}",
+    "confirm": "Confirmar agendamento",
+    "doneTitle": "Horário marcado!",
+    "doneText": "{{service}} com {{provider}}, {{day}} às {{time}}. Até lá!",
+    "again": "Marcar outro horário"
   }
 }

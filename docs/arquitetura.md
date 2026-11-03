@@ -103,7 +103,11 @@ configuração. No CI a variável fica desligada, então ali a trava sempre exis
 − agendamentos ativos, com a duração do serviço, o intervalo mínimo (`schedule_settings.buffer_min`)
 e o passo (`slot_step_min`). Cada faixa da jornada (hora local) vira instantes UTC pelo fuso do
 estabelecimento, então dias de horário de verão funcionam. A equipe usa em `/availability`; a
-página pública (SAL-11) vai usar o mesmo cálculo. A marcação pela equipe também respeita o
+página pública (SAL-11, `public_api.py`) usa o mesmo cálculo com a antecedência mínima e o
+limite de dias, e só aceita um horário que esteja na lista; depois o `check_slot` trava o
+profissional e confere de novo. Preço e outros dados da vertical entram no catálogo público pelo
+gancho `Vertical.public_offering_extras`. No front, a área da equipe é carregada sob demanda
+(`React.lazy`), para a página pública baixar só o necessário. A marcação pela equipe também respeita o
 intervalo mínimo (`409 too_close`, encaixável).
 
 **Mudanças em relação à proposta inicial:**

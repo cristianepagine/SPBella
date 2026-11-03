@@ -26,6 +26,10 @@ OPEN_ROUTES = {
     ("post", "/t/{slug}/auth/change-password"),
     ("post", "/t/{slug}/auth/forgot-password"),
     ("post", "/t/{slug}/auth/reset-password"),
+    # página pública de agendamento (SAL-11)
+    ("get", "/t/{slug}/booking/catalog"),
+    ("get", "/t/{slug}/booking/availability"),
+    ("post", "/t/{slug}/booking"),
 }
 
 ANY_ID = "00000000-0000-0000-0000-000000000000"

@@ -207,6 +207,8 @@ configurada, a verificação é pulada (em produção, isso é proibido).
 | `/auth/forgot-password` | 3 por e-mail e 5 por IP a cada 15 min |
 | `/auth/reset-password` | 10 por IP a cada 15 min |
 | `/auth/change-password` | 10 por pessoa a cada 15 min |
+| `POST /booking` (página pública) | 10 por IP e 5 por telefone a cada hora (exige Turnstile) |
+| `GET /booking/availability` | 120 por IP a cada 10 min |
 
 Passou do limite: `429 too_many_requests` com o cabeçalho `Retry-After` (segundos).
 
@@ -381,8 +383,10 @@ Só para quem tem `settings.manage` (hoje, o dono).
 #### `PATCH /t/{slug}/settings` — mudar
 
 Corpo com qualquer combinação de `name`, `locale` (`pt-BR` ou `es`), `timezone`, `buffer_min`
-(intervalo mínimo entre atendimentos: 0 a 120, de 5 em 5) e `slot_step_min` (passo dos horários
-livres: 5, 10, 15, 20, 30 ou 60). Vale **na hora** para todo mundo: a página pública
+(intervalo mínimo entre atendimentos: 0 a 120, de 5 em 5), `slot_step_min` (passo dos horários
+livres: 5, 10, 15, 20, 30 ou 60), `min_notice_min` (antecedência mínima na página pública: 0 a
+10080 minutos, de 15 em 15) e `max_days_ahead` (até quantos dias à frente a página pública
+aceita: 1 a 365). Vale **na hora** para todo mundo: a página pública
 (`GET /t/{slug}`), a agenda e os e-mails.
 
 - **A moeda não muda por aqui.** Os preços são guardados na menor unidade da moeda, então trocar
@@ -593,6 +597,51 @@ Sem `provider_id`, junta todos os profissionais que fazem o serviço ("sem prefe
 
 O cálculo segue o fuso do estabelecimento, inclusive em dias de mudança de horário de verão (a
 jornada local continua a mesma; os instantes UTC mudam).
+
+### Agendamento online (página pública)
+
+Sem login. É o que a página `/{slug}` do app usa. Nada aqui devolve dados de clientes.
+
+#### `GET /t/{slug}/booking/catalog`
+
+```json
+{
+  "offerings": [{"id": "…", "name": "Corte feminino", "duration_min": 60, "extras": {"price_minor": 8000}}],
+  "providers": [{"id": "…", "name": "Paula", "color": "sky", "offering_ids": ["…"]}],
+  "min_notice_min": 60, "max_days_ahead": 60, "privacy_policy_version": "2026-11-02"
+}
+```
+
+- Só serviços ativos que pelo menos um profissional ativo faz.
+- `extras` vem da vertical: no salão, o preço (`price_minor`, na menor unidade da moeda).
+
+#### `GET /t/{slug}/booking/availability?offering_id=…&date=AAAA-MM-DD[&provider_id=…]`
+
+Mesmo formato e mesmo cálculo de [Horários livres](#horários-livres), já sem os horários antes
+da antecedência mínima. Dia além de `max_days_ahead`: lista vazia.
+
+#### `POST /t/{slug}/booking`
+
+```json
+{
+  "offering_id": "…", "provider_id": null, "starts_at": "2026-11-10T13:00:00Z",
+  "name": "Maria", "phone": "(11) 98888-7777", "email": null, "locale": "pt-BR",
+  "consents": ["service", "reminders"], "turnstile_token": "…"
+}
+```
+
+- `provider_id: null` = **sem preferência**: vai para o profissional livre com menos
+  atendimentos no dia.
+- `starts_at` precisa ser um dos horários de `/booking/availability`.
+- **Telefone já cadastrado**: o agendamento vai para esse cliente; nome e e-mail cadastrados não
+  mudam (a resposta é igual, para não revelar quem é cliente). Telefone novo: cadastra.
+- Consentimentos registrados com origem `public_booking` e a versão da política; criação e
+  consentimento ficam na auditoria com `actor_type = customer`.
+- `201` com `appointment_id`, `offering_name`, `provider_name`, `starts_at`, `ends_at`.
+- `409 slot_unavailable`: o horário não está mais livre (outra pessoa pegou, passou da
+  antecedência, além do limite de dias). Mostre os horários de novo.
+- `422` com `fields[0].code`: `consent_required`, `invalid_phone`, `invalid_email`,
+  `string_too_short`. `400 turnstile_failed`, `429 too_many_requests`.
 
 ### Itens agendáveis
 

@@ -8,6 +8,7 @@ from app.core.vertical import Vertical
 from app.salon.demo import DEMO_TENANTS, seed_demo_salon
 from app.salon.seed import seed_new_salon
 from app.salon.services import api as services_api
+from app.salon.services.public import offering_extras
 
 VERTICAL = Vertical(
     name="salon",
@@ -27,4 +28,5 @@ VERTICAL = Vertical(
     seed_tenant=seed_new_salon,
     demo_tenants=DEMO_TENANTS,
     seed_demo=seed_demo_salon,
+    public_offering_extras=offering_extras,
 )

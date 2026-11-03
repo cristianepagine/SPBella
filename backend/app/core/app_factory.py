@@ -25,6 +25,7 @@ from app.core.scheduling import (
     blocks_api,
     offerings_api,
     providers_api,
+    public_api,
 )
 from app.core.system import api as system_api
 from app.core.tenants import api as tenants_api
@@ -58,6 +59,11 @@ CORE_OPENAPI_TAGS = [
     {
         "name": "Agenda",
         "description": "Profissionais, jornadas, folgas e itens agendáveis.",
+    },
+    {
+        "name": "Agendamento online",
+        "description": "Página pública do estabelecimento: o cliente final marca sem criar conta. "
+        "Sem login; protegida por Turnstile e limite de tentativas.",
     },
     {
         "name": "Auditoria",
@@ -117,6 +123,7 @@ def build_app(settings: Settings, vertical: Vertical) -> FastAPI:
     app.include_router(appointments_api.router)
     app.include_router(blocks_api.router)
     app.include_router(availability_api.router)
+    app.include_router(public_api.router)
     for router in vertical.routers:
         app.include_router(router)
     return app

@@ -417,6 +417,71 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/t/{slug}/booking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Marcar pela página pública
+         * @description Marca o horário sem criar conta. Se o telefone já é de um cliente, o agendamento vai para ele (nome e e-mail cadastrados não mudam); senão, cadastra. Registra os consentimentos com a versão da política de privacidade (origem `public_booking`) e fica no log de auditoria.
+         *
+         *     - Exige `turnstile_token` (`400 turnstile_failed`). Limites: 10 por IP e 5 por telefone a cada hora (`429`).
+         *     - Sem `provider_id` ("sem preferência"): vai para o profissional livre com menos atendimentos no dia.
+         *     - `409 slot_unavailable`: o horário não está (mais) livre — outra pessoa marcou, passou da antecedência mínima ou está além do limite de dias. Mostre os horários de novo.
+         *     - `422` com `fields[0].code`: `invalid_phone`, `invalid_email`, `consent_required`, `string_too_short`; ou `422 unknown_offering`.
+         */
+        post: operations["create_public_booking_t__slug__booking_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/booking/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Horários livres (página pública)
+         * @description O mesmo cálculo da equipe (jornada − bloqueios − agendamentos, duração e intervalo mínimo), já sem os horários antes da antecedência mínima e sem os dias além do limite (dia fora da janela: lista vazia). Limite: 120 consultas por IP a cada 10 min.
+         */
+        get: operations["get_public_availability_t__slug__booking_availability_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/booking/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Serviços e profissionais da página
+         * @description O que o cliente pode escolher, sem dados pessoais: serviços ativos (com o preço, no salão), profissionais ativos (só o nome de exibição e a cor) e as regras de antecedência.
+         */
+        get: operations["get_catalog_t__slug__booking_catalog_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/t/{slug}/customers": {
         parameters: {
             query?: never;
@@ -716,6 +781,8 @@ export interface paths {
          *
          *     - `buffer_min`: intervalo mínimo entre atendimentos (0 a 120, de 5 em 5).
          *     - `slot_step_min`: passo dos horários livres (5, 10, 15, 20, 30 ou 60).
+         *     - `min_notice_min`: antecedência mínima na página pública (0 a 10080, de 15 em 15).
+         *     - `max_days_ahead`: até quantos dias à frente a página pública aceita (1 a 365).
          *     - `422 validation_error` com `fields[0].code = invalid_timezone`: fuso desconhecido.
          *     - A moeda não muda por aqui (ver `currency`).
          */
@@ -1068,6 +1135,50 @@ export interface components {
              * Format: date-time
              */
             starts_at: string;
+        };
+        /** BookingConfirmation */
+        BookingConfirmation: {
+            /**
+             * Appointment Id
+             * Format: uuid
+             */
+            appointment_id: string;
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /** Offering Name */
+            offering_name: string;
+            /** Provider Name */
+            provider_name: string;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+        };
+        /** Catalog */
+        Catalog: {
+            /**
+             * Max Days Ahead
+             * @description Até quantos dias à frente dá para marcar.
+             */
+            max_days_ahead: number;
+            /**
+             * Min Notice Min
+             * @description Antecedência mínima para marcar, em minutos.
+             */
+            min_notice_min: number;
+            /**
+             * Offerings
+             * @description Ativos e feitos por pelo menos um profissional ativo.
+             */
+            offerings: components["schemas"]["PublicOffering"][];
+            /** Privacy Policy Version */
+            privacy_policy_version: string;
+            /** Providers */
+            providers: components["schemas"]["PublicProvider"][];
         };
         /** ChangePasswordIn */
         ChangePasswordIn: {
@@ -1585,6 +1696,86 @@ export interface components {
              */
             working_hours: components["schemas"]["WorkingRange"][];
         };
+        /** PublicBooking */
+        PublicBooking: {
+            /**
+             * Consents
+             * @description Precisa incluir `service` (usar os dados para o atendimento). `reminders` e `marketing` são opcionais.
+             */
+            consents: ("service" | "reminders" | "marketing")[];
+            /** Email */
+            email?: string | null;
+            /**
+             * Locale
+             * @description Idioma em que o cliente usou a página.
+             */
+            locale?: ("pt-BR" | "es") | null;
+            /** Name */
+            name: string;
+            /**
+             * Offering Id
+             * Format: uuid
+             */
+            offering_id: string;
+            /** Phone */
+            phone: string;
+            /**
+             * Provider Id
+             * @description Vazio = "sem preferência": o sistema escolhe quem está livre.
+             */
+            provider_id?: string | null;
+            /**
+             * Starts At
+             * Format: date-time
+             * @description Um dos horários de `/booking/availability`.
+             */
+            starts_at: string;
+            /** Turnstile Token */
+            turnstile_token?: string | null;
+        };
+        /** PublicOffering */
+        PublicOffering: {
+            /** Duration Min */
+            duration_min: number;
+            /**
+             * Extras
+             * @description Dados da vertical. No salão: `price_minor` (menor unidade da moeda).
+             * @example {
+             *       "price_minor": 8000
+             *     }
+             */
+            extras?: {
+                [key: string]: number | string;
+            };
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Name
+             * @example Corte feminino
+             */
+            name: string;
+        };
+        /** PublicProvider */
+        PublicProvider: {
+            /** Color */
+            color: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Name
+             * @description Como aparece na página.
+             * @example Paula
+             */
+            name: string;
+            /** Offering Ids */
+            offering_ids: string[];
+        };
         /** ReadinessResponse */
         ReadinessResponse: {
             /**
@@ -1692,6 +1883,10 @@ export interface components {
             buffer_min?: number | null;
             /** Locale */
             locale?: ("pt-BR" | "es") | null;
+            /** Max Days Ahead */
+            max_days_ahead?: number | null;
+            /** Min Notice Min */
+            min_notice_min?: number | null;
             /** Name */
             name?: string | null;
             /** Slot Step Min */
@@ -1799,6 +1994,16 @@ export interface components {
              * @enum {string}
              */
             locale: "pt-BR" | "es";
+            /**
+             * Max Days Ahead
+             * @description Página pública: até quantos dias à frente dá para marcar (1 a 365).
+             */
+            max_days_ahead: number;
+            /**
+             * Min Notice Min
+             * @description Página pública: antecedência mínima para marcar, em minutos (0 a 10080).
+             */
+            min_notice_min: number;
             /**
              * Name
              * @example Studio Bella
@@ -3041,6 +3246,174 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_public_booking_t__slug__booking_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicBooking"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingConfirmation"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_public_availability_t__slug__booking_availability_get: {
+        parameters: {
+            query: {
+                offering_id: string;
+                /** @description Data local (AAAA-MM-DD). */
+                date: string;
+                provider_id?: string | null;
+            };
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_catalog_t__slug__booking_catalog_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Catalog"];
                 };
             };
             /** @description Not Found */

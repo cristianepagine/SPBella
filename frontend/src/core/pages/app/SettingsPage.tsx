@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useState } from "react";
+import { type TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { type TenantSettings, useSaveSettings, useSettings } from "../../api/settings";
@@ -20,6 +21,21 @@ export function SettingsPage() {
 
 const EXAMPLE_PRICE = { BRL: 4590, PYG: 150000 } as const;
 
+// Página pública: antecedência mínima (minutos) e até quantos dias à frente.
+const NOTICE_OPTIONS = [0, 30, 60, 120, 240, 720, 1440, 2880];
+const DAYS_AHEAD_OPTIONS = [7, 14, 30, 60, 90, 180];
+
+function withCurrent(options: number[], current: number): number[] {
+  return options.includes(current) ? options : [...options, current].sort((a, b) => a - b);
+}
+
+function noticeLabel(t: TFunction, minutes: number): string {
+  if (minutes === 0) return t("settings.noNotice");
+  if (minutes % 1440 === 0) return t("settings.noticeDays", { count: minutes / 1440 });
+  if (minutes % 60 === 0) return t("settings.noticeHours", { count: minutes / 60 });
+  return t("settings.noticeMinutes", { count: minutes });
+}
+
 function SettingsForm({ current }: { current: TenantSettings }) {
   const { t, i18n } = useTranslation();
   const { slug } = useAuth();
@@ -29,16 +45,26 @@ function SettingsForm({ current }: { current: TenantSettings }) {
   const [timezone, setTimezone] = useState(current.timezone);
   const [buffer, setBuffer] = useState(current.buffer_min);
   const [step, setStep] = useState(current.slot_step_min);
+  const [notice, setNotice] = useState(current.min_notice_min);
+  const [daysAhead, setDaysAhead] = useState(current.max_days_ahead);
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => setSaved(false), [name, locale, timezone, buffer, step]);
+  useEffect(() => setSaved(false), [name, locale, timezone, buffer, step, notice, daysAhead]);
 
   const display = formatLocale(i18n.language, current.country);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     const ok = await save
-      .mutateAsync({ name, locale, timezone, buffer_min: buffer, slot_step_min: step })
+      .mutateAsync({
+        name,
+        locale,
+        timezone,
+        buffer_min: buffer,
+        slot_step_min: step,
+        min_notice_min: notice,
+        max_days_ahead: daysAhead,
+      })
       .then(
       () => true,
       () => false,
@@ -94,6 +120,26 @@ function SettingsForm({ current }: { current: TenantSettings }) {
           options={[5, 10, 15, 20, 30, 60].map((m) => ({
             value: String(m),
             label: t("settings.everyMinutes", { count: m }),
+          }))}
+        />
+        <SelectField
+          label={t("settings.notice")}
+          hint={t("settings.noticeHint")}
+          value={String(notice)}
+          onChange={(v) => setNotice(Number(v))}
+          options={withCurrent(NOTICE_OPTIONS, current.min_notice_min).map((m) => ({
+            value: String(m),
+            label: noticeLabel(t, m),
+          }))}
+        />
+        <SelectField
+          label={t("settings.daysAhead")}
+          hint={t("settings.daysAheadHint")}
+          value={String(daysAhead)}
+          onChange={(v) => setDaysAhead(Number(v))}
+          options={withCurrent(DAYS_AHEAD_OPTIONS, current.max_days_ahead).map((d) => ({
+            value: String(d),
+            label: t("settings.upToDays", { count: d }),
           }))}
         />
 

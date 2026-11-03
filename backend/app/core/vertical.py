@@ -7,6 +7,7 @@ que se descreve com um objeto `Vertical` e é ligada ao core em app/registry.py.
 Regra: o core nunca importa nada de uma vertical (tests/test_architecture.py garante).
 """
 
+import uuid
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 
@@ -17,6 +18,8 @@ from app.core.infra.tenancy import TenantContext
 
 # Recebe a sessão JÁ DENTRO do tenant (papel e schema do tenant) e o contexto dele.
 TenantSeed = Callable[[Session, TenantContext], None]
+# Dados extras dos itens agendáveis na página pública (ex.: preço do serviço no salão).
+OfferingExtras = Callable[[Session, Sequence[uuid.UUID]], dict[uuid.UUID, dict[str, int | str]]]
 
 
 @dataclass(frozen=True)
@@ -40,6 +43,8 @@ class Vertical:
     # Tenants de demonstração (`tenants seed-demo`) e os dados extras deles.
     demo_tenants: Sequence[DemoTenant] = field(default_factory=tuple)
     seed_demo: TenantSeed | None = None
+    # Campo `extras` de cada item no catálogo da página pública (`GET /booking/catalog`).
+    public_offering_extras: OfferingExtras | None = None
 
 
 CORE_ONLY = Vertical(

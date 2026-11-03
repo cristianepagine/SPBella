@@ -70,6 +70,12 @@ class TenantSettings(BaseModel):
     slot_step_min: SlotStep = Field(
         description="De quantos em quantos minutos os horários livres são oferecidos."
     )
+    min_notice_min: int = Field(
+        description="Página pública: antecedência mínima para marcar, em minutos (0 a 10080)."
+    )
+    max_days_ahead: int = Field(
+        description="Página pública: até quantos dias à frente dá para marcar (1 a 365)."
+    )
 
 
 class SettingsChanges(BaseModel):
@@ -78,6 +84,11 @@ class SettingsChanges(BaseModel):
     timezone: str | None = Field(default=None, max_length=64)
     buffer_min: int | None = Field(default=None, ge=0, le=120, multiple_of=5)
     slot_step_min: SlotStep | None = None
+    min_notice_min: int | None = Field(default=None, ge=0, le=10080, multiple_of=15)
+    max_days_ahead: int | None = Field(default=None, ge=1, le=365)
+
+
+RULE_FIELDS = ("buffer_min", "slot_step_min", "min_notice_min", "max_days_ahead")
 
 
 def _out(tenant: TenantContext, db: DbSession) -> TenantSettings:
@@ -88,6 +99,8 @@ def _out(tenant: TenantContext, db: DbSession) -> TenantSettings:
     return TenantSettings(
         buffer_min=rules.buffer_min,
         slot_step_min=rules.slot_step_min,
+        min_notice_min=rules.min_notice_min,
+        max_days_ahead=rules.max_days_ahead,
         name=tenant.name,
         locale=tenant.locale,
         timezone=tenant.timezone,
@@ -117,6 +130,8 @@ def get_settings(tenant: TenantDep, db: DbSession, _user: SettingsManager) -> Te
         "e-mails).\n\n"
         "- `buffer_min`: intervalo mínimo entre atendimentos (0 a 120, de 5 em 5).\n"
         "- `slot_step_min`: passo dos horários livres (5, 10, 15, 20, 30 ou 60).\n"
+        "- `min_notice_min`: antecedência mínima na página pública (0 a 10080, de 15 em 15).\n"
+        "- `max_days_ahead`: até quantos dias à frente a página pública aceita (1 a 365).\n"
         "- `422 validation_error` com `fields[0].code = invalid_timezone`: fuso desconhecido.\n"
         "- A moeda não muda por aqui (ver `currency`)."
     ),
@@ -132,7 +147,7 @@ def change_settings(
     user: SettingsManager,
 ) -> TenantSettings:
     changes = payload.model_dump(exclude_none=True)
-    rules_changes = {k: changes.pop(k) for k in ("buffer_min", "slot_step_min") if k in changes}
+    rules_changes = {k: changes.pop(k) for k in RULE_FIELDS if k in changes}
     if rules_changes:
         rules = db.get(ScheduleSettings, 1)
         for key, value in rules_changes.items():

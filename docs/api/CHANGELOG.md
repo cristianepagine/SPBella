@@ -2,6 +2,20 @@
 
 Mudanças visíveis para quem consome a API. Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.14.0] - 2026-11-03
+
+### Adicionado
+- Agendamento online, sem login (tag "Agendamento online"):
+  - `GET /t/{slug}/booking/catalog`: serviços (com `extras.price_minor` no salão) e
+    profissionais (só nome e cor), mais as regras de antecedência;
+  - `GET /t/{slug}/booking/availability`: horários livres já com a antecedência mínima e o
+    limite de dias;
+  - `POST /t/{slug}/booking`: marca com nome, telefone, e-mail opcional e consentimento
+    (`service` obrigatório), Turnstile e limite por IP e por telefone. Códigos novos:
+    `409 slot_unavailable`.
+- Configurações: `min_notice_min` (antecedência mínima da página pública) e `max_days_ahead`
+  (até quantos dias à frente) em `GET/PATCH /t/{slug}/settings`.
+
 ## [0.13.0] - 2026-11-03
 
 ### Adicionado

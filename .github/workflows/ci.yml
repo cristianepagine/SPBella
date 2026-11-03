@@ -151,6 +151,17 @@ jobs:
           test "$(livres "$DIA")" = "0"
           curl -fsS -X DELETE "http://localhost:8000/t/studio-bella/blocks/$BLOQUEIO" -H "Authorization: Bearer $TOKEN"
           test "$(livres "$DIA")" = "$ANTES"
+          # página pública (sem login): catálogo com preço, horário livre e marcação; o mesmo horário de novo = 409
+          CATALOGO=$(curl -fsS http://localhost:8000/t/studio-bella/booking/catalog)
+          echo "$CATALOGO" | python3 -c "import sys, json; d = json.load(sys.stdin); assert d['offerings'][0]['extras']['price_minor'] > 0, d"
+          PUBLICO=$(curl -fsS "http://localhost:8000/t/studio-bella/booking/availability?offering_id=$SERVICO&date=$DIA" \
+            | python3 -c "import sys, json; s = json.load(sys.stdin)['slots'][0]; \
+          print(json.dumps({'offering_id': '$SERVICO', 'starts_at': s['starts_at'], 'name': 'Cliente CI', \
+          'phone': '(11) 97777-0000', 'consents': ['service']}))")
+          curl -fsS -X POST http://localhost:8000/t/studio-bella/booking -H 'Content-Type: application/json' \
+            -d "$PUBLICO" -o /dev/null
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8000/t/studio-bella/booking \
+            -H 'Content-Type: application/json' -d "$PUBLICO")" = "409"
           # o token de um salão não vale no outro
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/t/salon-asuncion/auth/me \
             -H "Authorization: Bearer $TOKEN")" = "401"

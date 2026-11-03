@@ -39,5 +39,9 @@
   },
   "agenda": {
     "closed": "Salão fechado"
+  },
+  "salon": {
+    "publicTitle": "{{salon}} · Agende seu horário",
+    "publicIntro": "Agende seu horário em poucos toques."
   }
 }
