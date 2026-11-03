@@ -7,6 +7,7 @@ e de demonstração. Agenda, clientes, login etc. vêm do core.
 from app.core.vertical import Vertical
 from app.salon.demo import DEMO_TENANTS, seed_demo_salon
 from app.salon.seed import seed_new_salon
+from app.salon.services import api as services_api
 
 VERTICAL = Vertical(
     name="salon",
@@ -16,6 +17,13 @@ VERTICAL = Vertical(
         "Guia de uso, convenções (erros, datas, valores, autenticação) e exemplos: "
         "`docs/api/README.md` no repositório."
     ),
+    routers=[services_api.router],
+    openapi_tags=[
+        {
+            "name": "Serviços",
+            "description": "O que o salão oferece, com duração e preço (vertical salão).",
+        },
+    ],
     seed_tenant=seed_new_salon,
     demo_tenants=DEMO_TENANTS,
     seed_demo=seed_demo_salon,

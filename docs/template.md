@@ -26,9 +26,17 @@ Módulos do core no back-end:
 | `core/system/` | healthcheck | — |
 | `core/customers/` | clientes, telefones (E.164), consentimento por finalidade | SAL-04, SAL-07 |
 | `core/audit/` | log de auditoria só de inclusão; `record(...)` na mesma transação da mudança | SAL-04 |
-| `core/scheduling/` | profissionais, jornadas, bloqueios, agendamentos, horários livres | SAL-06, 08–10, 13 |
+| `core/scheduling/` | item agendável (`Offering`: nome, duração, ativo); depois profissionais, jornadas, bloqueios, agendamentos, horários livres | SAL-05, 06, 08–10, 13 |
 | `core/notifications/` | fila, `NotificationChannel`, e-mail, wa.me | SAL-14, 15 |
 | `core/reports/` | relatórios e Excel | SAL-16 |
+
+Na vertical `salon`:
+
+| Módulo | Conteúdo | História |
+|---|---|---|
+| `salon/services/` | serviço = `Offering` do core + preço (`salon_service_prices`), rotas `/services` | SAL-05 |
+| `salon/seed.py` | serviços de exemplo de todo salão novo | SAL-01 |
+| `salon/demo.py` | salões e equipe de demonstração | SAL-01, 02 |
 
 ## Regras
 

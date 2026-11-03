@@ -2,6 +2,15 @@
 
 Mudanças visíveis para quem consome a API. Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.8.0] - 2026-11-03
+
+### Adicionado
+- Serviços (vertical salão): `GET /t/{slug}/services` (`catalog.view`, todos os perfis),
+  `POST /t/{slug}/services` e `PATCH /t/{slug}/services/{service_id}` (`catalog.manage`, dono).
+- Permissão `catalog.view` (dono, recepção e profissional).
+- Salão novo já vem com 7 serviços de exemplo, no idioma e na moeda do salão.
+- Códigos de campo em `422 validation_error`: `invalid_duration`, `invalid_price`.
+
 ## [0.7.0] - 2026-11-03
 
 ### Adicionado

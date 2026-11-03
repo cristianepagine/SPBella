@@ -5,6 +5,8 @@ import {
   formatDateTime,
   formatLocale,
   formatMoney,
+  moneyInputValue,
+  parseMoney,
   timeZoneLabel,
 } from "./format";
 
@@ -43,5 +45,37 @@ describe("datas", () => {
 
     expect(timeZoneLabel("America/Sao_Paulo", "pt-BR", at)).toBe("Sao Paulo (UTC-03:00)");
     expect(timeZoneLabel("America/Rio_Branco", "pt-BR", at)).toBe("Rio Branco (UTC-05:00)");
+  });
+});
+
+describe("valor digitado", () => {
+  it.each([
+    ["45,90", 4590],
+    ["45.90", 4590],
+    ["45", 4500],
+    ["45,9", 4590],
+    ["1.234,56", 123456],
+    ["1,234.56", 123456],
+    ["R$ 80,00", 8000],
+    ["0", 0],
+  ])("em reais: %s → %i centavos", (text, minor) => {
+    expect(parseMoney(text, "BRL")).toBe(minor);
+  });
+
+  it.each([
+    ["150.000", 150000],
+    ["150000", 150000],
+    ["Gs. 80.000", 80000],
+  ])("em guaranis: %s → %i", (text, minor) => {
+    expect(parseMoney(text, "PYG")).toBe(minor);
+  });
+
+  it.each(["", "abc", "R$"])("recusa %j", (text) => {
+    expect(parseMoney(text, "BRL")).toBeNull();
+  });
+
+  it("mostra o valor para edição sem símbolo nem milhar", () => {
+    expect(moneyInputValue(123456, "BRL", "pt-BR")).toBe("1234,56");
+    expect(moneyInputValue(150000, "PYG", "es-PY")).toBe("150000");
   });
 });

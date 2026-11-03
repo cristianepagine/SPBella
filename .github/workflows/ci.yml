@@ -103,6 +103,12 @@ jobs:
             -H "Authorization: Bearer $TOKEN" | grep -q '"customer.created"'
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/t/studio-bella/audit \
             -H "Authorization: Bearer $RECEPCAO")" = "403"
+          # salão novo já vem com os serviços de exemplo (SAL-01/05); recepção vê, não edita
+          curl -fsS http://localhost:8000/t/studio-bella/services -H "Authorization: Bearer $RECEPCAO" \
+            | grep -q '"Corte feminino"'
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8000/t/studio-bella/services \
+            -H "Authorization: Bearer $RECEPCAO" -H 'Content-Type: application/json' \
+            -d '{"name":"X","duration_min":30,"price_minor":100}')" = "403"
           # o token de um salão não vale no outro
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/t/salon-asuncion/auth/me \
             -H "Authorization: Bearer $TOKEN")" = "401"

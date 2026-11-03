@@ -16,7 +16,9 @@ export function StaffLayout({ nav }: { nav: NavItem[] }) {
   const navigate = useNavigate();
 
   if (state.status !== "authenticated") return null;
-  const items = nav.filter((item) => !item.permission || can(item.permission));
+  const items = nav
+    .filter((item) => !item.permission || can(item.permission))
+    .sort((a, b) => a.order - b.order);
 
   async function signOut() {
     await logout();

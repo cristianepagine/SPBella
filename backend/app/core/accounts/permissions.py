@@ -15,7 +15,8 @@ class Permission(StrEnum):
     TEAM_MANAGE = "team.manage"  # cadastrar e desativar a equipe (SAL-02)
     SETTINGS_MANAGE = "settings.manage"  # configurações do estabelecimento (SAL-03)
     AUDIT_VIEW = "audit.view"  # quem alterou dados de clientes (SAL-04)
-    CATALOG_MANAGE = "catalog.manage"  # serviços e preços (SAL-05)
+    CATALOG_VIEW = "catalog.view"  # ver a lista de serviços (para agendar) (SAL-05)
+    CATALOG_MANAGE = "catalog.manage"  # cadastrar serviços e preços (SAL-05)
     PROVIDERS_MANAGE = "providers.manage"  # profissionais e jornadas (SAL-06)
     CUSTOMERS_MANAGE = "customers.manage"  # cadastrar e buscar clientes (SAL-07)
     AGENDA_VIEW_ALL = "agenda.view_all"  # agenda de todos os profissionais (SAL-08)
@@ -29,14 +30,15 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
     "owner": frozenset(Permission),
     "reception": frozenset(
         {
+            Permission.CATALOG_VIEW,
             Permission.CUSTOMERS_MANAGE,
             Permission.AGENDA_VIEW_ALL,
             Permission.AGENDA_VIEW_OWN,
             Permission.AGENDA_MANAGE,
         }
     ),
-    # "vê só a própria agenda"
-    "professional": frozenset({Permission.AGENDA_VIEW_OWN}),
+    # "vê só a própria agenda" (e os nomes dos serviços que aparecem nela)
+    "professional": frozenset({Permission.AGENDA_VIEW_OWN, Permission.CATALOG_VIEW}),
 }
 
 ROLE_NAMES_PT = {"owner": "Dono", "reception": "Recepção", "professional": "Profissional"}

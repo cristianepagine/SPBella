@@ -18,10 +18,12 @@ import { ResetPasswordPage } from "./core/pages/auth/ResetPasswordPage";
 import { HomePage } from "./core/pages/HomePage";
 import { NotFoundPage } from "./core/pages/NotFoundPage";
 import { TenantLayout } from "./core/pages/TenantLayout";
+import { SALON_NAV } from "./salon/nav";
 import { PublicHomePage } from "./salon/pages/PublicHomePage";
+import { ServicesPage } from "./salon/pages/ServicesPage";
 
 /** Menu da equipe: itens do core + os da vertical (serviços, agenda... nas próximas histórias). */
-const NAV: NavItem[] = [...CORE_NAV];
+const NAV: NavItem[] = [...CORE_NAV, ...SALON_NAV];
 
 /** Composição: rotas do core + páginas da vertical (salão). */
 export function App() {
@@ -47,6 +49,9 @@ export function App() {
                     <Route path="customers" element={<CustomersPage />} />
                     <Route path="customers/new" element={<NewCustomerPage />} />
                     <Route path="customers/:customerId" element={<CustomerPage />} />
+                  </Route>
+                  <Route element={<RequirePermission permission="catalog.manage" />}>
+                    <Route path="services" element={<ServicesPage />} />
                   </Route>
                   <Route element={<RequirePermission permission="team.manage" />}>
                     <Route path="team" element={<TeamPage />} />

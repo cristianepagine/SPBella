@@ -11,23 +11,27 @@ export type NavItem = {
   permission?: Permission;
   /** Só fica "ativo" no endereço exato (para o Início não acender em todas as páginas). */
   end?: boolean;
+  /** Posição no menu (menor primeiro). O core usa 0, 20, 80, 90; a vertical encaixa os seus. */
+  order: number;
 };
 
 /** Itens do core. A vertical acrescenta os seus em App.tsx. */
 export const CORE_NAV: NavItem[] = [
-  { id: "home", labelKey: "nav.home", to: salonPath.app, end: true },
+  { id: "home", labelKey: "nav.home", to: salonPath.app, end: true, order: 0 },
   {
     id: "customers",
     labelKey: "nav.customers",
     to: salonPath.customers,
     permission: "customers.manage",
+    order: 20,
   },
-  { id: "team", labelKey: "nav.team", to: salonPath.team, permission: "team.manage" },
+  { id: "team", labelKey: "nav.team", to: salonPath.team, permission: "team.manage", order: 80 },
   {
     id: "settings",
     labelKey: "nav.settings",
     to: salonPath.settings,
     permission: "settings.manage",
+    order: 90,
   },
 ];
 

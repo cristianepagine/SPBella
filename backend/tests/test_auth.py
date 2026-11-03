@@ -76,6 +76,7 @@ def test_login_returns_token_and_httponly_cookie_scoped_to_the_salon(db_client, 
             "agenda.manage",
             "agenda.view_all",
             "agenda.view_own",
+            "catalog.view",
             "customers.manage",
         ],
     }

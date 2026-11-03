@@ -163,7 +163,8 @@ fica em `backend/app/core/accounts/permissions.py` e é a fonte única de verdad
 | `team.manage` | Cadastrar e desativar a equipe | ✅ | | |
 | `settings.manage` | Configurações do salão (SAL-03) | ✅ | | |
 | `audit.view` | Ver quem alterou dados de clientes (SAL-04) | ✅ | | |
-| `catalog.manage` | Serviços e preços (SAL-05) | ✅ | | |
+| `catalog.view` | Ver a lista de serviços (para agendar) | ✅ | ✅ | ✅ |
+| `catalog.manage` | Cadastrar serviços e preços | ✅ | | |
 | `providers.manage` | Profissionais e jornadas (SAL-06) | ✅ | | |
 | `customers.manage` | Cadastrar e buscar clientes (SAL-07) | ✅ | ✅ | |
 | `agenda.view_all` | Agenda de todos os profissionais (SAL-08) | ✅ | ✅ | |
@@ -411,6 +412,47 @@ Para mostrar o app, nesta ordem:
 Números, moeda e datas seguem a convenção do **país** do estabelecimento, no idioma da pessoa
 (em um salão paraguaio, o guarani aparece como "Gs. 150.000"). Horários em 24 h, sempre no fuso
 do estabelecimento.
+
+### Serviços (vertical salão)
+
+Ver: `catalog.view` (todos os perfis). Cadastrar e alterar: `catalog.manage` (dono).
+
+| Campo | Regra |
+|---|---|
+| `name` | 1 a 120 caracteres |
+| `duration_min` | De 5 a 480 minutos, em múltiplos de 5 (`422 invalid_duration`) |
+| `price_minor` | Inteiro na menor unidade da moeda do salão: `8000` = R$ 80,00; `80000` = Gs. 80.000. De 0 a 100.000.000 (`422 invalid_price`) |
+| `currency` | Só na resposta: a moeda do salão |
+| `is_active` | `false` tira o serviço da agenda e da página pública |
+
+#### `GET /t/{slug}/services` — listar
+
+Ordem alfabética. Só os ativos, a menos que `include_inactive=true`.
+
+```json
+[{"id": "…", "name": "Corte feminino", "duration_min": 60, "price_minor": 8000,
+  "currency": "BRL", "is_active": true, "updated_at": "…"}]
+```
+
+#### `POST /t/{slug}/services` — cadastrar
+
+```bash
+curl -X POST http://localhost:8000/t/studio-bella/services -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"name": "Hidratação", "duration_min": 45, "price_minor": 7590}'
+```
+
+#### `PATCH /t/{slug}/services/{service_id}` — alterar ou desativar
+
+Qualquer combinação de `name`, `duration_min`, `price_minor` e `is_active`. **Serviços não são
+apagados**: agendamentos antigos continuam apontando para eles. Mudar o preço não muda o de
+agendamentos já feitos (cada agendamento vai guardar o preço do momento, a partir do SAL-09).
+
+#### Serviços de exemplo
+
+Todo salão criado pelo `tenants create` já nasce com 7 serviços (corte feminino e masculino,
+escova, coloração, manicure, pedicure e barba), no idioma e na moeda do salão. O dono ajusta
+os preços ou desativa os que não usa.
 
 ### Clientes
 

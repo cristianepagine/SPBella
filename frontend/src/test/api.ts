@@ -58,6 +58,7 @@ export const PERMISSIONS = {
     "agenda.view_own",
     "audit.view",
     "catalog.manage",
+    "catalog.view",
     "customers.manage",
     "providers.manage",
     "reports.view",
@@ -65,6 +66,12 @@ export const PERMISSIONS = {
     "team.manage",
     "time_off.manage",
   ],
-  reception: ["agenda.manage", "agenda.view_all", "agenda.view_own", "customers.manage"],
-  professional: ["agenda.view_own"],
+  reception: [
+    "agenda.manage",
+    "agenda.view_all",
+    "agenda.view_own",
+    "catalog.view",
+    "customers.manage",
+  ],
+  professional: ["agenda.view_own", "catalog.view"],
 } as const;

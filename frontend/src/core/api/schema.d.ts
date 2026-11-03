@@ -329,6 +329,52 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/t/{slug}/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar serviços
+         * @description Em ordem alfabética. Por padrão, só os ativos; `include_inactive=true` traz todos (para a tela de cadastro).
+         */
+        get: operations["list_services_t__slug__services_get"];
+        put?: never;
+        /**
+         * Cadastrar serviço
+         * @description Na menor unidade da moeda do estabelecimento: centavos em BRL (`4590` = R$ 45,90), guaranis em PYG (`150000` = Gs. 150.000).
+         *
+         *     - `422` com `fields[0].code`: `invalid_duration`, `invalid_price` ou `string_too_short` (nome vazio).
+         */
+        post: operations["create_service_t__slug__services_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/t/{slug}/services/{service_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Alterar ou desativar serviço
+         * @description Só os campos enviados mudam. Serviços não são apagados: `is_active: false` tira o serviço da agenda e da página pública, mas agendamentos antigos continuam com ele. Mudar o preço não muda o de agendamentos já feitos (cada agendamento guarda o seu).
+         */
+        patch: operations["change_service_t__slug__services__service_id__patch"];
+        trace?: never;
+    };
     "/t/{slug}/settings": {
         parameters: {
             query?: never;
@@ -763,11 +809,26 @@ export interface components {
              */
             role: "owner" | "reception" | "professional";
         };
+        /** NewService */
+        NewService: {
+            /**
+             * Duration Min
+             * @description Minutos, de 5 a 480, em múltiplos de 5.
+             */
+            duration_min: number;
+            /** Name */
+            name: string;
+            /**
+             * Price Minor
+             * @description Na menor unidade da moeda do estabelecimento: centavos em BRL (`4590` = R$ 45,90), guaranis em PYG (`150000` = Gs. 150.000).
+             */
+            price_minor: number;
+        };
         /**
          * Permission
          * @enum {string}
          */
-        Permission: "team.manage" | "settings.manage" | "audit.view" | "catalog.manage" | "providers.manage" | "customers.manage" | "agenda.view_all" | "agenda.view_own" | "agenda.manage" | "time_off.manage" | "reports.view";
+        Permission: "team.manage" | "settings.manage" | "audit.view" | "catalog.view" | "catalog.manage" | "providers.manage" | "customers.manage" | "agenda.view_all" | "agenda.view_own" | "agenda.manage" | "time_off.manage" | "reports.view";
         /** ReadinessResponse */
         ReadinessResponse: {
             /**
@@ -793,6 +854,63 @@ export interface components {
             token: string;
             /** Turnstile Token */
             turnstile_token?: string | null;
+        };
+        /** ServiceChanges */
+        ServiceChanges: {
+            /**
+             * Duration Min
+             * @description Minutos, de 5 a 480, em múltiplos de 5.
+             */
+            duration_min?: number | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /**
+             * Price Minor
+             * @description Na menor unidade da moeda do estabelecimento: centavos em BRL (`4590` = R$ 45,90), guaranis em PYG (`150000` = Gs. 150.000).
+             */
+            price_minor?: number | null;
+        };
+        /** ServiceOut */
+        ServiceOut: {
+            /**
+             * Currency
+             * @enum {string}
+             */
+            currency: "BRL" | "PYG";
+            /**
+             * Duration Min
+             * @description Minutos, de 5 a 480, em múltiplos de 5.
+             * @example 60
+             */
+            duration_min: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Is Active
+             * @description Desativado não aparece para agendar.
+             */
+            is_active: boolean;
+            /**
+             * Name
+             * @example Corte feminino
+             */
+            name: string;
+            /**
+             * Price Minor
+             * @description Na menor unidade da moeda do estabelecimento: centavos em BRL (`4590` = R$ 45,90), guaranis em PYG (`150000` = Gs. 150.000).
+             * @example 8000
+             */
+            price_minor: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** SessionOut */
         SessionOut: {
@@ -1912,6 +2030,194 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_services_t__slug__services_get: {
+        parameters: {
+            query?: {
+                include_inactive?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServiceOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_service_t__slug__services_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewService"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServiceOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    change_service_t__slug__services__service_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                service_id: string;
+                /** @description Identificador do salão na URL. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ServiceChanges"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServiceOut"];
                 };
             };
             /** @description Unauthorized */

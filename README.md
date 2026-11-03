@@ -142,5 +142,5 @@ Depois, atualize o [guia](docs/api/README.md) se mudou alguma convenção e regi
 
 ## Status
 
-Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 a SAL-04 concluídas (os
-serviços de exemplo do SAL-01 chegam com SAL-05). Próxima: SAL-05 (serviços com preço e duração). Ver [backlog](docs/backlog.md).
+Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 a SAL-05 concluídas.
+Próxima: SAL-06 (profissionais, jornadas, folgas e serviços de cada um). Ver [backlog](docs/backlog.md).

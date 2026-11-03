@@ -91,7 +91,7 @@ def test_role_change_takes_effect_immediately(db_client, owner, make_user):
     assert response.status_code == 200
     me = db_client.get("/t/alpha/auth/me", headers=bearer(member_token)).json()
     assert me["role"] == "professional"  # mesmo token antigo: o perfil vem do banco
-    assert me["permissions"] == ["agenda.view_own"]
+    assert me["permissions"] == ["agenda.view_own", "catalog.view"]
 
 
 def test_deactivating_someone_ends_their_sessions(db_client, owner, make_user):

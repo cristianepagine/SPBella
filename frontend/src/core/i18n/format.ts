@@ -41,3 +41,31 @@ export function timeZoneLabel(timeZone: string, locale: string, at = new Date())
     .find((part) => part.type === "timeZoneName")?.value;
   return offset ? `${city} (${offset.replace("GMT", "UTC")})` : city;
 }
+
+/**
+ * Lê um valor digitado ("45,90", "45.90", "1.234,56", "150.000") e devolve na menor unidade
+ * da moeda (4590, 123456, 150000). Devolve null se não for um valor válido.
+ */
+export function parseMoney(text: string, currency: string): number | null {
+  const digits = currencyDigits(currency);
+  const clean = text.replace(/[^\d.,]/g, "");
+  if (!/\d/.test(clean)) return null;
+  if (digits === 0) return Number(clean.replace(/[.,]/g, ""));
+
+  // O último "," ou "." seguido de 1 ou 2 dígitos é a vírgula decimal; o resto é milhar.
+  const decimal = clean.match(/[.,](\d{1,2})$/);
+  const whole = (decimal ? clean.slice(0, -decimal[0].length) : clean).replace(/[.,]/g, "");
+  if (whole === "" && !decimal) return null;
+  const cents = decimal ? decimal[1].padEnd(digits, "0") : "0".repeat(digits);
+  return Number(whole || "0") * 10 ** digits + Number(cents);
+}
+
+/** Valor para um campo de edição, sem símbolo e sem separador de milhar ("45,90", "150000"). */
+export function moneyInputValue(minor: number, currency: string, locale: string): string {
+  const digits = currencyDigits(currency);
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+    useGrouping: false,
+  }).format(minor / 10 ** digits);
+}

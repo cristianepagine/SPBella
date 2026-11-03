@@ -14,5 +14,27 @@
   },
   "customers": {
     "localeDefault": "O mesmo do salão"
+  },
+  "nav": {
+    "services": "Serviços"
+  },
+  "services": {
+    "title": "Serviços",
+    "new": "Novo serviço",
+    "name": "Nome do serviço",
+    "duration": "Duração",
+    "price": "Preço ({{currency}})",
+    "priceHint": {
+      "BRL": "Exemplo: 45,90",
+      "PYG": "Exemplo: 150.000"
+    },
+    "priceInvalid": "Digite o preço só com números, por exemplo 45,90.",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "deactivate": "Desativar",
+    "activate": "Reativar",
+    "inactive": "Desativado: não aparece para agendar",
+    "minutes": "{{count}} min"
   }
 }

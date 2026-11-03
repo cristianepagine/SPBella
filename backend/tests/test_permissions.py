@@ -53,12 +53,13 @@ def test_permission_matrix():
     """A matriz combinada na especificação (dono, recepção, profissional)."""
     assert ROLE_PERMISSIONS["owner"] == frozenset(Permission)
     assert ROLE_PERMISSIONS["reception"] == {
+        Permission.CATALOG_VIEW,
         Permission.CUSTOMERS_MANAGE,
         Permission.AGENDA_VIEW_ALL,
         Permission.AGENDA_VIEW_OWN,
         Permission.AGENDA_MANAGE,
     }
-    assert ROLE_PERMISSIONS["professional"] == {Permission.AGENDA_VIEW_OWN}
+    assert ROLE_PERMISSIONS["professional"] == {Permission.AGENDA_VIEW_OWN, Permission.CATALOG_VIEW}
 
 
 def test_every_salon_route_declares_its_permission():
