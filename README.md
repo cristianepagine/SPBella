@@ -1,14 +1,18 @@
 # SPBella
 
-Sistema de agendamento para salões de beleza e estética, feito pela **Spartacus Soluções**.
-Usado no celular, em português (Brasil) e espanhol (Paraguai).
+**Agenda Salão**: sistema de agendamento para salões e barbearias, feito pela
+**Spartacus Soluções**. Usado no celular, em português (Brasil) e espanhol (Paraguai).
+
+É também o **template base** dos próximos sistemas: o que é genérico mora em `core` e o que é
+só de salão, em `salon`. Ver [docs/template.md](docs/template.md).
 
 ## Estrutura
 
 | Pasta | O que é |
 |---|---|
-| [`backend/`](backend/) | API em Python 3.12 + FastAPI + SQLAlchemy 2 + Postgres |
-| [`frontend/`](frontend/) | App React + TypeScript + Vite + Tailwind (PWA) |
+| [`backend/`](backend/) | API em Python 3.12 + FastAPI + SQLAlchemy 2 + Postgres. `app/core` (template) e `app/salon` (vertical) |
+| [`frontend/`](frontend/) | App React + TypeScript + Vite + Tailwind (PWA). `src/core` (template) e `src/salon` (vertical) |
+| [`docs/template.md`](docs/template.md) | Como o core e as verticais se encaixam, e como criar um sistema novo |
 | [`docs/api/`](docs/api/) | **Documentação da API**: guia, `openapi.json` e changelog |
 | [`docs/arquitetura.md`](docs/arquitetura.md) | Decisões de arquitetura e pontos legais |
 | [`docs/backlog.md`](docs/backlog.md) | Histórias do MVP e o que fica para depois |
@@ -62,7 +66,8 @@ Tudo pela CLI (no Docker: `docker compose exec api python -m app.cli ...`):
 | Comando | O que faz |
 |---|---|
 | `db init` | Cria/atualiza o papel da aplicação e aplica as migrações do `public`. Pode rodar sempre. |
-| `tenants create --slug studio-ana --name "Studio Ana" --country BR --owner-email ana@x.com --owner-name Ana` | Cria schema, papel, tabelas e o usuário dono. Mostra a **senha provisória uma única vez**. Se algo falhar no meio, desfaz tudo. |
+| `tenants create --slug studio-ana --name "Studio Ana" --country BR --owner-email ana@x.com --owner-name Ana` | Cria schema, papel, tabelas, o usuário dono e os dados iniciais da vertical. Mostra a **senha provisória uma única vez**. Se algo falhar no meio, desfaz tudo. Leva poucos segundos (o teste exige menos de 1 minuto). |
+| `tenants create ... --plan whatsapp_api` | Plano do salão: `base` (padrão) ou `whatsapp_api` (adicional do WhatsApp automático, V2) |
 | `tenants create ... --dsn-ref TENANT_DSN_STUDIO_ANA` | O mesmo, mas em **banco dedicado** (conexões nas variáveis `TENANT_DSN_STUDIO_ANA` e `..._ADMIN`) |
 | `tenants migrate --all` | Migra todos os salões, um por vez. Se um falhar, segue para os outros e termina com código 1. |
 | `tenants migrate --slug studio-ana` | Migra só um salão |
@@ -76,7 +81,8 @@ Padrões por país: BR → `pt-BR`, `America/Sao_Paulo`, `BRL`; PY → `es`, `Am
 ```bash
 cd backend
 uv run alembic -n public revision --autogenerate -m "descricao"                         # tabelas de controle
-uv run alembic -n tenant -x schema=t_studio_bella revision --autogenerate -m "descricao"  # tabelas dos salões
+uv run alembic -n tenant -x schema=t_studio_bella revision --autogenerate \
+    --version-path migrations/tenant/core -m "descricao"   # tabelas genéricas (ou .../salon)
 ```
 
 Migrações de salão precisam funcionar com o código da versão anterior (primeiro adicionar, só depois
@@ -116,16 +122,16 @@ Depois, atualize o [guia](docs/api/README.md) se mudou alguma convenção e regi
 
 ## Regras do projeto
 
-- **Textos para o usuário** ficam só em `frontend/src/i18n/locales/` (`pt-BR.json` e `es.json`).
+- **Textos para o usuário** ficam só em `frontend/src/core/i18n/locales/` (textos neutros) e `frontend/src/salon/locales/` (vocabulário do salão), sempre em `pt-BR.json` e `es.json`.
   A API devolve códigos (`error.code`), nunca frases para o usuário.
 - **Sem dados pessoais nos logs.** Registre IDs, não nomes, telefones ou e-mails.
 - **Nenhum segredo no repositório.** Só `.env.example`.
 - **Datas em UTC** no banco e na API. **Dinheiro em inteiro** (`*_minor`).
 - Permissões são **sempre** verificadas no back-end (`CurrentUser`, `OwnerUser`, `StaffUser` em
-  `backend/app/core/auth.py`). O front só esconde botões.
+  `backend/app/core/accounts/auth.py`). O front só esconde botões.
 - Todo formulário público usa Turnstile e limite de tentativas.
 
 ## Status
 
-Histórias 1 (esqueleto), 2 (multitenancy) e 3 (login) concluídas. Próxima: história 4
-(configurações do salão). Ver [backlog](docs/backlog.md).
+Backlog no formato SAL ([docs/backlog.md](docs/backlog.md)). SAL-01 concluída (exceto os serviços
+de exemplo, que chegam com SAL-05). Próxima: SAL-02 (telas por perfil). Ver [backlog](docs/backlog.md).

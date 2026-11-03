@@ -9,10 +9,10 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlalchemy import select, text
 
-from app.core.auth import CurrentUser, OwnerUser, StaffUser
-from app.core.errors import ApiError
-from app.core.tenancy import DbSession
-from app.models.tenant import User
+from app.core.accounts.auth import CurrentUser, OwnerUser, StaffUser
+from app.core.accounts.models import User
+from app.core.infra.errors import ApiError
+from app.core.infra.tenancy import DbSession
 
 router = APIRouter(prefix="/t/{slug}/_probe")
 

@@ -11,10 +11,11 @@
 import argparse
 import sys
 
-from app.core.config import get_settings
-from app.core.logging import configure_logging
-from app.provisioning import (
+from app.core.infra.config import get_settings
+from app.core.infra.logging import configure_logging
+from app.core.tenants.provisioning import (
     DEMO_PASSWORD,
+    PLANS,
     ProvisioningError,
     create_tenant,
     init_database,
@@ -22,6 +23,7 @@ from app.provisioning import (
     migrate_tenants,
     seed_demo,
 )
+from app.registry import VERTICAL
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -49,6 +51,9 @@ def _parser() -> argparse.ArgumentParser:
     create.add_argument("--currency", choices=["BRL", "PYG"], help="padrão: pelo país")
     create.add_argument(
         "--dsn-ref", help="variável de ambiente do banco dedicado, ex.: TENANT_DSN_STUDIO_ANA"
+    )
+    create.add_argument(
+        "--plan", choices=list(PLANS), default="base", help="base (padrão) ou whatsapp_api"
     )
 
     migrate = tenants.add_parser("migrate", help="aplica as migrações nos salões")
@@ -83,6 +88,8 @@ def main(argv: list[str] | None = None) -> int:
                 locale=args.locale,
                 timezone=args.timezone,
                 currency=args.currency,
+                plan=args.plan,
+                vertical=VERTICAL,
             )
             print(f"Salão criado: {created.tenant.slug} (schema {created.tenant.schema})")
             print(f"Acesso do dono: {created.owner_email}")
@@ -101,12 +108,12 @@ def main(argv: list[str] | None = None) -> int:
             for t in list_tenants(settings):
                 where = t["dsn_ref"] or "principal"
                 print(
-                    f"{t['slug']:<30} {t['country']}  {t['status']:<12} "
+                    f"{t['slug']:<30} {t['country']}  {t['plan']:<13} {t['status']:<12} "
                     f"versão {t['revision'] or '-':<20} banco {where}"
                 )
 
         elif args.command == "seed-demo":
-            created = seed_demo(settings)
+            created = seed_demo(settings, VERTICAL)
             for c in created:
                 print(f"Demonstração criada: {c.tenant.slug}  login {c.owner_email}")
             if created:

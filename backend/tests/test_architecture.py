@@ -6,15 +6,15 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from app.core import tenancy
-from app.core.db import DSN_REF_PATTERN
-from app.core.tenancy import is_valid_slug, role_for, schema_for
+from app.core.infra import tenancy
+from app.core.infra.db import DSN_REF_PATTERN
+from app.core.infra.tenancy import is_valid_slug, role_for, schema_for
 from app.main import create_app
 
 APP_DIR = Path(__file__).resolve().parents[1] / "app"
 
 # Quem pode abrir conexões/sessões por conta própria.
-ALLOWED_DB_ACCESS = {"core/db.py", "core/tenancy.py", "provisioning.py"}
+ALLOWED_DB_ACCESS = {"core/infra/db.py", "core/infra/tenancy.py", "core/tenants/provisioning.py"}
 
 
 def _app_files():
@@ -27,9 +27,19 @@ def test_only_core_modules_open_connections_or_sessions():
     offenders = [name for name, src in _app_files() if pattern.search(src)]
 
     assert set(offenders) <= ALLOWED_DB_ACCESS, (
-        "Use DbSession (app/core/tenancy.py) nas rotas. Arquivos fora da regra: "
+        "Use DbSession (app/core/infra/tenancy.py) nas rotas. Arquivos fora da regra: "
         f"{sorted(set(offenders) - ALLOWED_DB_ACCESS)}"
     )
+
+
+def test_core_never_imports_a_vertical():
+    """O core é o template dos próximos sistemas: não pode depender do salão."""
+    pattern = re.compile(r"^\s*(from|import) app\.(salon|registry)\b", re.MULTILINE)
+    offenders = [
+        name for name, src in _app_files() if name.startswith("core/") and pattern.search(src)
+    ]
+
+    assert offenders == [], f"o core importa a vertical em: {offenders}"
 
 
 def test_only_tenancy_switches_role_or_search_path():
@@ -37,7 +47,7 @@ def test_only_tenancy_switches_role_or_search_path():
     pattern = re.compile(r"SET (LOCAL )?ROLE \"|'search_path'|SET search_path")
     offenders = {name for name, src in _app_files() if pattern.search(src)}
 
-    assert offenders <= {"core/tenancy.py", "provisioning.py"}
+    assert offenders <= {"core/infra/tenancy.py", "core/tenants/provisioning.py"}
 
 
 def test_every_salon_route_resolves_the_salon_first(monkeypatch):

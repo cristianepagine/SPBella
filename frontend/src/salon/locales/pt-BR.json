@@ -1,0 +1,12 @@
+{
+  "app": {
+    "tagline": "A agenda do seu salão, simples e no celular."
+  },
+  "auth": {
+    "staffLogin": "Área do salão: entrar",
+    "dashboardIntro": "Em breve a agenda do salão vai aparecer aqui."
+  },
+  "errors": {
+    "tenant_not_found": "Não encontramos esse salão. Confira se o endereço está certo."
+  }
+}

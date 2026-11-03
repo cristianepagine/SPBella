@@ -1,15 +1,18 @@
+import time
+
 import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.pool import NullPool
 
-from app import cli, provisioning
-from app.core.config import Settings
-from app.core.db import Databases
-from app.core.migrations import tenant_head
-from app.core.security import verify_password
-from app.core.tenancy import load_tenant, tenant_session
-from app.models.tenant import User
-from app.provisioning import (
+from app import cli
+from app.core.accounts.models import User
+from app.core.infra.config import Settings
+from app.core.infra.db import Databases
+from app.core.infra.migrations import tenant_head, tenant_version_dirs
+from app.core.infra.security import verify_password
+from app.core.infra.tenancy import load_tenant, tenant_session
+from app.core.tenants import provisioning
+from app.core.tenants.provisioning import (
     DEMO_PASSWORD,
     MIGRATION_LOCK_KEY,
     ProvisioningError,
@@ -18,6 +21,8 @@ from app.provisioning import (
     migrate_tenants,
     seed_demo,
 )
+from app.core.vertical import Vertical
+from app.registry import VERTICAL
 from tests.conftest import production_settings
 
 # --- validações (sem banco) --------------------------------------------------------------
@@ -67,7 +72,7 @@ def test_create_tenant_rejects_dsn_ref_outside_the_pattern():
 
 def test_seed_demo_is_refused_in_production():
     with pytest.raises(ProvisioningError, match="produção"):
-        seed_demo(production_settings())
+        seed_demo(production_settings(), VERTICAL)
 
 
 # --- com banco ---------------------------------------------------------------------------
@@ -168,8 +173,8 @@ def test_list_shows_revision_of_each_salon(db_settings, tenants):
 
 
 def test_seed_demo_creates_two_salons_once(db_settings, tenants):
-    first = seed_demo(db_settings)
-    second = seed_demo(db_settings)
+    first = seed_demo(db_settings, VERTICAL)
+    second = seed_demo(db_settings, VERTICAL)
 
     assert {c.tenant.slug for c in first} == {"studio-bella", "salon-asuncion"}
     assert second == []
@@ -202,3 +207,69 @@ def test_cli_create_prints_temporary_password_once(db_settings, tenants, monkeyp
     assert code == 0
     assert "dona@via-cli.test" in out
     assert "Senha provisória" in out
+
+
+# --- SAL-01: plano, ganchos da vertical, tempo -------------------------------------------
+
+
+def test_plan_must_be_known():
+    settings = Settings(database_admin_url="postgresql+psycopg://x@localhost:1/x")
+
+    with pytest.raises(ProvisioningError, match="plano"):
+        create_tenant(settings, **VALID, plan="premium")
+
+
+def test_plan_defaults_to_base_and_is_stored(db_settings, tenants):
+    created = create_tenant(db_settings, **{**VALID, "slug": "com-whatsapp"}, plan="whatsapp_api")
+
+    with _admin(db_settings).connect() as conn:
+        plans = dict(conn.execute(text("SELECT slug, plan FROM public.tenants")).all())
+    assert plans["alpha"] == "base"
+    assert plans["com-whatsapp"] == "whatsapp_api"
+    assert created.tenant.plan == "whatsapp_api"
+
+
+def _vertical(seed) -> Vertical:
+    return Vertical(name="teste", api_title="t", api_description="t", seed_tenant=seed)
+
+
+def test_vertical_seed_runs_inside_the_new_tenant(db_settings, tenants):
+    seen = {}
+
+    def seed(session, tenant):
+        seen["user"] = session.execute(text("SELECT current_user")).scalar()
+        seen["owners"] = session.query(User).filter_by(role="owner").count()
+
+    created = create_tenant(db_settings, **{**VALID, "slug": "com-seed"}, vertical=_vertical(seed))
+
+    assert seen == {"user": created.tenant.role, "owners": 1}  # já vê o dono criado
+
+
+def test_failing_vertical_seed_undoes_the_whole_tenant(db_settings, tenants):
+    def broken_seed(session, tenant):
+        raise RuntimeError("seed quebrado")
+
+    with pytest.raises(RuntimeError, match="seed quebrado"):
+        create_tenant(
+            db_settings, **{**VALID, "slug": "seed-ruim"}, vertical=_vertical(broken_seed)
+        )
+
+    with _admin(db_settings).connect() as conn:
+        assert conn.execute(text("SELECT to_regnamespace('t_seed_ruim')")).scalar() is None
+        assert not conn.execute(text("SELECT 1 FROM public.tenants WHERE slug='seed-ruim'")).first()
+
+
+def test_create_tenant_takes_less_than_a_minute(db_settings, tenants):
+    """Critério de aceite do SAL-01."""
+    start = time.perf_counter()
+    create_tenant(db_settings, **{**VALID, "slug": "cronometrado"}, vertical=VERTICAL)
+    elapsed = time.perf_counter() - start
+
+    assert elapsed < 60, f"levou {elapsed:.1f}s"
+
+
+def test_tenant_migrations_are_split_by_module_in_a_single_history():
+    names = [d.name for d in tenant_version_dirs()]
+
+    assert names == ["core", "salon"]
+    assert tenant_head() == "0002_auth_tokens"  # um único head, mesmo com duas pastas

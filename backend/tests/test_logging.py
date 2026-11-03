@@ -2,7 +2,7 @@ import json
 
 import structlog
 
-from app.core.logging import REDACTED, configure_logging, scrub_text
+from app.core.infra.logging import REDACTED, configure_logging, scrub_text
 
 
 def test_sensitive_keys_are_redacted(capsys):

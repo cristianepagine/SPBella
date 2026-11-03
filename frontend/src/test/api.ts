@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 
-import type { Session } from "../auth/session";
+import type { Session } from "../core/auth/session";
 
 type Handler = Response | ((request: Request) => Response | Promise<Response>);
 

@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "./App";
-import { resetSessions } from "./auth/session";
-import { changeLanguage, clearLanguagePreference } from "./i18n";
+import { resetSessions } from "./core/auth/session";
+import { changeLanguage, clearLanguagePreference } from "./core/i18n";
 import { apiError, json, mockApi, salon } from "./test/api";
 import { renderWithProviders } from "./test/render";
 

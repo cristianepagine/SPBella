@@ -19,8 +19,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.pool import NullPool
 
-from app.core.db import Databases
-from app.core.tenancy import load_tenant, tenant_session
+from app.core.infra.db import Databases
+from app.core.infra.tenancy import load_tenant, tenant_session
 from tests.conftest import APP_ROLE
 
 INSUFFICIENT_PRIVILEGE = "42501"
@@ -110,7 +110,7 @@ def test_unknown_or_malformed_slug_is_404(db_client, slug):
 
 
 def test_suspended_salon_is_404(db_client, db_settings):
-    from app.provisioning import create_tenant
+    from app.core.tenants.provisioning import create_tenant
 
     create_tenant(
         db_settings, slug="suspenso", name="Suspenso", country="BR",

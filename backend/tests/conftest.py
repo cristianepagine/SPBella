@@ -19,13 +19,14 @@ from sqlalchemy import create_engine, make_url, text
 from sqlalchemy.engine import URL
 from sqlalchemy.pool import NullPool
 
-from app.core.config import Settings
-from app.core.db import Databases
-from app.core.security import hash_password
-from app.core.tenancy import load_tenant, tenant_session
+from app.core.accounts.models import User
+from app.core.infra.config import Settings
+from app.core.infra.db import Databases
+from app.core.infra.security import hash_password
+from app.core.infra.tenancy import load_tenant, tenant_session
+from app.core.tenants.provisioning import CreatedTenant, create_tenant, init_database
 from app.main import create_app
-from app.models.tenant import User
-from app.provisioning import CreatedTenant, create_tenant, init_database
+from app.registry import VERTICAL
 from tests.probe import router as probe_router
 
 ADMIN_URL = os.getenv("TEST_ADMIN_DATABASE_URL")
@@ -128,6 +129,7 @@ def tenants(db_settings: Settings) -> dict[str, CreatedTenant]:
             name=f"Salão {slug.title()}",
             owner_email=f"dono@{slug}.test",
             owner_name=f"Dono {slug}",
+            vertical=VERTICAL,
             **spec,
         )
         for slug, spec in specs.items()

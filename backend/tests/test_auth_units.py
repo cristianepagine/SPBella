@@ -2,10 +2,10 @@
 
 import pytest
 
-from app.core.config import Settings
-from app.core.ratelimit import RateLimiter, TooManyRequestsError
-from app.core.security import hash_token, password_problem
-from app.core.turnstile import CloudflareTurnstile, SkipTurnstile, build_turnstile
+from app.core.infra.config import Settings
+from app.core.infra.ratelimit import RateLimiter, TooManyRequestsError
+from app.core.infra.security import hash_token, password_problem
+from app.core.infra.turnstile import CloudflareTurnstile, SkipTurnstile, build_turnstile
 from tests.conftest import production_settings
 
 
@@ -71,7 +71,7 @@ def test_production_refuses_unsafe_configuration(override, missing):
 
 
 def test_production_refuses_the_development_jwt_secret():
-    from app.core.config import DEV_JWT_SECRET
+    from app.core.infra.config import DEV_JWT_SECRET
 
     with pytest.raises(ValueError, match="JWT_SECRET"):
         production_settings(jwt_secret=DEV_JWT_SECRET)

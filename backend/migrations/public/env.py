@@ -4,9 +4,9 @@ from alembic import context
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
-from app.core.config import get_settings
-from app.models.base import PublicBase
-from app.models.public import Tenant  # noqa: F401 - registra a tabela no metadata
+from app.core.infra.config import get_settings
+from app.core.infra.models import PublicBase
+from app.core.tenants.models import Tenant  # noqa: F401 - registra a tabela no metadata
 
 config = context.config
 url = config.attributes.get("url") or get_settings().database_admin_url

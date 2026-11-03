@@ -2,6 +2,12 @@
 
 Mudanças visíveis para quem consome a API. Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [0.4.0] - 2026-11-02
+
+### Alterado
+- A tag do OpenAPI de `GET /t/{slug}` passou de "Salão" para "Estabelecimento" (a rota é do
+  core, que serve a outros tipos de negócio). Caminhos, campos e respostas **não mudaram**.
+
 ## [0.3.0] - 2026-11-02
 
 ### Adicionado

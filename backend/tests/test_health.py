@@ -2,7 +2,7 @@ def test_liveness_responds_without_database(client):
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "version": "0.3.0"}
+    assert response.json() == {"status": "ok", "version": "0.4.0"}
 
 
 def test_readiness_returns_503_when_database_is_down(client, monkeypatch):

@@ -10,9 +10,10 @@ from alembic import context
 from sqlalchemy import create_engine, text
 from sqlalchemy.pool import NullPool
 
-import app.models.tenant  # noqa: F401 - registra as tabelas no metadata
-from app.core.config import get_settings
-from app.models.base import TenantBase
+import app.core.accounts.models  # noqa: F401 - registra as tabelas do core no metadata
+import app.registry  # noqa: F401 - e as da vertical
+from app.core.infra.config import get_settings
+from app.core.infra.models import TenantBase
 
 config = context.config
 url = config.attributes.get("url") or get_settings().database_admin_url

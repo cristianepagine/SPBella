@@ -2,8 +2,8 @@ from fastapi import APIRouter
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
 
-from app.core.config import Settings
-from app.core.errors import ApiError
+from app.core.infra.config import Settings
+from app.core.infra.errors import ApiError
 from app.main import create_app
 from tests.conftest import production_settings
 

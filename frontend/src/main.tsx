@@ -1,5 +1,4 @@
 import "./index.css";
-import "./i18n";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
@@ -7,6 +6,10 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 
 import { App } from "./App";
+import { setupI18n } from "./core/i18n";
+import { salonLocales } from "./salon/locales";
+
+setupI18n(salonLocales);
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true } },

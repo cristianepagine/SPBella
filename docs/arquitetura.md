@@ -3,6 +3,11 @@
 Registro das decisões aprovadas na proposta inicial (2026-11-02). Quando uma decisão mudar,
 atualize este arquivo dizendo o que mudou e por quê.
 
+## Core e verticais
+
+O código é dividido em **core** (template reutilizável) e **vertical** (`salon`). O core nunca
+importa a vertical; ela se pluga pelo objeto `Vertical`. Detalhes e regras em [template.md](template.md).
+
 ## Visão geral
 
 ```
@@ -46,7 +51,7 @@ api.<dominio>/t/{slug}/... ─► Cloudflare (WAF, rate limit) ─► Cloudflare
   - é membro de todos os papéis de salão, mas, por causa do `NOINHERIT`, **não acessa nenhuma tabela de salão sem `SET ROLE`**.
 - **Um papel por salão** (`spbella_t_<slug>`): `NOLOGIN`. Lê e grava só nas tabelas do próprio schema. Não cria, altera nem apaga estrutura, e não lê `public.tenants`.
 
-**Como uma sessão entra no salão:** só [app/core/tenancy.py](../backend/app/core/tenancy.py) faz isso. A cada transação ele executa `SET LOCAL ROLE` e `set_config('search_path', ..., true)`. Os dois valem só até o fim da transação, então a conexão volta limpa para o pool. As rotas recebem essa sessão pela dependência `DbSession`, com `scope="function"`: o commit acontece antes de a resposta sair.
+**Como uma sessão entra no salão:** só [app/core/infra/tenancy.py](../backend/app/core/infra/tenancy.py) faz isso. A cada transação ele executa `SET LOCAL ROLE` e `set_config('search_path', ..., true)`. Os dois valem só até o fim da transação, então a conexão volta limpa para o pool. As rotas recebem essa sessão pela dependência `DbSession`, com `scope="function"`: o commit acontece antes de a resposta sair.
 
 **O que os testes provam** ([tests/test_tenant_isolation.py](../backend/tests/test_tenant_isolation.py)):
 - por HTTP, o salão B não lista, não lê, não altera e não apaga registros do salão A, nem mesmo pelo ID;
